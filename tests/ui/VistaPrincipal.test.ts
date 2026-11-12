@@ -292,7 +292,7 @@ describe("VistaPrincipal", () => {
       await navegarA("Participantes");
 
       hacerClic("Reingresar", fila("ana"));
-      expect(textoDe(dialogoAbierto())).toContain("Se le va a cobrar una garantía de $ 1.000.");
+      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 1.000 de garantía.");
       hacerClic("Cobrar", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
@@ -305,7 +305,7 @@ describe("VistaPrincipal", () => {
       await navegarA("Participantes");
 
       hacerClic("Registrar participante");
-      expect(textoDe(dialogoAbierto())).toContain("Se le va a cobrar una garantía de $ 1.000.");
+      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 1.000 de garantía.");
       completar("Nombre", "ana", dialogoAbierto());
       hacerClic("Registrar", dialogoAbierto());
 
@@ -321,7 +321,7 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Registrar", dialogoAbierto());
       expect(textoDe(dialogoAbierto())).toContain(
-        "Ya hay alguien con el nombre ana. ¿Es la misma persona? En ese caso, se le cobra la garantía de $ 1.000.",
+        "Ya hay alguien con el nombre ana. ¿Es la misma persona? En ese caso, hay que cobrarle $ 1.000 de garantía.",
       );
       hacerClic("Sí", dialogoAbierto());
 
@@ -339,7 +339,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Registrar", dialogoAbierto());
 
       expect(textoDe(dialogoAbierto())).toContain(
-        "En ese caso, se le cobra la garantía de $ 1.000 ($ 500 de créditos, $ 500 en efectivo).",
+        "En ese caso, hay que cobrarle $ 500 en efectivo; los otros $ 500 de la garantía de $ 1.000 salen de sus créditos.",
       );
     });
 
@@ -484,7 +484,7 @@ describe("VistaPrincipal", () => {
       await navegarA("Caja");
 
       hacerClic("Cobrar garantía", fila("beto"));
-      expect(textoDe(dialogoAbierto())).toContain("Se le va a cobrar $ 500 para completar la garantía de $ 1.500.");
+      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 500 para completar la garantía de $ 1.500.");
       hacerClic("Cobrar", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("beto")?.garantia()).toBe(1500);
@@ -562,7 +562,7 @@ describe("VistaPrincipal", () => {
       casillaDeAsistencia("carla").click();
       expect(casillaDeAsistencia("ana").disabled).toBe(true);
       hacerClic("Cobrar garantía y habilitar", fila("ana"));
-      expect(textoDe(dialogoAbierto())).toContain("Se le va a cobrar una garantía de $ 1.000.");
+      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 1.000 de garantía.");
       hacerClic("Cobrar", dialogoAbierto());
       expect(casillaDeAsistencia("ana").disabled).toBe(false);
       expect(casillaDeAsistencia("ana").checked).toBe(true);
@@ -705,7 +705,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Empezar encuentro");
 
       hacerClic("Cobrar garantía y habilitar", fila("beto"));
-      expect(textoDe(dialogoAbierto())).toContain("Se le va a cobrar $ 500 para completar la garantía de $ 1.500.");
+      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 500 para completar la garantía de $ 1.500.");
       hacerClic("Cobrar", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("beto")?.garantia()).toBe(1500);
@@ -724,7 +724,7 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Cobrar garantía y habilitar", fila("ana"));
       expect(textoDe(dialogoAbierto())).toContain(
-        "Se le va a cobrar una garantía de $ 1.000 ($ 500 de créditos, $ 500 en efectivo).",
+        "Hay que cobrarle $ 500 en efectivo; los otros $ 500 de la garantía de $ 1.000 salen de sus créditos.",
       );
       hacerClic("Cobrar", dialogoAbierto());
 
@@ -756,7 +756,7 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Cobrar garantía y habilitar", fila("beto"));
       expect(textoDe(dialogoAbierto())).toContain(
-        "Se le va a cobrar $ 500 para completar la garantía de $ 1.500 ($ 334 de créditos, $ 166 en efectivo).",
+        "Le faltan $ 500 para completar la garantía de $ 1.500. Hay que cobrarle $ 166 en efectivo; los otros $ 334 salen de sus créditos.",
       );
       hacerClic("Cobrar", dialogoAbierto());
 

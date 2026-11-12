@@ -2,7 +2,7 @@ import { campoDeTexto } from "./Campos.ts";
 import { Dialogo } from "./Dialogo.ts";
 import type { Participante } from "../models/Participante.ts";
 import { monto } from "../app/Formato.ts";
-import { avisoDeGarantia, parteDeCreditos } from "./DialogoDeCobroDeGarantia.ts";
+import { avisoDeGarantia, cobroDeLaGarantiaA } from "./DialogoDeCobroDeGarantia.ts";
 import { crear, valorDe } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 
@@ -60,7 +60,7 @@ export class DialogoDeRegistro {
       return `la garantía de ${monto(garantia)} la cubren sus créditos: no hay que cobrarle nada.`;
     }
 
-    return `se le cobra la garantía de ${monto(garantia)}${parteDeCreditos(grupo, participante)}.`;
+    return `hay que ${cobroDeLaGarantiaA(grupo, participante)}`;
   }
 
   private _preguntarSiEsLaMismaPersona(participante: Participante): void {

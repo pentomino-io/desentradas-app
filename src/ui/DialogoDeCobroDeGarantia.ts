@@ -5,30 +5,38 @@ import { Dialogo } from "./Dialogo.ts";
 import { crear } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 
-const cobroDeGarantia = (garantia: number): string => `Se le va a cobrar una garantía de ${monto(garantia)}`;
-
 export const avisoDeGarantia = (grupo: Grupo): HTMLParagraphElement =>
-  crear("p", {}, `${cobroDeGarantia(grupo.reglas().garantia())}.`);
+  crear("p", {}, `Hay que cobrarle ${monto(grupo.reglas().garantia())} de garantía.`);
 
-export const parteDeCreditos = (grupo: Grupo, participante: Participante): string => {
+export const cobroDeLaGarantiaA = (grupo: Grupo, participante: Participante): string => {
+  const porCobrar = grupo.garantiaPorCobrarA(participante);
   const deCreditos = grupo.creditosParaLaGarantiaDe(participante);
-  const enEfectivo = grupo.garantiaPorCobrarA(participante) - deCreditos;
-  return deCreditos === 0 ? "" : ` (${monto(deCreditos)} de créditos, ${monto(enEfectivo)} en efectivo)`;
+  if (deCreditos === 0) return `cobrarle ${monto(porCobrar)} de garantía.`;
+
+  const enEfectivo = monto(porCobrar - deCreditos);
+  return `cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} de la garantía de ${monto(porCobrar)} salen de sus créditos.`;
+};
+
+const avisoDeCompletarLaGarantia = (grupo: Grupo, participante: Participante): string => {
+  const porCobrar = grupo.garantiaPorCobrarA(participante);
+  const deCreditos = grupo.creditosParaLaGarantiaDe(participante);
+  const completar = `completar la garantía de ${monto(grupo.reglas().garantia())}`;
+  if (deCreditos === 0) return `Hay que cobrarle ${monto(porCobrar)} para ${completar}.`;
+
+  const faltante = `Le faltan ${monto(porCobrar)} para ${completar}.`;
+  if (grupo.susCreditosCubrenLaGarantiaDe(participante))
+    return `${faltante} Sus créditos lo cubren: no hay que cobrarle nada.`;
+
+  const enEfectivo = monto(porCobrar - deCreditos);
+  return `${faltante} Hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} salen de sus créditos.`;
 };
 
 const avisoDeCobro = (grupo: Grupo, participante: Participante): string => {
-  const porCobrar = grupo.garantiaPorCobrarA(participante);
-  const cubierta = grupo.susCreditosCubrenLaGarantiaDe(participante);
-  if (grupo.situacionDe(participante) === "inactivo") {
-    return cubierta
-      ? `La garantía de ${monto(porCobrar)} la cubren sus créditos: no hay que cobrarle nada.`
-      : `${cobroDeGarantia(porCobrar)}${parteDeCreditos(grupo, participante)}.`;
-  }
+  if (grupo.situacionDe(participante) !== "inactivo") return avisoDeCompletarLaGarantia(grupo, participante);
 
-  const garantia = monto(grupo.reglas().garantia());
-  return cubierta
-    ? `Le faltan ${monto(porCobrar)} para completar la garantía de ${garantia}. Sus créditos lo cubren: no hay que cobrarle nada.`
-    : `Se le va a cobrar ${monto(porCobrar)} para completar la garantía de ${garantia}${parteDeCreditos(grupo, participante)}.`;
+  return grupo.susCreditosCubrenLaGarantiaDe(participante)
+    ? `La garantía de ${monto(grupo.garantiaPorCobrarA(participante))} la cubren sus créditos: no hay que cobrarle nada.`
+    : `Hay que ${cobroDeLaGarantiaA(grupo, participante)}`;
 };
 
 const textoDeConfirmacion = (grupo: Grupo, participante: Participante): string => {
