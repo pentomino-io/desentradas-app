@@ -23,11 +23,11 @@ const grupoConGarantiaInactivaIncompletaYCompleta = () => {
 const grupoConAnaInactivaConCreditos = () => {
   const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
   const ana = grupo.ingresar("ana", dia(1));
-  grupo.ingresar("beto", dia(1));
-  grupo.ingresar("carla", dia(1));
+  const beto = grupo.ingresar("beto", dia(1));
+  const carla = grupo.ingresar("carla", dia(1));
   grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["ana", "beto"], ausentes: ["carla"] })); // ana recibe 500
   grupo.registrarEncuentro(nuevoEncuentro({ numero: 3, asistentes: ["beto"], ausentes: ["ana"] }));
-  return { grupo, ana };
+  return { grupo, ana, beto, carla };
 };
 
 const movimientosDe = (grupo: Grupo) =>
@@ -365,6 +365,15 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo).filter(([, , persona]) => persona === "ana")).toEqual([
         [dia(1), "cobro", "ana", 1000],
       ]);
+    });
+
+    it("los créditos pendientes cubren la garantía por cobrar si alcanzan para toda, y no hay nada que cubrir a quien no le falta nada", () => {
+      const { grupo, ana, beto, carla } = grupoConAnaInactivaConCreditos(); // ana tiene $ 500 de crédito, beto $ 1.500, carla nada
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(4), garantia: 400 }));
+
+      const cubiertas = [ana, beto, carla].map((participante) => grupo.susCreditosCubrenLaGarantiaDe(participante));
+
+      expect(cubiertas).toEqual([true, false, false]);
     });
 
     it("la garantía por cobrar es lo que falta para llegar a la actual: toda para un inactivo, la diferencia para quien la tiene incompleta, nada para quien la tiene completa", () => {

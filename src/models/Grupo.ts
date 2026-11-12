@@ -129,6 +129,11 @@ export class Grupo {
     return Math.min(this.garantiaPorCobrarA(participante), this._caja.montoPendienteDe(participante.nombre()));
   }
 
+  susCreditosCubrenLaGarantiaDe(participante: Participante): boolean {
+    const porCobrar = this.garantiaPorCobrarA(participante);
+    return porCobrar > 0 && this.creditosParaLaGarantiaDe(participante) === porCobrar;
+  }
+
   saldos(): readonly Saldo[] {
     return this._participantes
       .map(
@@ -143,7 +148,7 @@ export class Grupo {
   }
 
   totalPorCobrar(): number {
-    return this.saldos().reduce((total, saldo) => total + saldo.porCobrar(), 0);
+    return this._participantes.reduce((total, participante) => total + this._faltanteDeGarantiaDe(participante), 0);
   }
 
   efectosDeCambiarLasReglas(reglas: Reglas): readonly CambioDeGarantia[] {

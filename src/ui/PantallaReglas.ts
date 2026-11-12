@@ -25,16 +25,17 @@ const efecto = (nombres: readonly string[], cambio: CambioDeGarantia): string =>
 const descripcionDe = (efectos: readonly CambioDeGarantia[]): string => {
   if (efectos.length === 0) return "No cambia la plata de nadie.";
 
-  const grupos = new Map<string, { cambio: CambioDeGarantia; nombres: string[] }>();
+  const grupos = new Map<string, CambioDeGarantia[]>();
   const ordenados = efectos.toSorted(
     (uno, otro) => uno.monto() - otro.monto() || Number(uno.loCubrenSusCreditos()) - Number(otro.loCubrenSusCreditos()),
   );
   for (const cambio of ordenados) {
     const clave = `${cambio.monto()} ${cambio.loCubrenSusCreditos()}`;
-    const nombres = grupos.get(clave)?.nombres ?? [];
-    grupos.set(clave, { cambio, nombres: [...nombres, cambio.nombre()] });
+    grupos.set(clave, [...(grupos.get(clave) ?? []), cambio]);
   }
-  const frases = [...grupos.values()].map(({ cambio, nombres }) => efecto(nombres.toSorted(alfabetico), cambio));
+  const frases = [...grupos.values()].map((cambios) =>
+    efecto(cambios.map((cambio) => cambio.nombre()).toSorted(alfabetico), cambios[0]),
+  );
   return `${frases.join("; ")}.`;
 };
 

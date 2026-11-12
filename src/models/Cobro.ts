@@ -13,7 +13,7 @@ export class Cobro implements Movimiento {
     return new Cobro(persona, monto, fecha, "ingreso");
   }
 
-  static deGarantia(persona: string, monto: number, fecha: Date, deCreditos = 0): Cobro {
+  static deGarantia(persona: string, monto: number, fecha: Date, deCreditos: number): Cobro {
     return new Cobro(persona, monto, fecha, "garantía", deCreditos);
   }
 

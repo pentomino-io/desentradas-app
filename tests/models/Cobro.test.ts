@@ -21,7 +21,7 @@ describe("Cobro", () => {
   });
 
   it("el cobro de una garantía se describe como tal, con la persona a quien se le cobró", () => {
-    const cobro = Cobro.deGarantia("ana", 1000, dia(3));
+    const cobro = Cobro.deGarantia("ana", 1000, dia(3), 0);
 
     const descripcion = cobro.describir();
 

@@ -1,4 +1,4 @@
-// Lo que falta de la garantía no se compensa solo con los créditos: cada uno elige si acepta el cobro o se lleva el crédito.
+// Los créditos cubren lo que falta de la garantía recién al cobrarla; antes, cada uno puede llevárselos.
 export class Saldo {
   private _nombre: string;
   private _porCobrar: number;

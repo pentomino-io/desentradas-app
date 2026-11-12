@@ -2,7 +2,7 @@ import { campoDeTexto } from "./Campos.ts";
 import { Dialogo } from "./Dialogo.ts";
 import type { Participante } from "../models/Participante.ts";
 import { monto } from "../app/Formato.ts";
-import { avisoDeGarantia, laCubrenSusCreditos, parteDeCreditos } from "./DialogoDeCobroDeGarantia.ts";
+import { avisoDeGarantia, parteDeCreditos } from "./DialogoDeCobroDeGarantia.ts";
 import { crear, valorDe } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 
@@ -56,7 +56,7 @@ export class DialogoDeRegistro {
   private _cobroA(participante: Participante): string {
     const grupo = this._entorno.grupo();
     const garantia = grupo.garantiaPorCobrarA(participante);
-    if (laCubrenSusCreditos(grupo, participante)) {
+    if (grupo.susCreditosCubrenLaGarantiaDe(participante)) {
       return `la garantía de ${monto(garantia)} la cubren sus créditos: no hay que cobrarle nada.`;
     }
 
