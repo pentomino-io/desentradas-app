@@ -546,6 +546,19 @@ describe("Grupo", () => {
       expect(pueden).toEqual([false, false, true]);
     });
 
+    it("la situación de cada uno distingue a quienes participan con la garantía actual completa de quienes la tienen incompleta", () => {
+      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+      const ana = grupo.ingresar("ana", dia(1));
+      const beto = grupo.ingresar("beto", dia(1));
+      grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana"] }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+      const carla = grupo.ingresar("carla", dia(3));
+
+      const situaciones = [ana, beto, carla].map((participante) => grupo.situacionDe(participante));
+
+      expect(situaciones).toEqual(["inactivo", "garantía incompleta", "participando"]);
+    });
+
     it("quienes ya no participan son los que superaron la tolerancia de faltas", () => {
       const grupo = nuevoGrupo(reglas({ toleranciaDeFaltas: 1 }));
       const ana = grupo.ingresar("ana", dia(1));

@@ -1,4 +1,4 @@
-import { Estado, type NombreDeEstado } from "./Estado.ts";
+import { Estado, type NombreDeEstado, type Situacion } from "./Estado.ts";
 import { Inactivo } from "./Inactivo.ts";
 import { TransicionInvalida } from "./TransicionInvalida.ts";
 
@@ -12,6 +12,10 @@ export class Participando extends Estado {
 
   nombre(): NombreDeEstado {
     return "participando";
+  }
+
+  situacion(garantiaVigente: number): Situacion {
+    return this._garantia < garantiaVigente ? "garantía incompleta" : "participando";
   }
 
   override voy(): Estado {

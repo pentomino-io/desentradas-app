@@ -1,4 +1,4 @@
-import { Estado, type NombreDeEstado } from "./Estado.ts";
+import { Estado, type NombreDeEstado, type Situacion } from "./Estado.ts";
 import { Participando } from "./Participando.ts";
 
 export class Inactivo extends Estado {
@@ -10,6 +10,10 @@ export class Inactivo extends Estado {
   }
 
   nombre(): NombreDeEstado {
+    return "inactivo";
+  }
+
+  situacion(_garantiaVigente: number): Situacion {
     return "inactivo";
   }
 

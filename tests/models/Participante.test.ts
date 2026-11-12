@@ -28,6 +28,14 @@ describe("Participante", () => {
       expect(puedeAsistir).toBe(false);
     });
 
+    it("con una garantía menor a la vigente está en situación de garantía incompleta", () => {
+      const ana = nuevoParticipante(1000);
+
+      const situacion = ana.situacion(1500);
+
+      expect(situacion).toBe("garantía incompleta");
+    });
+
     it("ir a un encuentro lo mantiene participando con la misma garantía", () => {
       const ana = nuevoParticipante(1500);
 

@@ -1,6 +1,6 @@
 import type { Encuentro } from "./Encuentro.ts";
 import { GarantiaPerdida } from "./GarantiaPerdida.ts";
-import type { Estado, NombreDeEstado } from "./estados/Estado.ts";
+import type { Estado, NombreDeEstado, Situacion } from "./estados/Estado.ts";
 import { Participando } from "./estados/Participando.ts";
 import { Transicion, type Disparador } from "./Transicion.ts";
 
@@ -43,6 +43,10 @@ export class Participante {
 
   estado(): NombreDeEstado {
     return this._estado().nombre();
+  }
+
+  situacion(garantiaVigente: number): Situacion {
+    return this._estado().situacion(garantiaVigente);
   }
 
   historial(): readonly Transicion[] {

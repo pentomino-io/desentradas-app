@@ -7,6 +7,7 @@ import type { Reglas } from "./Reglas.ts";
 import type { Reparto } from "./Reparto.ts";
 import { Participante } from "./Participante.ts";
 import { Saldo } from "./Saldo.ts";
+import type { Situacion } from "./estados/Estado.ts";
 
 export class Grupo {
   private _nombre: string;
@@ -113,6 +114,10 @@ export class Grupo {
 
   puedeAsistir(participante: Participante): boolean {
     return participante.puedeAsistir(this.reglas().garantia());
+  }
+
+  situacionDe(participante: Participante): Situacion {
+    return participante.situacion(this.reglas().garantia());
   }
 
   garantiaPorCobrarA(participante: Participante): number {

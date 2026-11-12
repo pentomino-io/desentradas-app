@@ -2,12 +2,16 @@ import { TransicionInvalida } from "./TransicionInvalida.ts";
 
 export type NombreDeEstado = "participando" | "inactivo";
 
+export type Situacion = NombreDeEstado | "garantía incompleta";
+
 export abstract class Estado {
   abstract nombre(): NombreDeEstado;
 
   voy(): Estado {
     throw new TransicionInvalida("ir", this.nombre());
   }
+
+  abstract situacion(garantiaVigente: number): Situacion;
 
   abstract falto(): Estado;
 
