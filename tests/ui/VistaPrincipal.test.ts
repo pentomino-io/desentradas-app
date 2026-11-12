@@ -399,19 +399,45 @@ describe("VistaPrincipal", () => {
   });
 
   describe("pantalla de caja", () => {
-    it("los saldos muestran por nombre lo que tiene por recibir cada uno, y el total por repartir", async () => {
+    it("los saldos muestran por nombre lo que tiene por recibir cada uno, y los totales por cobrar y por repartir", async () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
       nuevaAplicacion(almacenamientos).registrarEncuentro(dia(3), ["dani", "carla"], ["ana", "beto"]); // carla y dani reciben 500
       montar(almacenamientos);
 
       await navegarA("Caja");
 
+      expect(hayElementoConTexto("p > span", "Por cobrar $ 0")).toBe(true);
       expect(hayElementoConTexto("p > span", "Por repartir $ 2.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
         ["beto", "inactivo", "$ 334", "Registrar reparto"],
         ["carla", "participando", "$ 833", "Registrar reparto"],
         ["dani", "participando", "$ 833", "Registrar reparto"],
       ]);
+    });
+
+    it("quien tiene la garantía incompleta tiene un saldo negativo, aparte del de sus créditos, que cuenta en el total por cobrar", async () => {
+      montar(almacenamientosConGarantiasIncompletas());
+
+      await navegarA("Caja");
+
+      expect(hayElementoConTexto("p > span", "Por cobrar $ 1.500")).toBe(true);
+      expect(hayElementoConTexto("p > span", "Por repartir $ 1.000")).toBe(true);
+      expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!).slice(0, 2)).toEqual([
+        ["beto", "garantía incompleta", "-$ 500", "Cobrar garantía"],
+        ["beto", "garantía incompleta", "$ 334", "Registrar reparto"],
+      ]);
+    });
+
+    it("cobrar la garantía desde la caja cobra lo que falta para completarla", async () => {
+      const { aplicacion } = montar(almacenamientosConGarantiasIncompletas());
+      await navegarA("Caja");
+
+      hacerClic("Cobrar garantía", fila("beto"));
+      expect(textoDe(dialogoAbierto())).toContain("Se le va a cobrar $ 500 para completar la garantía de $ 1.500.");
+      hacerClic("Cobrar", dialogoAbierto());
+
+      expect(aplicacion.grupo().participante("beto")?.garantia()).toBe(1500);
+      expect(hayElementoConTexto("p > span", "Por cobrar $ 1.000")).toBe(true);
     });
 
     it("repartir entrega los créditos pendientes y queda entre los movimientos, junto a los cobros de garantía", async () => {
@@ -430,12 +456,12 @@ describe("VistaPrincipal", () => {
       ]);
     });
 
-    it("sin saldos dice que no hay nada para repartir", async () => {
+    it("sin saldos dice que no hay nada para cobrar ni repartir", async () => {
       montar(almacenamientosConGrupoSinParticipantes());
 
       await navegarA("Caja");
 
-      expect(hayElementoConTexto("p", "No hay nada para repartir")).toBe(true);
+      expect(hayElementoConTexto("p", "No hay nada para cobrar ni repartir")).toBe(true);
       expect(document.querySelector("table")).toBeNull();
     });
   });

@@ -15,4 +15,8 @@ export class Saldo {
   monto(): number {
     return this._monto;
   }
+
+  debe(): boolean {
+    return this._monto < 0;
+  }
 }
