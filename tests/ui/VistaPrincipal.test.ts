@@ -37,8 +37,10 @@ const almacenamientosConAnaInactivaYUnaPlanillaCon = (presentes: string[]) => {
 };
 
 const almacenamientosConGarantiasIncompletas = () => {
-  const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
-  nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+  const almacenamientos = almacenamientosConAnaInactiva();
+  const aplicacion = nuevaAplicacion(almacenamientos);
+  ["beto", "carla", "dani"].forEach((nombre) => aplicacion.repartir(nombre, dia(3)));
+  aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
   return almacenamientos;
 };
 
@@ -415,16 +417,19 @@ describe("VistaPrincipal", () => {
       ]);
     });
 
-    it("quien tiene la garantía incompleta tiene un saldo negativo, aparte del de sus créditos, que cuenta en el total por cobrar", async () => {
-      montar(almacenamientosConGarantiasIncompletas());
+    it("quien tiene la garantía incompleta tiene un saldo negativo por lo que le falta después de usar sus créditos, que cuenta en el total por cobrar", async () => {
+      const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
+      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+      montar(almacenamientos);
 
       await navegarA("Caja");
 
-      expect(hayElementoConTexto("p > span", "Por cobrar $ 1.500")).toBe(true);
-      expect(hayElementoConTexto("p > span", "Por repartir $ 1.000")).toBe(true);
-      expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!).slice(0, 2)).toEqual([
-        ["beto", "garantía incompleta", "-$ 500", "Cobrar garantía"],
-        ["beto", "garantía incompleta", "$ 334", "Registrar reparto"],
+      expect(hayElementoConTexto("p > span", "Por cobrar $ 500")).toBe(true);
+      expect(buscar("p > span", (texto) => texto.startsWith("Por repartir"), document)).toBeUndefined();
+      expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
+        ["beto", "garantía incompleta", "-$ 166", "Cobrar garantía"],
+        ["carla", "garantía incompleta", "-$ 167", "Cobrar garantía"],
+        ["dani", "garantía incompleta", "-$ 167", "Cobrar garantía"],
       ]);
     });
 

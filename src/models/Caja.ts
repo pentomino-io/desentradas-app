@@ -19,12 +19,23 @@ export class Caja {
   }
 
   cobrar(cobro: Cobro): void {
-    this._consumirCreditosDe(cobro.persona(), cobro.montoDeCreditos());
+    this.aplicarCreditos(cobro.persona(), cobro.montoDeCreditos());
     this._cobros.push(cobro);
   }
 
   acreditar(credito: Credito): void {
     this._creditosPendientes.push(credito);
+  }
+
+  aplicarCreditos(nombre: string, monto: number): void {
+    let porConsumir = monto;
+    this._creditosPendientes = this._creditosPendientes.flatMap((credito) => {
+      if (credito.acreedor() !== nombre) return [credito];
+
+      const consumido = Math.min(porConsumir, credito.monto());
+      porConsumir -= consumido;
+      return consumido < credito.monto() ? [new Credito(nombre, credito.monto() - consumido)] : [];
+    });
   }
 
   distribuir(garantiaPerdida: GarantiaPerdida): void {
@@ -66,23 +77,8 @@ export class Caja {
     return Credito.montoTotalDe(this._creditosPendientes);
   }
 
-  nombresConCreditosPendientes(): string[] {
-    return [...new Set(this._creditosPendientes.map((credito) => credito.acreedor()))];
-  }
-
   private _cobrosYRepartos(): readonly Movimiento[] {
     return [...this._cobros, ...this._repartos].sort((uno, otro) => uno.fecha().getTime() - otro.fecha().getTime());
-  }
-
-  private _consumirCreditosDe(nombre: string, monto: number): void {
-    let porConsumir = monto;
-    this._creditosPendientes = this._creditosPendientes.flatMap((credito) => {
-      if (credito.acreedor() !== nombre) return [credito];
-
-      const consumido = Math.min(porConsumir, credito.monto());
-      porConsumir -= consumido;
-      return consumido < credito.monto() ? [new Credito(nombre, credito.monto() - consumido)] : [];
-    });
   }
 
   private _creditosPorDistribuir(garantiaPerdida: GarantiaPerdida): Credito[] {

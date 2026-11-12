@@ -38,7 +38,11 @@ describe("Caja", () => {
 
       caja.distribuir(garantiaPerdida({ monto: 2, asistentes: ["carla", "beto", "ana"] }));
 
-      expect(caja.nombresConCreditosPendientes()).toEqual(["ana", "beto"]);
+      expect(montosPendientesDe(caja, ["ana", "beto", "carla"])).toEqual([
+        ["ana", 1],
+        ["beto", 1],
+        ["carla", 0],
+      ]);
     });
   });
 
@@ -60,16 +64,6 @@ describe("Caja", () => {
       expect(caja.montoPendienteDe("carla")).toBe(500);
       expect(caja.montoPendienteDe("dario")).toBe(0);
       expect(caja.totalPendiente()).toBe(1300);
-    });
-
-    it("conoce los nombres con créditos pendientes, sin repetir y en el orden en que aparecieron", () => {
-      const caja = nuevaCaja();
-      caja.distribuir(garantiaPerdida({ monto: 1000, asistentes: ["dario", "carla"] }));
-      caja.distribuir(garantiaPerdida({ monto: 300, asistentes: ["beto"] }));
-      caja.distribuir(garantiaPerdida({ monto: 200, asistentes: ["dario"] }));
-      caja.repartir("carla", dia(4));
-
-      expect(caja.nombresConCreditosPendientes()).toEqual(["dario", "beto"]);
     });
   });
 
