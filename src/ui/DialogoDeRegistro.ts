@@ -1,6 +1,6 @@
 import { campoDeTexto } from "./Campos.ts";
 import { Dialogo } from "./Dialogo.ts";
-import { avisoDeGarantia, DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGarantia.ts";
+import { avisoDeGarantia, montoDeLaGarantia } from "./DialogoDeCobroDeGarantia.ts";
 import { crear, valorDe } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 
@@ -50,12 +50,10 @@ export class DialogoDeRegistro {
   }
 
   private _preguntarSiEsLaMismaPersona(nombre: string): void {
-    new Dialogo(
-      this._entorno,
-      this._titulo,
-      [crear("p", {}, `Ya hay alguien con el nombre ${nombre}. ¿Es la misma persona?`)],
-      "Sí",
-      () => new DialogoDeCobroDeGarantia(this._entorno, nombre, () => this._cobrarGarantia(nombre)).abrir(),
+    const pregunta = `Ya hay alguien con el nombre ${nombre}. ¿Es la misma persona?`;
+    const cobro = `Si es ella, se le cobra la garantía de ${montoDeLaGarantia(this._entorno)}.`;
+    new Dialogo(this._entorno, this._titulo, [crear("p", {}, `${pregunta} ${cobro}`)], "Sí", () =>
+      this._cobrarGarantia(nombre),
     )
       .conTextoDeCancelacion("No, es otra persona", () => this.abrir(pedidoDeOtroNombre(nombre)))
       .abrir();

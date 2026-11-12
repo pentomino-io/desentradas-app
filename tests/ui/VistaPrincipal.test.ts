@@ -291,10 +291,10 @@ describe("VistaPrincipal", () => {
       completar("Nombre", "ana", dialogoAbierto());
 
       hacerClic("Registrar", dialogoAbierto());
-      expect(textoDe(dialogoAbierto())).toContain("Ya hay alguien con el nombre ana. ¿Es la misma persona?");
+      expect(textoDe(dialogoAbierto())).toContain(
+        "Ya hay alguien con el nombre ana. ¿Es la misma persona? Si es ella, se le cobra la garantía de $ 1.000.",
+      );
       hacerClic("Sí", dialogoAbierto());
-      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Cobrar la garantía a ana");
-      hacerClic("Cobrar", dialogoAbierto());
 
       expect(hayDialogoAbierto()).toBe(false);
       expect(nombresDeParticipantes(aplicacion)).toEqual(["ana", "beto", "carla", "dani"]);
@@ -549,7 +549,6 @@ describe("VistaPrincipal", () => {
       completar("Nombre", "ana", dialogoAbierto());
       hacerClic("Registrar", dialogoAbierto());
       hacerClic("Sí", dialogoAbierto());
-      hacerClic("Cobrar", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
       expect(casillaDeAsistencia("ana").checked).toBe(true);
