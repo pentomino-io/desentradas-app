@@ -1054,7 +1054,7 @@ describe("VistaPrincipal", () => {
       expect(document.querySelector("dialog")).toBeNull();
     });
 
-    it("importar en un dispositivo nuevo lo exportado en otro reproduce los mismos participantes", async () => {
+    it("importar en un dispositivo nuevo lo exportado en otro, tras avisar que no se puede deshacer, reproduce los mismos participantes", async () => {
       const { aplicacion: original } = montar(almacenamientosConAnaInactiva());
       await navegarA("Historial");
       const exportado = await exportar();
@@ -1065,7 +1065,10 @@ describe("VistaPrincipal", () => {
 
       elegirArchivo("Importar", exportado);
       await vi.waitFor(() => dialogoAbierto());
-      expect(textoDe(dialogoAbierto())).toContain("reemplazar");
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("¿Reemplazar los datos?");
+      expect(textoDe(dialogoAbierto())).toContain(
+        'Se va a reemplazar todo lo guardado en este dispositivo por el contenido de "bitacora.json". No se puede deshacer: si querés conservar lo actual, exportalo antes.',
+      );
       hacerClic("Reemplazar", dialogoAbierto());
 
       expect(aplicacion.grupo().nombre()).toBe("Fútbol de los jueves");

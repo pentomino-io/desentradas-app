@@ -53,9 +53,9 @@ export class PantallaHistorial {
     const aviso = crear(
       "p",
       {},
-      `Se va a reemplazar todo lo guardado en este dispositivo por el contenido de "${nombreDelArchivo}".`,
+      `Se va a reemplazar todo lo guardado en este dispositivo por el contenido de "${nombreDelArchivo}". No se puede deshacer: si querés conservar lo actual, exportalo antes.`,
     );
-    new Dialogo(this._entorno, "Importar", [aviso], "Reemplazar", () => {
+    new Dialogo(this._entorno, "¿Reemplazar los datos?", [aviso], "Reemplazar", () => {
       this._entorno.aplicacion().importar(texto);
     }).abrir();
   }
