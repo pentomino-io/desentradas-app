@@ -513,7 +513,7 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Registrar reparto", fila("beto"));
       expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Reparto a beto");
-      expect(textoDe(dialogoAbierto())).toContain("Se le van a entregar $ 334.");
+      expect(textoDe(dialogoAbierto())).toContain("Hay que entregarle $ 334.");
       hacerClic("Registrar reparto", dialogoAbierto());
 
       expect(aplicacion.grupo().caja().montoPendienteDe("beto")).toBe(0);

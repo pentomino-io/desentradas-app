@@ -108,7 +108,7 @@ export class PantallaCaja {
     new Dialogo(
       this._entorno,
       `Reparto a ${nombre}`,
-      [crear("p", {}, `Se le van a entregar ${monto(saldo.aFavor())}.`)],
+      [crear("p", {}, `Hay que entregarle ${monto(saldo.aFavor())}.`)],
       "Registrar reparto",
       () => this._entorno.aplicacion().repartir(nombre, this._entorno.ahora()),
     ).abrir();
