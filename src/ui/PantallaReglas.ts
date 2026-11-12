@@ -12,21 +12,30 @@ const valoresDe = (reglas: Reglas): string[] => [String(reglas.toleranciaDeFalta
 const formatoDeEnumeracion = new Intl.ListFormat("es-AR", { type: "conjunction" });
 const enumeracion = (nombres: readonly string[]): string => formatoDeEnumeracion.format(nombres);
 
-const efecto = (nombres: readonly string[], saldo: number): string => {
+const efecto = (nombres: readonly string[], cambio: CambioDeGarantia): string => {
   const varios = nombres.length > 1;
-  return saldo < 0
-    ? `${enumeracion(nombres)} ${varios ? "deben" : "debe"} completar ${monto(-saldo)}`
-    : `${enumeracion(nombres)} ${varios ? "reciben" : "recibe"} un crédito de ${monto(saldo)}`;
+  if (cambio.monto() > 0) {
+    return `${enumeracion(nombres)} ${varios ? "reciben" : "recibe"} un crédito de ${monto(cambio.monto())}`;
+  }
+
+  const partes = [
+    cambio.deCreditos() > 0 && `${varios ? "cubren" : "cubre"} ${monto(cambio.deCreditos())} con sus créditos`,
+    cambio.porCobrar() > 0 && `${varios ? "deben" : "debe"} completar ${monto(cambio.porCobrar())}`,
+  ];
+  return `${enumeracion(nombres)} ${partes.filter((parte) => parte !== false).join(" y ")}`;
 };
 
 const descripcionDe = (efectos: readonly CambioDeGarantia[]): string => {
   if (efectos.length === 0) return "No cambia la plata de nadie.";
 
-  const nombresPorSaldo = new Map<number, string[]>();
-  for (const saldo of efectos.toSorted((uno, otro) => uno.monto() - otro.monto())) {
-    nombresPorSaldo.set(saldo.monto(), [...(nombresPorSaldo.get(saldo.monto()) ?? []), saldo.nombre()]);
+  const grupos = new Map<string, { cambio: CambioDeGarantia; nombres: string[] }>();
+  const ordenados = efectos.toSorted((uno, otro) => uno.monto() - otro.monto() || uno.deCreditos() - otro.deCreditos());
+  for (const cambio of ordenados) {
+    const clave = `${cambio.monto()} ${cambio.deCreditos()}`;
+    const nombres = grupos.get(clave)?.nombres ?? [];
+    grupos.set(clave, { cambio, nombres: [...nombres, cambio.nombre()] });
   }
-  const frases = [...nombresPorSaldo].map(([saldo, nombres]) => efecto(nombres.toSorted(alfabetico), saldo));
+  const frases = [...grupos.values()].map(({ cambio, nombres }) => efecto(nombres.toSorted(alfabetico), cambio));
   return `${frases.join("; ")}.`;
 };
 

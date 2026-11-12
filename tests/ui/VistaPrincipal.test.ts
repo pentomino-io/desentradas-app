@@ -680,6 +680,18 @@ describe("VistaPrincipal", () => {
       expect(aplicacion.grupo().reglas().garantia()).toBe(1500);
     });
 
+    it("cambiar las reglas avisa qué parte de lo que falta de la garantía cubre cada uno con sus créditos", async () => {
+      montar(almacenamientosConAnaInactiva()); // beto recibe 334, carla y dani 333
+      await navegarA("Reglas");
+      completar("¿Cuánto se paga de garantía?", "1334");
+
+      hacerClic("Cambiar reglas");
+
+      expect(textoDe(dialogoAbierto())).toContain(
+        "carla y dani cubren $ 333 con sus créditos y deben completar $ 1; beto cubre $ 334 con sus créditos.",
+      );
+    });
+
     it("cambiar las reglas sin que nadie tenga que completar la garantía ni reciba un crédito avisa que no cambia la plata de nadie", async () => {
       montar(almacenamientosConGarantiasIncompletas());
       await navegarA("Reglas");

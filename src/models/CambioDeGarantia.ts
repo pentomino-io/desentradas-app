@@ -22,4 +22,8 @@ export class CambioDeGarantia {
   deCreditos(): number {
     return this._deCreditos;
   }
+
+  porCobrar(): number {
+    return Math.max(0, -this._monto - this._deCreditos);
+  }
 }
