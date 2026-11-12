@@ -96,10 +96,10 @@ describe("Caja", () => {
   describe("movimientos", () => {
     it("los movimientos son los cobros y los repartos, en orden cronológico, sin las garantías perdidas", () => {
       const caja = nuevaCaja();
-      caja.cobrar(new Cobro("ana", 1000, dia(1)));
+      caja.cobrar(Cobro.alIngresar("ana", 1000, dia(1)));
       caja.distribuir(garantiaPerdida({ persona: "ana", monto: 1000, numero: 3, asistentes: ["beto"] }));
       caja.repartir("beto", dia(5));
-      caja.cobrar(new Cobro("dario", 300, dia(6)));
+      caja.cobrar(Cobro.alIngresar("dario", 300, dia(6)));
 
       const movimientos = caja.movimientos();
 
@@ -120,7 +120,7 @@ describe("Caja", () => {
     it("un cobro no genera créditos", () => {
       const caja = nuevaCaja();
 
-      caja.cobrar(new Cobro("ana", 1000, dia(1)));
+      caja.cobrar(Cobro.alIngresar("ana", 1000, dia(1)));
 
       expect(caja.totalPendiente()).toBe(0);
     });

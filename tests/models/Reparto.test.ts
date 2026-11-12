@@ -12,6 +12,14 @@ describe("Reparto", () => {
     expect(reparto.monto()).toBe(800);
   });
 
+  it("se describe como el reparto a su acreedor", () => {
+    const reparto = new Reparto(dia(5), [nuevoCredito({ acreedor: "beto" })]);
+
+    const descripcion = reparto.describir();
+
+    expect(descripcion).toBe("reparto a beto");
+  });
+
   it("no se puede repartir sin créditos", () => {
     expect(() => {
       new Reparto(dia(5), []);

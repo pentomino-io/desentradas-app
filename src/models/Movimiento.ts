@@ -6,4 +6,5 @@ export interface Movimiento {
   tipo(): TipoDeMovimiento;
   persona(): string;
   monto(): number;
+  describir(): string;
 }

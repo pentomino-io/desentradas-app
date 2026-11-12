@@ -28,6 +28,10 @@ export class Reparto implements Movimiento {
     return this.acreedor();
   }
 
+  describir(): string {
+    return `reparto a ${this.acreedor()}`;
+  }
+
   creditos(): readonly Credito[] {
     return this._creditos;
   }

@@ -57,17 +57,17 @@ export class Grupo {
     const garantia = this.reglas().garantia();
     const participante = new Participante(nombreLimpio, fecha, garantia);
     this._participantes.push(participante);
-    this._caja.cobrar(new Cobro(nombreLimpio, garantia, fecha));
+    this._caja.cobrar(Cobro.alIngresar(nombreLimpio, garantia, fecha));
     return participante;
   }
 
   cobrarGarantia(nombre: string, fecha: Date): void {
     const participante = this._participanteLlamado(nombre.trim());
-    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cobro", fecha);
+    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cobro de la garantía", fecha);
 
     const garantia = this.reglas().garantia();
     participante.cobrarGarantia(fecha, garantia);
-    this._caja.cobrar(new Cobro(participante.nombre(), garantia, fecha));
+    this._caja.cobrar(Cobro.deGarantia(participante.nombre(), garantia, fecha));
   }
 
   repartir(nombre: string, fecha: Date): Reparto {
@@ -158,7 +158,7 @@ export class Grupo {
     }
     const posterior = this._caja.movimientoPosteriorA(fecha);
     if (posterior !== undefined) {
-      throw new Error(`${movimiento} no puede ser anterior al último ${posterior.tipo()}`);
+      throw new Error(`${movimiento} no puede ser anterior al ${posterior.describir()}`);
     }
   }
 
