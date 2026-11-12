@@ -91,6 +91,6 @@ export class PantallaParticipantes {
   }
 
   private _abrirReingreso(participante: Participante): void {
-    new DialogoDeCobroDeGarantia(this._entorno, participante).abrir();
+    new DialogoDeCobroDeGarantia(this._entorno, participante, `Reingresar a ${participante.nombre()}`).abrir();
   }
 }

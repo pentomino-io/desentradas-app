@@ -8,6 +8,9 @@ import type { Entorno } from "./Entorno.ts";
 export const avisoDeGarantia = (grupo: Grupo): HTMLParagraphElement =>
   crear("p", {}, `Hay que cobrarle ${monto(grupo.reglas().garantia())} de garantía.`);
 
+const efectivoParaLaGarantiaDe = (grupo: Grupo, participante: Participante): number =>
+  grupo.garantiaPorCobrarA(participante) - grupo.creditosParaLaGarantiaDe(participante);
+
 export const cobroDeLaGarantiaA = (grupo: Grupo, participante: Participante): string => {
   const porCobrar = grupo.garantiaPorCobrarA(participante);
   if (grupo.susCreditosCubrenLaGarantiaDe(participante))
@@ -16,7 +19,7 @@ export const cobroDeLaGarantiaA = (grupo: Grupo, participante: Participante): st
   const deCreditos = grupo.creditosParaLaGarantiaDe(participante);
   if (deCreditos === 0) return `hay que cobrarle ${monto(porCobrar)} de garantía.`;
 
-  const enEfectivo = monto(porCobrar - deCreditos);
+  const enEfectivo = monto(efectivoParaLaGarantiaDe(grupo, participante));
   return `hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} de la garantía de ${monto(porCobrar)} salen de su crédito.`;
 };
 
@@ -30,9 +33,9 @@ const avisoDeCompletarLaGarantia = (grupo: Grupo, participante: Participante): s
 
   const faltante = `Le faltan ${monto(porCobrar)} para ${completar}.`;
   if (grupo.susCreditosCubrenLaGarantiaDe(participante))
-    return `${faltante} Su crédito lo cubre: no hay que cobrarle nada.`;
+    return `${faltante} Lo cubre su crédito: no hay que cobrarle nada.`;
 
-  const enEfectivo = monto(porCobrar - deCreditos);
+  const enEfectivo = monto(efectivoParaLaGarantiaDe(grupo, participante));
   return `${faltante} Hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} salen de su crédito.`;
 };
 
@@ -42,20 +45,21 @@ const avisoDeCobro = (grupo: Grupo, participante: Participante): string =>
     : avisoDeCompletarLaGarantia(grupo, participante);
 
 const textoDeConfirmacion = (grupo: Grupo, participante: Participante): string => {
-  if (!grupo.susCreditosCubrenLaGarantiaDe(participante)) return "Cobrar";
+  if (grupo.susCreditosCubrenLaGarantiaDe(participante)) return "Usar su crédito";
 
-  return grupo.situacionDe(participante) === "inactivo" ? "Cubrir con créditos" : "Completar con créditos";
+  return `Cobrar ${monto(efectivoParaLaGarantiaDe(grupo, participante))}`;
 };
 
 export class DialogoDeCobroDeGarantia extends Dialogo {
   constructor(
     entorno: Entorno,
     participante: Participante,
+    titulo: string,
     cobrar = () => entorno.aplicacion().cobrarGarantia(participante.nombre(), entorno.ahora()),
   ) {
     super(
       entorno,
-      `Cobrar la garantía a ${participante.nombre()}`,
+      titulo,
       [crear("p", {}, avisoDeCobro(entorno.grupo(), participante))],
       textoDeConfirmacion(entorno.grupo(), participante),
       cobrar,

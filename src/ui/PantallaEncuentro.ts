@@ -123,7 +123,9 @@ export class PantallaEncuentro {
 
   private _abrirCobro(participante: Participante): void {
     const nombre = participante.nombre();
-    new DialogoDeCobroDeGarantia(this._entorno, participante, () => this._cobrarGarantia(nombre)).abrir();
+    new DialogoDeCobroDeGarantia(this._entorno, participante, `Cobrar la garantía a ${nombre}`, () =>
+      this._cobrarGarantia(nombre),
+    ).abrir();
   }
 
   private _cobrarGarantia(nombre: string): void {

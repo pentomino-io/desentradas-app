@@ -98,7 +98,8 @@ export class PantallaCaja {
   }
 
   private _abrirCobro(nombre: string): void {
-    new DialogoDeCobroDeGarantia(this._entorno, this._entorno.grupo().participante(nombre)!).abrir();
+    const participante = this._entorno.grupo().participante(nombre)!;
+    new DialogoDeCobroDeGarantia(this._entorno, participante, `Cobrar la garantía a ${nombre}`).abrir();
   }
 
   private _abrirEntrega(saldo: Saldo): void {
