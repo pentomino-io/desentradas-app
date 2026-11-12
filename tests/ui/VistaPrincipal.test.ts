@@ -271,6 +271,19 @@ describe("VistaPrincipal", () => {
       expect(hayDesplegable("Quienes ya no participan")).toBe(false);
     });
 
+    it("registrar un participante pide confirmar el cobro de la garantía, y después figura entre los activos", async () => {
+      const { aplicacion } = montar(almacenamientosConGrupoSinParticipantes());
+      await navegarA("Participantes");
+
+      hacerClic("Registrar participante");
+      expect(textoDe(dialogoAbierto())).toContain("Se le va a cobrar una garantía de $ 1.000.");
+      completar("Nombre", "ana", dialogoAbierto());
+      hacerClic("Registrar", dialogoAbierto());
+
+      expect(aplicacion.grupo().participante("ana")?.garantia()).toBe(1000);
+      expect(filasDeActivos()).toEqual([["ana", "participando"]]);
+    });
+
     it("quien superó la tolerancia de faltas figura entre quienes ya no participan, para reingresarlo, y no entre los activos", async () => {
       montar(almacenamientosConAnaFueraDeLaTolerancia());
 
