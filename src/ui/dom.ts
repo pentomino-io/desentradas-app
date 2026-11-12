@@ -102,13 +102,29 @@ export const descargar = (nombreDelArchivo: string, contenido: string, tipo: str
 
 export const alerta = (): HTMLOutputElement => crear("output", { role: "alert" });
 
+const mensajeDe = (error: unknown): string => (error instanceof Error ? error.message : String(error));
+
+export class ErrorExplicado extends Error {
+  private _causa: unknown;
+
+  constructor(explicacion: string, causa: unknown) {
+    super(explicacion);
+    this._causa = causa;
+  }
+
+  detalle(): string {
+    return mensajeDe(this._causa);
+  }
+}
+
 export const intentar = (accion: () => void, alerta: HTMLOutputElement): boolean => {
   try {
     alerta.textContent = "";
     accion();
     return true;
   } catch (error) {
-    alerta.textContent = error instanceof Error ? error.message : String(error);
+    alerta.textContent = mensajeDe(error);
+    anexar(alerta, error instanceof ErrorExplicado && crear("small", {}, error.detalle()));
     return false;
   }
 };

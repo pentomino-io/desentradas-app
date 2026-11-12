@@ -534,6 +534,7 @@ describe("Aplicacion", () => {
     it("no se puede importar un texto que no es JSON", () => {
       const almacenamiento = new AlmacenamientoEnMemoria();
       const aplicacion = aplicacionConGrupo({ bitacora: almacenamiento });
+      aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("carla");
       const exportadoAntes = aplicacion.exportar();
 
       expect(() => {
@@ -541,6 +542,7 @@ describe("Aplicacion", () => {
       }).toThrow(/^Formato inválido/);
       expect(aplicacion.exportar()).toBe(exportadoAntes);
       expect(almacenamiento.leer()).toBe(exportadoAntes);
+      expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual(["carla"]);
     });
 
     it("no se puede importar una bitácora con un comando que el grupo rechaza", () => {

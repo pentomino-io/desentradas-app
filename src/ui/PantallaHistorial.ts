@@ -3,6 +3,7 @@ import { fechaYHora } from "../app/Formato.ts";
 import { Dialogo, mostrarEnDialogo } from "./Dialogo.ts";
 import { alerta, boton, crear, descargar, fila, intentar, tabla } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
+import { Importacion } from "./Importacion.ts";
 import { alfabetico } from "./Orden.ts";
 
 export class PantallaHistorial {
@@ -19,45 +20,17 @@ export class PantallaHistorial {
   }
 
   private _copiaDeSeguridad(): HTMLElement {
-    const archivo = crear("input", {
-      type: "file",
-      name: "archivo",
-      accept: ".json,application/json",
-      onchange: () => this._leerParaImportar(archivo),
-    });
     return crear(
       "form",
       { onsubmit: (evento: Event) => evento.preventDefault() },
       crear("h3", {}, "Copia de seguridad"),
       boton("Exportar", () => this._exportar()),
-      crear("label", {}, "Importar ", archivo),
+      ...new Importacion(this._entorno).elementos(),
     );
   }
 
   private _exportar(): void {
     descargar(`${this._entorno.grupo().nombre()}.json`, this._entorno.aplicacion().exportar(), "application/json");
-  }
-
-  private _leerParaImportar(entrada: HTMLInputElement): void {
-    const archivo = entrada.files?.[0];
-    if (archivo === undefined) return;
-
-    archivo.text().then(
-      (texto) => this._confirmarImportacion(archivo.name, texto),
-      () => (this._errores.textContent = "No se pudo leer el archivo"),
-    );
-    entrada.value = "";
-  }
-
-  private _confirmarImportacion(nombreDelArchivo: string, texto: string): void {
-    const aviso = crear(
-      "p",
-      {},
-      `Se va a reemplazar todo lo guardado en este dispositivo por el contenido de "${nombreDelArchivo}". No se puede deshacer: si querés conservar lo actual, exportalo antes.`,
-    );
-    new Dialogo(this._entorno, "¿Reemplazar los datos?", [aviso], "Reemplazar", () => {
-      this._entorno.aplicacion().importar(texto);
-    }).abrir();
   }
 
   private _tabla(): HTMLElement | undefined {

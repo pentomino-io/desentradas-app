@@ -1076,5 +1076,61 @@ describe("VistaPrincipal", () => {
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
       expect(textoDe(document.querySelector("h1")!)).toBe("Fútbol de los jueves");
     });
+
+    it("no se puede importar un archivo que no es una copia de seguridad, y se explica con su detalle técnico", async () => {
+      const almacenamientos = almacenamientosConAnaInactivaYUnaPlanillaCon(["beto"]);
+      const guardado = almacenamientos.bitacora.leer();
+      const { aplicacion } = montar(almacenamientos);
+      await navegarA("Historial");
+      elegirArchivo("Importar", "esto no es JSON");
+      await vi.waitFor(() => dialogoAbierto());
+
+      hacerClic("Reemplazar", dialogoAbierto());
+
+      const error = dialogoAbierto().querySelector("[role=alert]")!;
+      expect(error.firstChild?.textContent).toBe(
+        "El archivo no es una copia de seguridad de Desentradas, o está dañado. No se cambió nada.",
+      );
+      expect(textoDe(error.querySelector("small")!)).toBe("Formato inválido: el texto no es JSON");
+      expect(almacenamientos.bitacora.leer()).toBe(guardado);
+      expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual(["beto"]);
+    });
+
+    it.each([
+      [
+        1,
+        "Esta copia de seguridad es de una versión anterior de la app, sin garantías, y no se puede importar. No se cambió nada.",
+      ],
+      [
+        3,
+        "Esta copia de seguridad es de una versión más nueva de la app. Recargá la página para actualizarla e intentá de nuevo. No se cambió nada.",
+      ],
+    ])(
+      "no se puede importar una copia de seguridad de la versión %i de la bitácora, y se explica por qué",
+      async (version, explicacion) => {
+        montar(almacenamientosConGrupoSinParticipantes());
+        await navegarA("Historial");
+        elegirArchivo("Importar", JSON.stringify({ version, comandos: [] }));
+        await vi.waitFor(() => dialogoAbierto());
+
+        hacerClic("Reemplazar", dialogoAbierto());
+
+        expect(dialogoAbierto().querySelector("[role=alert]")!.firstChild?.textContent).toBe(explicacion);
+      },
+    );
+
+    it("si no se puede leer el archivo elegido para importar, pide elegirlo de nuevo", async () => {
+      montar(almacenamientosConGrupoSinParticipantes());
+      await navegarA("Historial");
+      const lectura = vi.spyOn(Blob.prototype, "text").mockRejectedValueOnce(new Error("Sin permiso"));
+
+      elegirArchivo("Importar", "{}");
+
+      await vi.waitFor(() =>
+        expect(hayElementoConTexto("[role=alert]", "No se pudo leer el archivo. Probá elegirlo de nuevo.")).toBe(true),
+      );
+      expect(hayDialogoAbierto()).toBe(false);
+      lectura.mockRestore();
+    });
   });
 });

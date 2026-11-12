@@ -314,6 +314,11 @@ p[role="alert"] {
   color: var(--negativo);
 }
 
+[role="alert"] small {
+  display: block;
+  font-weight: normal;
+}
+
 details {
   border: 2px solid;
   padding: 0.5rem 1rem;
