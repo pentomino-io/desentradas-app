@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { TransicionInvalida } from "../../src/models/estados/TransicionInvalida.ts";
 import type { CambioDeGarantia } from "../../src/models/CambioDeGarantia.ts";
 import { Grupo } from "../../src/models/Grupo.ts";
+import type { Saldo } from "../../src/models/Saldo.ts";
 import { desempate, dia, nuevoEncuentro, nuevoGrupo, reglas } from "./factories.ts";
 
 const grupoConAnaInactiva = () => {
@@ -14,7 +15,6 @@ const grupoConAnaInactiva = () => {
 
 const grupoConGarantiaInactivaIncompletaYCompleta = () => {
   const { grupo, ana, beto } = grupoConAnaInactiva();
-  grupo.repartir("beto", dia(3));
   grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
   const carla = grupo.ingresar("carla", dia(3));
   return { grupo, ana, beto, carla };
@@ -139,25 +139,14 @@ describe("Grupo", () => {
       expect(grupo.caja().montoPendienteDe("ana")).toBe(0);
     });
 
-    it("subir la garantía la completa con los créditos pendientes de quien los tiene, sin cobrarle nada", () => {
+    it("subir la garantía deja con la garantía incompleta a quien tiene menos, aunque tenga créditos pendientes, que siguen pendientes", () => {
       const { grupo, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
 
       grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
 
-      expect(beto.garantia()).toBe(1500);
-      expect(grupo.puedeAsistir(beto)).toBe(true);
-      expect(grupo.caja().montoPendienteDe("beto")).toBe(500);
-      expect(beto.historial().at(-1)?.disparador()).toBe("cambio de reglas");
-      expect(grupo.caja().movimientos()).toHaveLength(2);
-    });
-
-    it("subir la garantía más que los créditos pendientes de alguien los usa todos, y le queda por cobrar el resto", () => {
-      const { grupo, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
-
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 2500 }));
-
+      expect(grupo.situacionDe(beto)).toBe("garantía incompleta");
       expect(grupo.garantiaPorCobrarA(beto)).toBe(500);
-      expect(grupo.caja().montoPendienteDe("beto")).toBe(0);
+      expect(grupo.caja().montoPendienteDe("beto")).toBe(1000);
     });
   });
 
@@ -686,6 +675,8 @@ describe("Grupo", () => {
   });
 
   describe("saldos", () => {
+    const comoLista = (saldo: Saldo) => [saldo.nombre(), saldo.porCobrar(), saldo.aFavor()];
+
     it("quien tiene créditos pendientes tiene un saldo positivo por ellos, y quien no los tiene no tiene saldo", () => {
       const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
       grupo.ingresar("ana", dia(1));
@@ -695,16 +686,25 @@ describe("Grupo", () => {
 
       const saldos = grupo.saldos();
 
-      expect(saldos.map((saldo) => [saldo.nombre(), saldo.monto()])).toEqual([["carla", 2000]]);
+      expect(saldos.map(comoLista)).toEqual([["carla", 0, 2000]]);
     });
 
-    it("quien tiene la garantía incompleta tiene un único saldo, negativo por lo que le falta después de usar sus créditos, y un inactivo no debe nada", () => {
+    it("el saldo de quien tiene la garantía incompleta tiene por cobrar lo que le falta, aparte de sus créditos a favor, y un inactivo no debe nada", () => {
       const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
       grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 2500 }));
 
       const saldos = grupo.saldos();
 
-      expect(saldos.map((saldo) => [saldo.nombre(), saldo.monto()])).toEqual([["beto", -500]]);
+      expect(saldos.map(comoLista)).toEqual([["beto", 1500, 1000]]);
+    });
+
+    it("el total por cobrar no descuenta los créditos de quien tiene la garantía incompleta", () => {
+      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+
+      const total = grupo.totalPorCobrar();
+
+      expect(total).toBe(500);
     });
 
     it("el total por cobrar es lo que les falta a quienes tienen la garantía incompleta, sin contar a los inactivos", () => {

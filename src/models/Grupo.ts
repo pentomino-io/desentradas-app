@@ -37,7 +37,6 @@ export class Grupo {
 
     this._historialDeReglas.push(reglas);
     this._devolverLosExcedentesDeGarantia(reglas);
-    this._completarLasGarantiasConCreditos(reglas.rigeDesde());
   }
 
   reglas(): Reglas {
@@ -130,17 +129,21 @@ export class Grupo {
     return Math.min(this.garantiaPorCobrarA(participante), this._caja.montoPendienteDe(participante.nombre()));
   }
 
-  // Los créditos se aplican a lo que falta de la garantía, así que nadie debe y tiene créditos a la vez.
   saldos(): readonly Saldo[] {
     return this._participantes
-      .map((participante) => new Saldo(participante.nombre(), this._saldoDe(participante)))
-      .filter((saldo) => saldo.monto() !== 0);
+      .map(
+        (participante) =>
+          new Saldo(
+            participante.nombre(),
+            this._faltanteDeGarantiaDe(participante),
+            this._caja.montoPendienteDe(participante.nombre()),
+          ),
+      )
+      .filter((saldo) => saldo.debe() || saldo.tieneAFavor());
   }
 
   totalPorCobrar(): number {
-    return this.saldos()
-      .filter((saldo) => saldo.debe())
-      .reduce((total, saldo) => total - saldo.monto(), 0);
+    return this.saldos().reduce((total, saldo) => total + saldo.porCobrar(), 0);
   }
 
   efectosDeCambiarLasReglas(reglas: Reglas): readonly CambioDeGarantia[] {
@@ -160,10 +163,6 @@ export class Grupo {
     return this.reglas().garantia();
   }
 
-  private _saldoDe(participante: Participante): number {
-    return -this._faltanteDeGarantiaDe(participante) + this._caja.montoPendienteDe(participante.nombre());
-  }
-
   private _faltanteDeGarantiaDe(participante: Participante): number {
     return Math.max(0, -participante.saldoDeGarantia(this._garantiaVigente()));
   }
@@ -172,19 +171,6 @@ export class Grupo {
     for (const participante of this._participantes) {
       const excedente = participante.bajarGarantia(reglas.rigeDesde(), reglas.garantia());
       if (excedente > 0) this._caja.acreditar(new Credito(participante.nombre(), excedente));
-    }
-  }
-
-  private _completarLasGarantiasConCreditos(fecha: Date): void {
-    for (const participante of this._participantes) {
-      const deCreditos = Math.min(
-        this._faltanteDeGarantiaDe(participante),
-        this._caja.montoPendienteDe(participante.nombre()),
-      );
-      if (deCreditos === 0) continue;
-
-      participante.completarGarantiaConCreditos(fecha, deCreditos);
-      this._caja.aplicarCreditos(participante.nombre(), deCreditos);
     }
   }
 

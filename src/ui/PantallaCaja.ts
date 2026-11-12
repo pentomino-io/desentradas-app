@@ -48,19 +48,31 @@ export class PantallaCaja {
   }
 
   private _filaDeSaldo(saldo: Saldo): HTMLTableRowElement {
+    const ambos = saldo.debe() && saldo.tieneAFavor();
     return fila(
       saldo.nombre(),
-      this._estadoDe(saldo.nombre()),
-      crear("span", { class: saldo.debe() ? "debe" : "a-favor" }, monto(saldo.monto())),
-      saldo.debe()
-        ? boton("Cobrar garantía", () => this._abrirCobro(saldo.nombre()))
-        : boton("Registrar reparto", () => this._abrirReparto(saldo)),
+      this._estadoDe(saldo),
+      crear(
+        "span",
+        {},
+        saldo.debe() && crear("span", { class: "debe" }, monto(-saldo.porCobrar())),
+        ambos && " ",
+        saldo.tieneAFavor() && crear("span", { class: "a-favor" }, monto(saldo.aFavor())),
+      ),
+      crear(
+        "span",
+        {},
+        saldo.debe() && boton("Cobrar garantía", () => this._abrirCobro(saldo.nombre())),
+        ambos && " ",
+        saldo.tieneAFavor() && boton("Registrar reparto", () => this._abrirReparto(saldo)),
+      ),
     );
   }
 
-  private _estadoDe(nombre: string): string {
-    const participante = this._entorno.grupo().participante(nombre);
-    return participante === undefined ? "" : this._entorno.grupo().situacionDe(participante);
+  private _estadoDe(saldo: Saldo): string {
+    const participante = this._entorno.grupo().participante(saldo.nombre())!;
+    const situacion = this._entorno.grupo().situacionDe(participante);
+    return saldo.loCubrenSusCreditos() ? `${situacion} (la cubren sus créditos)` : situacion;
   }
 
   private _tablaDeMovimientos(): HTMLElement | undefined {
@@ -85,7 +97,7 @@ export class PantallaCaja {
     new Dialogo(
       this._entorno,
       `Reparto a ${nombre}`,
-      [crear("p", {}, `Se le van a entregar ${monto(saldo.monto())}.`)],
+      [crear("p", {}, `Se le van a entregar ${monto(saldo.aFavor())}.`)],
       "Registrar reparto",
       () => this._entorno.aplicacion().repartir(nombre, this._entorno.ahora()),
     ).abrir();

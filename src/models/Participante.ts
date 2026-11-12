@@ -27,10 +27,6 @@ export class Participante {
     this._transicionar("cobro de garantía", fecha, this._estado().cobrarGarantia(garantia));
   }
 
-  completarGarantiaConCreditos(fecha: Date, creditos: number): void {
-    this._transicionar("cambio de reglas", fecha, this._estado().cobrarGarantia(this.garantia() + creditos));
-  }
-
   bajarGarantia(fecha: Date, garantia: number): number {
     const excedente = Math.max(0, this.saldoDeGarantia(garantia));
     if (excedente === 0) return 0;

@@ -439,20 +439,22 @@ describe("VistaPrincipal", () => {
       ]);
     });
 
-    it("quien tiene la garantía incompleta tiene un saldo negativo por lo que le falta después de usar sus créditos, que cuenta en el total por cobrar", async () => {
+    it("quien tiene la garantía incompleta y créditos muestra las dos cosas, dice si los créditos la cubren, y cuenta en los dos totales", async () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
-      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1334 }));
       montar(almacenamientos);
 
       await navegarA("Caja");
 
-      expect(hayElementoConTexto("p > span", "Por cobrar $ 500")).toBe(true);
-      expect(buscar("p > span", (texto) => texto.startsWith("Por repartir"), document)).toBeUndefined();
+      expect(hayElementoConTexto("p > span", "Por cobrar $ 1.002")).toBe(true);
+      expect(hayElementoConTexto("p > span", "Por repartir $ 1.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
-        ["beto", "garantía incompleta", "-$ 166", "Cobrar garantía"],
-        ["carla", "garantía incompleta", "-$ 167", "Cobrar garantía"],
-        ["dani", "garantía incompleta", "-$ 167", "Cobrar garantía"],
+        ["beto", "garantía incompleta (la cubren sus créditos)", "-$ 334 $ 334", "Cobrar garantía Registrar reparto"],
+        ["carla", "garantía incompleta", "-$ 334 $ 333", "Cobrar garantía Registrar reparto"],
+        ["dani", "garantía incompleta", "-$ 334 $ 333", "Cobrar garantía Registrar reparto"],
       ]);
+      expect(textoDe(fila("beto").querySelector(".debe")!)).toBe("-$ 334");
+      expect(textoDe(fila("beto").querySelector(".a-favor")!)).toBe("$ 334");
     });
 
     it("cobrar la garantía desde la caja cobra lo que falta para completarla", async () => {

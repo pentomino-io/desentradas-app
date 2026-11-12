@@ -452,13 +452,13 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual([]);
     });
 
-    it("subir la garantía no desmarca a quien la completa con sus créditos, porque puede seguir asistiendo", () => {
+    it("subir la garantía desmarca también a quien tiene créditos que cubren lo que le falta, porque tiene que aceptar el cobro", () => {
       const aplicacion = aplicacionConAnaInactiva(); // beto tiene $ 1.000 de crédito
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
 
       aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
 
-      expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual(["beto"]);
+      expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual([]);
     });
 
     it("deshacer la creación del grupo descarta la planilla de asistencia", () => {
