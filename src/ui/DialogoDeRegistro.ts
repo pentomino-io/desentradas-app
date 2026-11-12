@@ -4,7 +4,7 @@ import { avisoDeGarantia, DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGar
 import { crear, valorDe } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 
-const pedidoDeOtroNombre = (nombre: string): string => `Ya hay una ${nombre}. Escribí otro nombre.`;
+const pedidoDeOtroNombre = (nombre: string): string => `Ya hay alguien con el nombre ${nombre}. Escribí otro nombre.`;
 
 export class DialogoDeRegistro {
   private _entorno: Entorno;
@@ -53,7 +53,7 @@ export class DialogoDeRegistro {
     new Dialogo(
       this._entorno,
       this._titulo,
-      [crear("p", {}, `Ya hay una ${nombre}. ¿Es la misma persona?`)],
+      [crear("p", {}, `Ya hay alguien con el nombre ${nombre}. ¿Es la misma persona?`)],
       "Sí",
       () => new DialogoDeCobroDeGarantia(this._entorno, nombre, () => this._cobrarGarantia(nombre)).abrir(),
     )
