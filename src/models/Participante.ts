@@ -1,40 +1,32 @@
-import { Cobro, type OrigenDeCobro } from "./Cobro.ts";
 import type { Encuentro } from "./Encuentro.ts";
-import type { Reglas } from "./Reglas.ts";
+import { GarantiaPerdida } from "./GarantiaPerdida.ts";
 import type { Estado, NombreDeEstado } from "./estados/Estado.ts";
 import { Participando } from "./estados/Participando.ts";
-import { Transicion, type Accion, type Disparador } from "./Transicion.ts";
-
-export type MotivoDeFinalizacion = "por faltas" | "por pago de morosidad";
+import { Transicion, type Disparador } from "./Transicion.ts";
 
 export class Participante {
   private _nombre: string;
   private _historial: Transicion[];
 
-  constructor(nombre: string, fechaDeIngreso: Date, reglas: Reglas) {
+  constructor(nombre: string, fechaDeIngreso: Date, garantia: number) {
     this._nombre = nombre;
-    this._historial = [new Transicion(fechaDeIngreso, "ingreso", new Participando(reglas))];
+    this._historial = [new Transicion(fechaDeIngreso, "ingreso", new Participando(garantia))];
   }
 
-  voy(encuentro: Encuentro, reglas: Reglas): void {
-    this._transicionar("voy", encuentro.fecha(), this._estado().voy(reglas));
+  voy(encuentro: Encuentro): void {
+    this._transicionar("voy", encuentro.fecha(), this._estado().voy());
   }
 
-  falto(encuentro: Encuentro): void {
-    this._transicionar("falto", encuentro.fecha(), this._estado().falto(encuentro));
+  falto(encuentro: Encuentro): GarantiaPerdida | undefined {
+    const garantia = this.garantia();
+    this._transicionar("falto", encuentro.fecha(), this._estado().falto());
+    if (garantia === 0) return undefined;
+
+    return new GarantiaPerdida(this._nombre, garantia, encuentro);
   }
 
-  pago(fecha: Date, monto: number, origen: OrigenDeCobro): Cobro {
-    const cobro = new Cobro(this._nombre, monto, fecha, this._estado().encuentroAdeudado(), origen);
-    this._transicionar("pago", fecha, this._estado().pago(fecha, monto));
-    return cobro;
-  }
-
-  reingresar(fecha: Date, reglas: Reglas): void {
-    const participando = this._estado().reingresar(reglas);
-    this._asertarQueNoEsAnteriorALaFinalizacion(fecha);
-
-    this._transicionar("reingresar", fecha, participando);
+  cobrarGarantia(fecha: Date, garantia: number): void {
+    this._transicionar("cobro de garantía", fecha, this._estado().cobrarGarantia(garantia));
   }
 
   nombre(): string {
@@ -45,74 +37,24 @@ export class Participante {
     return this._estado().nombre();
   }
 
-  reglas(): Reglas {
-    return this._estado().reglas();
-  }
-
   historial(): readonly Transicion[] {
     return this._historial;
-  }
-
-  fechaDeIngreso(): Date {
-    return this._historial.findLast((transicion) => transicion.iniciaParticipacion())!.fecha();
-  }
-
-  ingresoDespuesDe(encuentro: Encuentro): boolean {
-    return this.fechaDeIngreso() > encuentro.fecha();
   }
 
   fechaDelUltimoCambio(): Date {
     return this._ultimaTransicion().fecha();
   }
 
-  puede(accion: Accion): boolean {
-    return this._estado().puede(accion);
-  }
-
-  accionesPosibles(): readonly Accion[] {
-    return this._estado().accionesPosibles();
-  }
-
   puedeAsistir(): boolean {
     return this._estado().puedeAsistir();
   }
 
-  esPosibleAsistente(): boolean {
-    return this._estado().esPosibleAsistente();
-  }
-
-  soloLeFaltaPagarParaAsistir(): boolean {
-    return this._estado().soloLeFaltaPagarParaAsistir();
-  }
-
-  soloLeFaltaPagarParaReingresar(): boolean {
-    return this._estado().soloLeFaltaPagarParaReingresar();
-  }
-
-  estaAlDia(): boolean {
-    return this._estado().estaAlDia();
-  }
-
-  estaActivo(): boolean {
-    return this._estado().estaActivo();
+  garantia(): number {
+    return this._estado().garantia();
   }
 
   faltas(): number {
     return this._estado().faltas();
-  }
-
-  deudaAl(fecha: Date): number {
-    return this._estado().deudaAl(fecha);
-  }
-
-  motivoDeFinalizacion(): MotivoDeFinalizacion | undefined {
-    if (this.estaActivo()) return undefined;
-
-    return this._ultimaTransicion().disparador() === "falto" ? "por faltas" : "por pago de morosidad";
-  }
-
-  private _asertarQueNoEsAnteriorALaFinalizacion(fecha: Date): void {
-    if (fecha < this.fechaDelUltimoCambio()) throw new Error("El reingreso no puede ser anterior a la finalización");
   }
 
   private _transicionar(disparador: Disparador, fecha: Date, nuevoEstado: Estado): void {

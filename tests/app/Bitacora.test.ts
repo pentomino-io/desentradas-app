@@ -43,7 +43,7 @@ describe("Bitacora", () => {
       bitacora.ejecutar(ingresar);
 
       expect(bitacora.comandos().at(-1)).toBe(ingresar);
-      expect(bitacora.grupo().participanteActivo("ana")).toBeDefined();
+      expect(bitacora.grupo().participante("ana")).toBeDefined();
     });
 
     it("un comando que el grupo rechaza no se agrega a la bitácora", () => {
@@ -53,7 +53,7 @@ describe("Bitacora", () => {
 
       expect(() => {
         bitacora.ejecutar(new Ingresar("ana", dia(2)));
-      }).toThrow("ana ya tiene una participación activa");
+      }).toThrow("ana ya está en el grupo");
       expect(bitacora.comandos()).toEqual(comandosAntes);
     });
   });
@@ -67,8 +67,8 @@ describe("Bitacora", () => {
       bitacora.deshacer();
 
       expect(bitacora.comandos()).toHaveLength(2);
-      expect(bitacora.grupo().participanteActivo("ana")).toBeDefined();
-      expect(bitacora.grupo().participanteActivo("beto")).toBeUndefined();
+      expect(bitacora.grupo().participante("ana")).toBeDefined();
+      expect(bitacora.grupo().participante("beto")).toBeUndefined();
     });
 
     it("deshacer devuelve el comando deshecho", () => {
@@ -111,12 +111,12 @@ describe("Bitacora", () => {
       bitacora.ejecutar(new Ingresar("ana", dia(1)));
       bitacora.ejecutar(new Ingresar("beto", dia(1)));
       const grupoAnterior = bitacora.grupo();
-      const anaAnterior = grupoAnterior.participanteActivo("ana");
+      const anaAnterior = grupoAnterior.participante("ana");
 
       bitacora.deshacer();
 
       expect(bitacora.grupo()).not.toBe(grupoAnterior);
-      expect(bitacora.grupo().participanteActivo("ana")).not.toBe(anaAnterior);
+      expect(bitacora.grupo().participante("ana")).not.toBe(anaAnterior);
     });
   });
 
@@ -130,11 +130,11 @@ describe("Bitacora", () => {
       const leida = Bitacora.desdeJson(json, desempate);
 
       expect(json).toEqual({
-        version: 1,
+        version: 2,
         comandos: [new CrearGrupo("Fútbol de los jueves", reglas()).aJson(), ingresar.aJson()],
       });
       expect(leida.grupo().nombre()).toBe("Fútbol de los jueves");
-      expect(leida.grupo().participanteActivo("ana")).toBeDefined();
+      expect(leida.grupo().participante("ana")).toBeDefined();
       expect(leida.aJson()).toEqual(json);
     });
 
@@ -144,14 +144,14 @@ describe("Bitacora", () => {
       const json = bitacora.aJson();
       const leida = Bitacora.desdeJson(json, desempate);
 
-      expect(json).toEqual({ version: 1, comandos: [] });
+      expect(json).toEqual({ version: 2, comandos: [] });
       expect(leida.tieneGrupo()).toBe(false);
     });
 
     it("no se puede leer una bitácora de una versión desconocida", () => {
       expect(() => {
-        Bitacora.desdeJson({ version: 2, comandos: [] }, desempate);
-      }).toThrow('Formato inválido: versión de bitácora desconocida "2"');
+        Bitacora.desdeJson({ version: 1, comandos: [] }, desempate);
+      }).toThrow('Formato inválido: versión de bitácora desconocida "1"');
     });
 
     it("no se puede leer una bitácora con un comando que el grupo rechaza", () => {
@@ -162,7 +162,7 @@ describe("Bitacora", () => {
 
       expect(() => {
         Bitacora.desdeJson(json, desempate);
-      }).toThrow("ana ya tiene una participación activa");
+      }).toThrow("ana ya está en el grupo");
     });
   });
 });

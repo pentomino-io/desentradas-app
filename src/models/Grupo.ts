@@ -1,6 +1,5 @@
 import { Caja } from "./Caja.ts";
-import type { OrigenDeCobro } from "./Cobro.ts";
-import type { Credito } from "./Credito.ts";
+import { Cobro } from "./Cobro.ts";
 import type { Desempate } from "./Desempate.ts";
 import type { Encuentro } from "./Encuentro.ts";
 import type { Reglas } from "./Reglas.ts";
@@ -49,40 +48,26 @@ export class Grupo {
     return this._historialDeReglas.slice(0, -1);
   }
 
-  reglasVigentesAl(fecha: Date): Reglas {
-    const vigentes = this._historialDeReglas.findLast((reglas) => reglas.rigeDesde() <= fecha);
-    if (vigentes === undefined) throw new Error("No hay reglas vigentes en esa fecha");
-
-    return vigentes;
-  }
-
   ingresar(nombre: string, fecha: Date): Participante {
     const nombreLimpio = nombre.trim();
     if (nombreLimpio === "") throw new Error("El nombre no puede estar vacío");
-    this._asertarQueNoTieneParticipacionActiva(nombreLimpio);
-    this._asertarQueNuncaParticipo(nombreLimpio);
-    const reglas = this.reglasVigentesAl(fecha);
+    if (this.participante(nombreLimpio) !== undefined) throw new Error(`${nombreLimpio} ya está en el grupo`);
+    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El ingreso", fecha);
 
-    const participante = new Participante(nombreLimpio, fecha, reglas);
+    const garantia = this.reglas().garantia();
+    const participante = new Participante(nombreLimpio, fecha, garantia);
     this._participantes.push(participante);
+    this._caja.cobrar(new Cobro(nombreLimpio, garantia, fecha));
     return participante;
   }
 
-  reingresar(nombre: string, fecha: Date): Participante {
-    const nombreLimpio = nombre.trim();
-    this._asertarQueNoTieneParticipacionActiva(nombreLimpio);
-    const participante = this._participanteFinalizadoLlamado(nombreLimpio);
-    const reglas = this.reglasVigentesAl(fecha);
-
-    participante.reingresar(fecha, reglas);
-    return participante;
-  }
-
-  cobrar(nombre: string, monto: number, fecha: Date): void {
-    const participante = this._participanteActivoLlamado(nombre);
+  cobrarGarantia(nombre: string, fecha: Date): void {
+    const participante = this._participanteLlamado(nombre.trim());
     this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cobro", fecha);
 
-    this._cobrarYDistribuir(participante, monto, fecha, "efectivo");
+    const garantia = this.reglas().garantia();
+    participante.cobrarGarantia(fecha, garantia);
+    this._caja.cobrar(new Cobro(participante.nombre(), garantia, fecha));
   }
 
   repartir(nombre: string, fecha: Date): Reparto {
@@ -96,12 +81,11 @@ export class Grupo {
     this._asertarQueNoEsAnteriorAlUltimoMovimiento("El encuentro", encuentro.fecha());
     this._asertarQuePuedenAsistir(encuentro);
     this._asertarQuePuedenFaltar(encuentro);
-    const reglas = this.reglasVigentesAl(encuentro.fecha());
 
-    this._participantesLlamados(encuentro.asistentes()).forEach((participante) => participante.voy(encuentro, reglas));
+    this._participantesLlamados(encuentro.asistentes()).forEach((participante) => participante.voy(encuentro));
     this._participantesLlamados(encuentro.ausentes()).forEach((participante) => {
-      participante.falto(encuentro);
-      this._aplicarCreditosPendientesDe(participante, encuentro.fecha());
+      const perdida = participante.falto(encuentro);
+      if (perdida !== undefined) this._caja.distribuir(perdida);
     });
     this._encuentros.push(encuentro);
   }
@@ -115,92 +99,51 @@ export class Grupo {
   }
 
   participantes(): readonly Participante[] {
-    return this._participantes.filter((participante) => participante.estaActivo());
+    return this._participantes;
   }
 
   posiblesAsistentes(): readonly Participante[] {
-    return this._participantes.filter((participante) => participante.esPosibleAsistente());
+    return this._participantes.filter((participante) => this._esPosibleAsistente(participante));
   }
 
-  participantesFinalizados(): readonly Participante[] {
-    return this._participantes.filter((participante) => !participante.estaActivo());
-  }
-
-  // Ningún nombre se repite: quien debe no tiene créditos pendientes.
-  saldosAl(fecha: Date): readonly Saldo[] {
-    const deudas = this._participantes
-      .map((participante) => new Saldo(participante.nombre(), -participante.deudaAl(fecha)))
-      .filter((saldo) => saldo.debe());
-    const creditos = this._caja
+  saldos(): readonly Saldo[] {
+    return this._caja
       .nombresConCreditosPendientes()
       .map((nombre) => new Saldo(nombre, this._caja.montoPendienteDe(nombre)));
-    return [...deudas, ...creditos];
   }
 
   participante(nombre: string): Participante | undefined {
     return this._participantes.find((participante) => participante.nombre() === nombre);
   }
 
-  participanteActivo(nombre: string): Participante | undefined {
-    return this.participantes().find((participante) => participante.nombre() === nombre);
-  }
-
-  yaParticipo(nombre: string): boolean {
-    return this._participanteFinalizado(nombre.trim()) !== undefined;
-  }
-
   private _participantesLlamados(nombres: Iterable<string>): readonly Participante[] {
-    return [...nombres].map((nombre) => this._participanteActivoLlamado(nombre));
+    return [...nombres].map((nombre) => this._participanteLlamado(nombre));
   }
 
-  private _participanteActivoLlamado(nombre: string): Participante {
-    const participante = this.participanteActivo(nombre);
-    if (participante === undefined) throw new Error(`${nombre} no tiene una participación activa`);
+  private _participanteLlamado(nombre: string): Participante {
+    const participante = this.participante(nombre);
+    if (participante === undefined) throw new Error(`${nombre} no es participante del grupo`);
 
     return participante;
   }
 
-  private _participanteFinalizado(nombre: string): Participante | undefined {
-    return this.participantesFinalizados().find((participante) => participante.nombre() === nombre);
-  }
-
-  private _participanteFinalizadoLlamado(nombre: string): Participante {
-    const participante = this._participanteFinalizado(nombre);
-    if (participante === undefined) throw new Error(`${nombre} nunca ingresó al grupo`);
-
-    return participante;
-  }
-
-  private _asertarQueNoTieneParticipacionActiva(nombre: string): void {
-    if (this.participanteActivo(nombre) !== undefined) throw new Error(`${nombre} ya tiene una participación activa`);
-  }
-
-  private _asertarQueNuncaParticipo(nombre: string): void {
-    if (this._participanteFinalizado(nombre) !== undefined) {
-      throw new Error(`${nombre} ya participó del grupo, debe reingresar`);
-    }
+  private _esPosibleAsistente(participante: Participante): boolean {
+    return !this.reglas().superaLaTolerancia(participante.faltas());
   }
 
   private _asertarQuePuedenAsistir(encuentro: Encuentro): void {
     for (const nombre of encuentro.asistentes()) {
-      const participante = this._participanteDelEncuentroLlamado(nombre, encuentro);
+      const participante = this._participanteLlamado(nombre);
       if (!participante.puedeAsistir()) throw new Error(`${nombre} no puede asistir`);
     }
   }
 
+  // Como sólo un posible asistente puede faltar, las faltas seguidas no pasan de la tolerancia más una.
   private _asertarQuePuedenFaltar(encuentro: Encuentro): void {
     for (const nombre of encuentro.ausentes()) {
-      const participante = this._participanteDelEncuentroLlamado(nombre, encuentro);
-      if (!participante.esPosibleAsistente()) throw new Error(`${nombre} no puede faltar`);
+      const participante = this._participanteLlamado(nombre);
+      if (!this._esPosibleAsistente(participante)) throw new Error(`${nombre} no puede faltar`);
     }
-  }
-
-  private _participanteDelEncuentroLlamado(nombre: string, encuentro: Encuentro): Participante {
-    const participante = this.participanteActivo(nombre);
-    if (participante === undefined) throw new Error(`${nombre} no es un participante activo`);
-    if (participante.ingresoDespuesDe(encuentro)) throw new Error(`${nombre} ingresó después del encuentro`);
-
-    return participante;
   }
 
   private _asertarQueEsPosteriorAlUltimoEncuentro(encuentro: Encuentro): void {
@@ -226,10 +169,10 @@ export class Grupo {
   }
 
   private _seUsaronLasReglasActuales(): boolean {
-    const actuales = this.reglas();
+    const rigeDesde = this.reglas().rigeDesde();
     return (
-      !this._esPosteriorAlUltimoEncuentro(actuales.rigeDesde()) ||
-      this.participantes().some((participante) => participante.reglas() === actuales)
+      !this._esPosteriorAlUltimoEncuentro(rigeDesde) ||
+      this._caja.movimientos().some((movimiento) => movimiento.tipo() === "cobro" && movimiento.fecha() >= rigeDesde)
     );
   }
 
@@ -239,28 +182,5 @@ export class Grupo {
 
   private _huboEncuentrosDespuesDe(fecha: Date): boolean {
     return this._encuentros.some((encuentro) => encuentro.fecha() > fecha);
-  }
-
-  private _cobrarYDistribuir(participante: Participante, monto: number, fecha: Date, origen: OrigenDeCobro): void {
-    const cobro = participante.pago(fecha, monto, origen);
-    this._aplicarCreditosPendientesDeLosAcreedores(this._caja.cobrar(cobro), fecha);
-  }
-
-  private _aplicarCreditosPendientesDeLosAcreedores(creditos: readonly Credito[], fecha: Date): void {
-    const acreedores = new Set(creditos.map((credito) => credito.acreedor()));
-    acreedores.forEach((nombre) => {
-      const acreedor = this.participanteActivo(nombre);
-      if (acreedor !== undefined) this._aplicarCreditosPendientesDe(acreedor, fecha);
-    });
-  }
-
-  private _aplicarCreditosPendientesDe(participante: Participante, fecha: Date): void {
-    for (const credito of this._caja.creditosPendientesDe(participante.nombre())) {
-      const deuda = participante.deudaAl(fecha);
-      if (deuda === 0) return;
-
-      const monto = Math.min(credito.monto(), deuda);
-      this._cobrarYDistribuir(participante, monto, fecha, credito);
-    }
   }
 }

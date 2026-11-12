@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { AlmacenamientoEnMemoria } from "../../src/app/AlmacenamientoEnMemoria.ts";
 import { CrearGrupo } from "../../src/app/comandos/CrearGrupo.ts";
-import { Cobrar } from "../../src/app/comandos/Cobrar.ts";
+import { CobrarGarantia } from "../../src/app/comandos/CobrarGarantia.ts";
 import { Ingresar } from "../../src/app/comandos/Ingresar.ts";
-import { Reingresar } from "../../src/app/comandos/Reingresar.ts";
 import { RegistrarEncuentro } from "../../src/app/comandos/RegistrarEncuentro.ts";
 import { reglasAJson } from "../../src/app/json/ReglasJson.ts";
 import { dia, reglas } from "../models/factories.ts";
@@ -16,21 +15,16 @@ const aplicacionConAnaYBeto = (almacenamientos: Almacenamientos = {}) => {
   return aplicacion;
 };
 
-const aplicacionConDeudaDeAna = (almacenamientos: Almacenamientos = {}) => {
+const aplicacionConAnaInactiva = (almacenamientos: Almacenamientos = {}) => {
   const aplicacion = aplicacionConAnaYBeto(almacenamientos);
   aplicacion.registrarEncuentro(dia(2), ["beto"], ["ana"]);
   return aplicacion;
 };
 
-const aplicacionConAnaMorosa = () => {
-  const aplicacion = aplicacionConDeudaDeAna();
+const aplicacionConAnaFueraDeLaTolerancia = () => {
+  const aplicacion = aplicacionConAnaInactiva();
   aplicacion.registrarEncuentro(dia(3), ["beto"], ["ana"]);
-  return aplicacion;
-};
-
-const aplicacionConAnaFinalizada = () => {
-  const aplicacion = aplicacionConAnaMorosa();
-  aplicacion.cobrar("ana", 1000, dia(4));
+  aplicacion.registrarEncuentro(dia(4), ["beto"], ["ana"]);
   return aplicacion;
 };
 
@@ -89,7 +83,7 @@ describe("Aplicacion", () => {
       const almacenamiento = new AlmacenamientoEnMemoria();
       almacenamiento.guardar(
         JSON.stringify({
-          version: 1,
+          version: 2,
           comandos: [{ tipo: "ingresar", nombre: "ana", fecha: dia(1).toISOString() }],
         }),
       );
@@ -108,18 +102,18 @@ describe("Aplicacion", () => {
 
       expect(() => {
         aplicacion.ingresar("ana", dia(2));
-      }).toThrow("ana ya tiene una participación activa");
+      }).toThrow("ana ya está en el grupo");
       expect(almacenamiento.leer()).toBe(guardadoAntes);
     });
   });
 
   describe("comandos", () => {
-    it("ingresar deja a la persona como participante activo del grupo", () => {
+    it("ingresar deja a la persona como participante del grupo", () => {
       const aplicacion = aplicacionConGrupo();
 
       aplicacion.ingresar("ana", dia(1));
 
-      expect(aplicacion.grupo().participanteActivo("ana")).toBeDefined();
+      expect(aplicacion.grupo().participante("ana")).toBeDefined();
     });
 
     it("registrar encuentro registra el encuentro con sus asistentes en el grupo", () => {
@@ -128,20 +122,11 @@ describe("Aplicacion", () => {
       aplicacion.registrarEncuentro(dia(2), ["beto"], ["ana"]);
 
       expect(aplicacion.grupo().encuentros()).toHaveLength(1);
-      expect(aplicacion.grupo().participanteActivo("ana")?.estado()).toBe("en deuda");
-    });
-
-    it("cobrar registra el cobro a la persona en el grupo", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
-
-      aplicacion.cobrar("ana", 400, dia(3));
-
-      expect(aplicacion.grupo().participanteActivo("ana")?.deudaAl(dia(3))).toBe(600);
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
     });
 
     it("repartir entrega los créditos pendientes de la persona", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
-      aplicacion.cobrar("ana", 1000, dia(3));
+      const aplicacion = aplicacionConAnaInactiva();
 
       aplicacion.repartir("beto", dia(4));
 
@@ -149,42 +134,12 @@ describe("Aplicacion", () => {
       expect(aplicacion.grupo().caja().repartos()).toHaveLength(1);
     });
 
-    it("reingresar vuelve a dejar como participante activo a quien ya participó", () => {
-      const aplicacion = aplicacionConAnaFinalizada();
+    it("cobrar la garantía vuelve a hacer participar a un inactivo", () => {
+      const aplicacion = aplicacionConAnaFueraDeLaTolerancia();
 
-      aplicacion.reingresar("ana", dia(11));
+      aplicacion.cobrarGarantia("ana", dia(5));
 
-      expect(aplicacion.grupo().participanteActivo("ana")?.estado()).toBe("participando");
-    });
-
-    it("cobrar y reingresar a un moroso que paga toda su deuda lo deja participando, con un cobro y un reingreso en el historial", () => {
-      const aplicacion = aplicacionConAnaMorosa();
-
-      aplicacion.cobrarYReingresar("ana", 1000, dia(4));
-
-      expect(aplicacion.grupo().participanteActivo("ana")?.estado()).toBe("participando");
-      expect(aplicacion.comandos().at(-2)).toBeInstanceOf(Cobrar);
-      expect(aplicacion.comandos().at(-1)).toBeInstanceOf(Reingresar);
-    });
-
-    it("cobrar y reingresar a un moroso que paga parte de su deuda lo deja moroso por el resto, con sólo el cobro en el historial", () => {
-      const aplicacion = aplicacionConAnaMorosa();
-
-      aplicacion.cobrarYReingresar("ana", 400, dia(4));
-
-      const ana = aplicacion.grupo().participanteActivo("ana");
-      expect(ana?.estado()).toBe("moroso");
-      expect(ana?.deudaAl(dia(4))).toBe(600);
-      expect(aplicacion.comandos().at(-2)).toBeInstanceOf(RegistrarEncuentro);
-      expect(aplicacion.comandos().at(-1)).toBeInstanceOf(Cobrar);
-    });
-
-    it("no se puede cobrar y reingresar a quien no es moroso", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
-
-      expect(() => {
-        aplicacion.cobrarYReingresar("ana", 1000, dia(4));
-      }).toThrow("Cobrar y reingresar sólo aplica a un moroso");
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
     });
 
     it("cambiar reglas deja vigentes las nuevas reglas en el grupo", () => {
@@ -212,7 +167,7 @@ describe("Aplicacion", () => {
 
   describe("deshacer", () => {
     it("deshacer deja el grupo como estaba antes del último comando", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
+      const aplicacion = aplicacionConAnaInactiva();
 
       aplicacion.deshacer();
 
@@ -221,7 +176,7 @@ describe("Aplicacion", () => {
     });
 
     it("deshacer devuelve el comando deshecho", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
+      const aplicacion = aplicacionConAnaInactiva();
       const ultimo = aplicacion.comandos().at(-1);
 
       const deshecho = aplicacion.deshacer();
@@ -267,7 +222,7 @@ describe("Aplicacion", () => {
 
     it("deshacer deja guardada la bitácora", () => {
       const almacenamiento = new AlmacenamientoEnMemoria();
-      const aplicacion = aplicacionConDeudaDeAna({ bitacora: almacenamiento });
+      const aplicacion = aplicacionConAnaInactiva({ bitacora: almacenamiento });
 
       aplicacion.deshacer();
 
@@ -361,7 +316,7 @@ describe("Aplicacion", () => {
     });
 
     it("un registro de encuentro que el grupo rechaza deja la planilla como estaba", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
+      const aplicacion = aplicacionConAnaInactiva();
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
 
       expect(() => {
@@ -370,73 +325,24 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual(["beto"]);
     });
 
-    it("cobrar en la puerta toda la deuda deja a la persona marcada como presente", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
-      aplicacion.empezarPlanillaDeAsistencia();
-
-      aplicacion.cobrarEnLaPuerta("ana", 1000, dia(3));
-
-      expect(aplicacion.grupo().participanteActivo("ana")?.estado()).toBe("libre de deuda");
-      expect(aplicacion.planillaDeAsistencia().asiste("ana")).toBe(true);
-    });
-
-    it("un pago parcial en la puerta no marca a la persona, porque sigue sin poder asistir", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
-      aplicacion.empezarPlanillaDeAsistencia();
-
-      aplicacion.cobrarEnLaPuerta("ana", 400, dia(3));
-
-      expect(aplicacion.grupo().participanteActivo("ana")?.deudaAl(dia(3))).toBe(600);
-      expect(aplicacion.planillaDeAsistencia().asiste("ana")).toBe(false);
-    });
-
-    it("cobrar en la puerta toda la deuda a un moroso lo reingresa y lo deja marcado como presente", () => {
-      const aplicacion = aplicacionConAnaMorosa();
-      aplicacion.empezarPlanillaDeAsistencia();
-
-      aplicacion.cobrarEnLaPuerta("ana", 1000, dia(4));
-
-      expect(aplicacion.grupo().participanteActivo("ana")?.estado()).toBe("participando");
-      expect(aplicacion.planillaDeAsistencia().asiste("ana")).toBe(true);
-    });
-
-    it("un pago parcial de un moroso en la puerta no lo marca, porque sigue moroso", () => {
-      const aplicacion = aplicacionConAnaMorosa();
-      aplicacion.empezarPlanillaDeAsistencia();
-
-      aplicacion.cobrarEnLaPuerta("ana", 400, dia(4));
-
-      expect(aplicacion.grupo().participanteActivo("ana")?.estado()).toBe("moroso");
-      expect(aplicacion.planillaDeAsistencia().asiste("ana")).toBe(false);
-    });
-
-    it("no se puede cobrar en la puerta a quien no debe nada", () => {
-      const aplicacion = aplicacionConGrupo();
-      aplicacion.ingresar("ana", dia(1));
-
-      expect(() => {
-        aplicacion.cobrarEnLaPuerta("ana", 1000, dia(4));
-      }).toThrow("Pagar en la puerta no habilita a ana");
-    });
-
     it("ingresar como asistente a alguien nuevo lo deja participando desde la fecha del ingreso y marcado como presente", () => {
       const aplicacion = aplicacionConGrupo();
       aplicacion.empezarPlanillaDeAsistencia();
 
       aplicacion.ingresarAsistente("carla", dia(3));
 
-      expect(aplicacion.grupo().participanteActivo("carla")?.historial().at(0)?.fecha()).toEqual(dia(3));
+      expect(aplicacion.grupo().participante("carla")?.historial().at(0)?.fecha()).toEqual(dia(3));
       expect(aplicacion.planillaDeAsistencia().asiste("carla")).toBe(true);
     });
 
-    it("ingresar como asistente a quien ya participó lo reingresa desde la fecha del ingreso y lo deja marcado como presente", () => {
-      const aplicacion = aplicacionConAnaFinalizada();
+    it("ingresar como asistente a un inactivo le cobra la garantía y lo deja marcado como presente", () => {
+      const aplicacion = aplicacionConAnaFueraDeLaTolerancia();
       aplicacion.empezarPlanillaDeAsistencia();
 
       aplicacion.ingresarAsistente("ana", dia(5));
 
-      expect(aplicacion.grupo().participanteActivo("ana")?.estado()).toBe("participando");
-      expect(aplicacion.grupo().participanteActivo("ana")?.fechaDelUltimoCambio()).toEqual(dia(5));
+      expect(aplicacion.comandos().at(-1)).toEqual(new CobrarGarantia("ana", dia(5)));
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
       expect(aplicacion.planillaDeAsistencia().asiste("ana")).toBe(true);
     });
 
@@ -446,19 +352,19 @@ describe("Aplicacion", () => {
 
       aplicacion.ingresarAsistente(" carla ", dia(3));
 
-      expect(aplicacion.grupo().participanteActivo("carla")).toBeDefined();
+      expect(aplicacion.grupo().participante("carla")).toBeDefined();
       expect(aplicacion.planillaDeAsistencia().asiste("carla")).toBe(true);
     });
 
-    it("quedan ausentes los posibles asistentes sin marcar, incluso quien está en deuda", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
+    it("quedan ausentes los posibles asistentes sin marcar, incluso un inactivo que no superó la tolerancia", () => {
+      const aplicacion = aplicacionConAnaInactiva();
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
 
       expect(aplicacion.ausentesEnPlanillaDeAsistencia()).toEqual(["ana"]);
     });
 
-    it("un moroso no figura entre los ausentes en la planilla", () => {
-      const aplicacion = aplicacionConAnaMorosa();
+    it("quien superó la tolerancia de faltas no figura entre los ausentes en la planilla", () => {
+      const aplicacion = aplicacionConAnaFueraDeLaTolerancia();
       aplicacion.empezarPlanillaDeAsistencia();
 
       expect(aplicacion.ausentesEnPlanillaDeAsistencia()).toEqual(["beto"]);
@@ -480,21 +386,21 @@ describe("Aplicacion", () => {
       expect(() => {
         aplicacion.ingresarAsistente("carla", dia(3));
       }).toThrow("No hay una planilla de asistencia empezada");
-      expect(aplicacion.grupo().participanteActivo("carla")).toBeUndefined();
+      expect(aplicacion.grupo().participante("carla")).toBeUndefined();
     });
 
     it("deshacer el registro de un encuentro restaura su planilla", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
+      const aplicacion = aplicacionConAnaInactiva();
 
       aplicacion.deshacer();
 
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual(["beto"]);
     });
 
-    it("deshacer un cobro en la puerta desmarca a la persona, que vuelve a no poder asistir", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
+    it("deshacer el cobro de la garantía a un asistente lo desmarca, porque vuelve a no poder asistir", () => {
+      const aplicacion = aplicacionConAnaInactiva();
       aplicacion.empezarPlanillaDeAsistencia();
-      aplicacion.cobrarEnLaPuerta("ana", 1000, dia(3));
+      aplicacion.ingresarAsistente("ana", dia(3));
 
       aplicacion.deshacer();
 
@@ -511,21 +417,8 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asiste("carla")).toBe(false);
     });
 
-    it("deshacer un cobro desmarca a quien dejó de estar habilitado por el crédito aplicado", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
-      aplicacion.ingresar("carla", dia(2));
-      aplicacion.registrarEncuentro(dia(3), ["carla"], ["ana", "beto"]);
-      const planilla = aplicacion.empezarPlanillaDeAsistencia();
-      aplicacion.cobrar("ana", 1000, dia(4)); // el crédito de beto por la falta de ana salda su deuda
-      planilla.marcarComoPresente("beto");
-
-      aplicacion.deshacer();
-
-      expect(aplicacion.planillaDeAsistencia().asiste("beto")).toBe(false);
-    });
-
     it("deshacer no toca las marcas de quienes siguen pudiendo asistir", () => {
-      const aplicacion = aplicacionConDeudaDeAna();
+      const aplicacion = aplicacionConAnaInactiva();
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
       aplicacion.ingresarAsistente("carla", dia(3));
 
@@ -544,7 +437,7 @@ describe("Aplicacion", () => {
     });
 
     it("importar una bitácora descarta la planilla", () => {
-      const exportado = aplicacionConDeudaDeAna().exportar();
+      const exportado = aplicacionConAnaInactiva().exportar();
       const aplicacion = aplicacionConGrupo();
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("carla");
 
@@ -562,7 +455,7 @@ describe("Aplicacion", () => {
       const texto = aplicacion.exportar();
 
       expect(JSON.parse(texto)).toEqual({
-        version: 1,
+        version: 2,
         comandos: [
           { tipo: "crear grupo", nombreDelGrupo: "Fútbol de los jueves", reglas: reglasAJson(reglas()) },
           { tipo: "ingresar", nombre: "ana", fecha: dia(1).toISOString() },
@@ -571,19 +464,19 @@ describe("Aplicacion", () => {
     });
 
     it("importar reemplaza la bitácora por la importada", () => {
-      const exportado = aplicacionConDeudaDeAna().exportar();
+      const exportado = aplicacionConAnaInactiva().exportar();
       const aplicacion = aplicacionConGrupo();
       aplicacion.ingresar("carla", dia(1));
 
       aplicacion.importar(exportado);
 
       expect(aplicacion.exportar()).toBe(exportado);
-      expect(aplicacion.grupo().participanteActivo("carla")).toBeUndefined();
-      expect(aplicacion.grupo().participanteActivo("ana")?.estado()).toBe("en deuda");
+      expect(aplicacion.grupo().participante("carla")).toBeUndefined();
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
     });
 
     it("importar deja guardada la bitácora importada", () => {
-      const exportado = aplicacionConDeudaDeAna().exportar();
+      const exportado = aplicacionConAnaInactiva().exportar();
       const almacenamiento = new AlmacenamientoEnMemoria();
       const aplicacion = aplicacionConGrupo({ bitacora: almacenamiento });
       aplicacion.ingresar("carla", dia(1));
@@ -610,11 +503,11 @@ describe("Aplicacion", () => {
       const aplicacion = aplicacionConGrupo({ bitacora: almacenamiento });
       const exportadoAntes = aplicacion.exportar();
       const invalida = JSON.parse(exportadoAntes);
-      invalida.comandos.push({ tipo: "cobrar", nombre: "ana", monto: 1000, fecha: dia(3).toISOString() });
+      invalida.comandos.push({ tipo: "cobrar garantía", nombre: "ana", fecha: dia(3).toISOString() });
 
       expect(() => {
         aplicacion.importar(JSON.stringify(invalida));
-      }).toThrow("ana no tiene una participación activa");
+      }).toThrow("ana no es participante del grupo");
       expect(aplicacion.exportar()).toBe(exportadoAntes);
       expect(almacenamiento.leer()).toBe(exportadoAntes);
     });

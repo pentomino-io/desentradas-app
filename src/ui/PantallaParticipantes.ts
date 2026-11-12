@@ -1,19 +1,18 @@
-import { monto } from "../app/Formato.ts";
 import type { Participante } from "../models/Participante.ts";
-import { DialogoDeCobro } from "./DialogoDeCobro.ts";
+import { DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGarantia.ts";
 import { DialogoDeRegistro } from "./DialogoDeRegistro.ts";
-import { alerta, boton, crear, desplegable, fila, type Hijo, tabla, tablaOAviso } from "./dom.ts";
+import { boton, crear, desplegable, fila, type Hijo, tabla, tablaOAviso } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 import { porNombre } from "./Orden.ts";
 
 const ultimoCambioDe = (participante: Participante) => participante.fechaDelUltimoCambio().getTime();
 
-// Primero quienes no están al día, del cambio más reciente al más antiguo; después los que están al día, por nombre.
+// Primero los inactivos, del cambio más reciente al más antiguo; después quienes participan, por nombre.
 const porAtencionYNombre = (uno: Participante, otro: Participante): number => {
-  const unoAlDia = uno.estaAlDia();
-  const otroAlDia = otro.estaAlDia();
-  if (unoAlDia !== otroAlDia) return unoAlDia ? 1 : -1;
-  if (!unoAlDia && ultimoCambioDe(uno) !== ultimoCambioDe(otro)) {
+  const unoParticipa = uno.puedeAsistir();
+  const otroParticipa = otro.puedeAsistir();
+  if (unoParticipa !== otroParticipa) return unoParticipa ? 1 : -1;
+  if (!unoParticipa && ultimoCambioDe(uno) !== ultimoCambioDe(otro)) {
     return ultimoCambioDe(otro) - ultimoCambioDe(uno);
   }
 
@@ -22,11 +21,9 @@ const porAtencionYNombre = (uno: Participante, otro: Participante): number => {
 
 export class PantallaParticipantes {
   private _entorno: Entorno;
-  private _erroresDeReingreso: HTMLOutputElement;
 
   constructor(entorno: Entorno) {
     this._entorno = entorno;
-    this._erroresDeReingreso = alerta();
   }
 
   elemento(): HTMLElement {
@@ -35,7 +32,7 @@ export class PantallaParticipantes {
       {},
       crear("h2", {}, "Participantes"),
       ...this._tablaDeActivos(),
-      desplegable("Quienes ya no participan", this._tablaDeQuienesYaNoParticipan(), this._erroresDeReingreso),
+      desplegable("Quienes ya no participan", this._tablaDeQuienesYaNoParticipan()),
     );
   }
 
@@ -54,46 +51,32 @@ export class PantallaParticipantes {
     return fila(participante.nombre(), this._estadoConFaltas(participante));
   }
 
-  // Sólo en libre de deuda las faltas cuentan contra la tolerancia.
   private _estadoConFaltas(participante: Participante): string {
     const estado = participante.estado();
-    if (estado !== "libre de deuda") return estado;
+    if (participante.puedeAsistir()) return estado;
 
-    const tolerancia = participante.reglas().toleranciaDeFaltas();
+    const tolerancia = this._entorno.grupo().reglas().toleranciaDeFaltas();
     return `${estado} (${participante.faltas()}/${tolerancia} faltas)`;
   }
 
-  // Un moroso sigue activo en el grupo, pero no participa hasta pagar y reingresar.
   private _tablaDeQuienesYaNoParticipan(): HTMLElement | undefined {
     const grupo = this._entorno.grupo();
-    const morosos = grupo.participantes().filter((participante) => participante.soloLeFaltaPagarParaReingresar());
+    const posiblesAsistentes = grupo.posiblesAsistentes();
     return tabla(
       undefined,
-      ["Nombre", "Motivo", ""],
-      [...morosos, ...grupo.participantesFinalizados()]
+      ["Nombre", ""],
+      grupo
+        .participantes()
+        .filter((participante) => !posiblesAsistentes.includes(participante))
         .toSorted(porNombre)
-        .map((participante) =>
-          participante.soloLeFaltaPagarParaReingresar()
-            ? this._filaDeMoroso(participante)
-            : this._filaDeFinalizado(participante),
-        ),
+        .map((participante) => this._filaDeQuienYaNoParticipa(participante.nombre())),
     );
   }
 
-  private _filaDeMoroso(participante: Participante): HTMLTableRowElement {
-    return fila(
-      participante.nombre(),
-      `moroso, debe ${monto(participante.deudaAl(this._entorno.ahora()))}`,
-      boton("Cobrar y reingresar", () => this._abrirCobro(participante)),
-    );
-  }
-
-  private _filaDeFinalizado(participante: Participante): HTMLTableRowElement {
-    const nombre = participante.nombre();
+  private _filaDeQuienYaNoParticipa(nombre: string): HTMLTableRowElement {
     return fila(
       nombre,
-      participante.motivoDeFinalizacion() ?? "",
-      boton("Reingresar", () => this._reingresar(nombre)),
+      boton("Reingresar", () => this._abrirReingreso(nombre)),
     );
   }
 
@@ -103,17 +86,9 @@ export class PantallaParticipantes {
     ).abrir();
   }
 
-  private _abrirCobro(participante: Participante): void {
-    const nombre = participante.nombre();
-    const deuda = participante.deudaAl(this._entorno.ahora());
-    new DialogoDeCobro(this._entorno, nombre, deuda, (monto) =>
-      this._entorno.aplicacion().cobrarYReingresar(nombre, monto, this._entorno.ahora()),
+  private _abrirReingreso(nombre: string): void {
+    new DialogoDeCobroDeGarantia(this._entorno, nombre, () =>
+      this._entorno.aplicacion().cobrarGarantia(nombre, this._entorno.ahora()),
     ).abrir();
-  }
-
-  private _reingresar(nombre: string): void {
-    this._entorno.intentarYRefrescar(() => {
-      this._entorno.aplicacion().reingresar(nombre, this._entorno.ahora());
-    }, this._erroresDeReingreso);
   }
 }

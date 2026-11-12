@@ -1,4 +1,4 @@
-// Lo que una persona le debe al grupo (negativo) o el grupo le debe a ella (positivo).
+// Lo que el grupo le debe a una persona.
 export class Saldo {
   private _nombre: string;
   private _monto: number;
@@ -14,9 +14,5 @@ export class Saldo {
 
   monto(): number {
     return this._monto;
-  }
-
-  debe(): boolean {
-    return this._monto < 0;
   }
 }

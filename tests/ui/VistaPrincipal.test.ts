@@ -19,7 +19,7 @@ const almacenamientosConGrupoSinParticipantes = () => {
   return almacenamientos;
 };
 
-const almacenamientosConDeudaDeAna = () => {
+const almacenamientosConAnaInactiva = () => {
   const almacenamientos = almacenamientosConGrupoSinParticipantes();
   const aplicacion = nuevaAplicacion(almacenamientos);
   ["ana", "beto", "carla", "dani"].forEach((nombre) => aplicacion.ingresar(nombre, dia(1)));
@@ -27,22 +27,18 @@ const almacenamientosConDeudaDeAna = () => {
   return almacenamientos;
 };
 
-const almacenamientosConDeudaDeAnaYUnaPlanillaCon = (presentes: string[]) => {
-  const almacenamientos = almacenamientosConDeudaDeAna();
+const almacenamientosConAnaInactivaYUnaPlanillaCon = (presentes: string[]) => {
+  const almacenamientos = almacenamientosConAnaInactiva();
   const planilla = nuevaAplicacion(almacenamientos).empezarPlanillaDeAsistencia();
   presentes.forEach((nombre) => planilla.marcarComoPresente(nombre));
   return almacenamientos;
 };
 
-const almacenamientosConAnaMorosa = () => {
-  const almacenamientos = almacenamientosConDeudaDeAna();
-  nuevaAplicacion(almacenamientos).registrarEncuentro(dia(3), ["beto", "carla", "dani"], ["ana"]);
-  return almacenamientos;
-};
-
-const almacenamientosConAnaFinalizada = () => {
-  const almacenamientos = almacenamientosConAnaMorosa();
-  nuevaAplicacion(almacenamientos).cobrar("ana", 1000, dia(4));
+const almacenamientosConAnaFueraDeLaTolerancia = () => {
+  const almacenamientos = almacenamientosConAnaInactiva();
+  const aplicacion = nuevaAplicacion(almacenamientos);
+  aplicacion.registrarEncuentro(dia(3), ["beto", "carla", "dani"], ["ana"]);
+  aplicacion.registrarEncuentro(dia(4), ["beto", "carla", "dani"], ["ana"]);
   return almacenamientos;
 };
 
@@ -169,7 +165,7 @@ describe("VistaPrincipal", () => {
   });
 
   it("las tablas sin filas no se muestran, ni el desplegable que las contiene, hasta que tienen algo que mostrar", async () => {
-    const almacenamientos = almacenamientosConDeudaDeAna();
+    const almacenamientos = almacenamientosConGrupoSinParticipantes();
     montar(almacenamientos);
     await navegarA("Participantes");
     expect(hayDesplegable("Quienes ya no participan")).toBe(false);
@@ -179,8 +175,9 @@ describe("VistaPrincipal", () => {
     expect(hayDesplegable("Versiones anteriores")).toBe(false);
 
     const preparacion = nuevaAplicacion(almacenamientos);
-    preparacion.registrarEncuentro(dia(3), ["beto", "carla", "dani"], ["ana"]);
-    preparacion.cobrar("ana", 1000, dia(4)); // ana queda finalizada por pago de morosidad
+    preparacion.ingresar("ana", dia(1));
+    preparacion.ingresar("beto", dia(1));
+    [2, 3, 4].forEach((numero) => preparacion.registrarEncuentro(dia(numero), ["beto"], ["ana"])); // ana supera la tolerancia
     recargar(almacenamientos);
     await navegarA("Participantes");
     expect(hayDesplegable("Quienes ya no participan")).toBe(true);
@@ -190,7 +187,7 @@ describe("VistaPrincipal", () => {
   });
 
   it("una vista que ya no está en el documento deja de seguir la navegación", async () => {
-    const { raiz } = montar(almacenamientosConDeudaDeAna());
+    const { raiz } = montar(almacenamientosConAnaInactiva());
     document.body.replaceChildren();
 
     location.hash = "#caja";
@@ -246,8 +243,8 @@ describe("VistaPrincipal", () => {
   });
 
   describe("pantalla de participantes", () => {
-    it("registrar un participante y reingresar a uno finalizado se fechan en el momento en que se hacen", async () => {
-      const { aplicacion } = montar(almacenamientosConAnaFinalizada());
+    it("registrar un participante y reingresar a quien ya no participa se fechan en el momento en que se hacen", async () => {
+      const { aplicacion } = montar(almacenamientosConAnaFueraDeLaTolerancia());
       await navegarA("Participantes");
 
       hacerClic("Registrar participante");
@@ -255,52 +252,42 @@ describe("VistaPrincipal", () => {
       completar("Nombre", "gus", dialogoAbierto());
       hacerClic("Registrar", dialogoAbierto());
       hacerClic("Reingresar", fila("ana"));
+      hacerClic("Cobrar", dialogoAbierto());
 
-      expect(aplicacion.grupo().participanteActivo("gus")?.historial().at(0)?.fecha()).toEqual(ahora());
-      expect(aplicacion.grupo().participanteActivo("ana")?.fechaDelUltimoCambio()).toEqual(ahora());
+      expect(aplicacion.grupo().participante("gus")?.historial().at(0)?.fecha()).toEqual(ahora());
+      expect(aplicacion.grupo().participante("ana")?.fechaDelUltimoCambio()).toEqual(ahora());
     });
 
-    it("reingresar no pide confirmación", async () => {
-      const { aplicacion } = montar(almacenamientosConAnaFinalizada());
+    it("reingresar pide confirmar el cobro de la garantía, y después figura entre los activos", async () => {
+      const { aplicacion } = montar(almacenamientosConAnaFueraDeLaTolerancia());
       await navegarA("Participantes");
 
       hacerClic("Reingresar", fila("ana"));
-
-      expect(hayDialogoAbierto()).toBe(false);
-      expect(aplicacion.grupo().participanteActivo("ana")?.estado()).toBe("participando");
-    });
-
-    it("un moroso figura entre quienes ya no participan, con su deuda y para cobrarle y reingresarlo, y no entre los activos", async () => {
-      montar(almacenamientosConAnaMorosa());
-
-      await navegarA("Participantes");
-
-      expect(filasDeQuienesYaNoParticipan()).toEqual([["ana", "moroso, debe $ 1.000", "Cobrar y reingresar"]]);
-      expect(filasDeActivos().map(([nombre]) => nombre)).toEqual(["beto", "carla", "dani"]);
-    });
-
-    it("cobrarle toda la deuda a un moroso lo reingresa entre los activos", async () => {
-      const { aplicacion } = montar(almacenamientosConAnaMorosa());
-      await navegarA("Participantes");
-
-      hacerClic("Cobrar y reingresar", fila("ana"));
+      expect(textoDe(dialogoAbierto())).toContain("Se le va a cobrar una garantía de $ 1.000.");
       hacerClic("Cobrar", dialogoAbierto());
 
-      expect(aplicacion.grupo().participanteActivo("ana")?.fechaDelUltimoCambio()).toEqual(ahora());
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
       expect(filasDeActivos()).toContainEqual(["ana", "participando"]);
       expect(hayDesplegable("Quienes ya no participan")).toBe(false);
     });
 
-    it("las faltas de quien está libre de deuda se cuentan contra su propia tolerancia", async () => {
-      const almacenamientos = almacenamientosConDeudaDeAna();
-      const aplicacion = nuevaAplicacion(almacenamientos);
-      aplicacion.cobrar("ana", 1000, dia(3));
-      aplicacion.cambiarReglas(reglas({ rigeDesde: dia(4), toleranciaDeFaltas: 1 }));
+    it("quien superó la tolerancia de faltas figura entre quienes ya no participan, para reingresarlo, y no entre los activos", async () => {
+      montar(almacenamientosConAnaFueraDeLaTolerancia());
+
+      await navegarA("Participantes");
+
+      expect(filasDeQuienesYaNoParticipan()).toEqual([["ana", "Reingresar"]]);
+      expect(filasDeActivos().map(([nombre]) => nombre)).toEqual(["beto", "carla", "dani"]);
+    });
+
+    it("las faltas de un inactivo se cuentan contra la tolerancia de las reglas actuales", async () => {
+      const almacenamientos = almacenamientosConAnaInactiva();
+      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), toleranciaDeFaltas: 3 }));
       montar(almacenamientos);
 
       await navegarA("Participantes");
 
-      expect(textosDeLasCeldas(fila("ana"))).toEqual(["ana", "libre de deuda (1/2 faltas)"]);
+      expect(textosDeLasCeldas(fila("ana"))).toEqual(["ana", "inactivo (1/3 faltas)"]);
     });
 
     it("sin participaciones activas dice que todavía no hay nadie", async () => {
@@ -314,79 +301,51 @@ describe("VistaPrincipal", () => {
   });
 
   describe("pantalla de caja", () => {
-    it("se puede cobrar a un moroso, y sigue en la tabla mientras deba", async () => {
-      const almacenamientos = almacenamientosConAnaMorosa();
-      const { aplicacion } = montar(almacenamientos);
-      await navegarA("Caja");
-      expect(textosDeLasCeldas(fila("ana"))).toEqual(["ana", "moroso", "-$ 1.000", "Cobrar"]);
-
-      hacerClic("Cobrar", fila("ana"));
-      expect(campo("Monto", dialogoAbierto()).value).toBe("1000");
-      expect(hayEtiqueta("Fecha", dialogoAbierto())).toBe(false);
-      completar("Monto", "400", dialogoAbierto());
-      hacerClic("Cobrar", dialogoAbierto());
-
-      expect(aplicacion.grupo().participanteActivo("ana")?.deudaAl(ahora())).toBe(600);
-      expect(textosDeLasCeldas(fila("ana"))).toEqual(["ana", "moroso", "-$ 600", "Cobrar"]);
-    });
-
-    it("los saldos muestran primero a quienes deben y después a quienes tienen por recibir, cada grupo por nombre, incluso si ya no participan", async () => {
-      const almacenamientos = almacenamientosConDeudaDeAna();
-      const preparacion = nuevaAplicacion(almacenamientos);
-      preparacion.registrarEncuentro(dia(3), ["carla", "dani"], ["ana", "beto"]); // ana queda morosa
-      preparacion.ingresar("fede", dia(3));
-      preparacion.ingresar("eva", dia(3));
-      preparacion.registrarEncuentro(dia(4), ["carla", "dani"], ["beto", "fede", "eva"]); // beto queda moroso
-      preparacion.cobrar("beto", 1000, dia(4)); // beto queda finalizado
-      preparacion.cobrar("ana", 1000, dia(5)); // beto recibe su parte por haber ido al primer encuentro
+    it("los saldos muestran por nombre lo que tiene por recibir cada uno, y el total por repartir", async () => {
+      const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
+      nuevaAplicacion(almacenamientos).registrarEncuentro(dia(3), ["dani", "carla"], ["ana", "beto"]); // carla y dani reciben 500
       montar(almacenamientos);
 
       await navegarA("Caja");
 
-      expect(hayElementoConTexto("p > span", "Por cobrar $ 2.000")).toBe(true);
       expect(hayElementoConTexto("p > span", "Por repartir $ 2.000")).toBe(true);
+      expect(textoDe(document.querySelector("main")!)).not.toContain("Por cobrar");
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
-        ["eva", "en deuda", "-$ 1.000", "Cobrar"],
-        ["fede", "en deuda", "-$ 1.000", "Cobrar"],
-        ["beto", "finalizado", "$ 334", "Registrar reparto"],
+        ["beto", "inactivo", "$ 334", "Registrar reparto"],
         ["carla", "participando", "$ 833", "Registrar reparto"],
         ["dani", "participando", "$ 833", "Registrar reparto"],
       ]);
     });
 
-    it("repartir entrega los créditos pendientes y queda entre los movimientos, que no incluyen los cobros hechos con créditos", async () => {
-      const almacenamientos = almacenamientosConDeudaDeAna();
-      const preparacion = nuevaAplicacion(almacenamientos);
-      preparacion.cobrar("ana", 1000, dia(3)); // beto recibe 334, carla y dani 333
-      preparacion.registrarEncuentro(dia(4), ["beto", "carla"], ["ana", "dani"]); // el crédito de dani se aplica a su deuda
-      const { aplicacion } = montar(almacenamientos);
+    it("repartir entrega los créditos pendientes y queda entre los movimientos, junto a los cobros de garantía", async () => {
+      const { aplicacion } = montar(almacenamientosConAnaInactiva()); // beto recibe 334
       await navegarA("Caja");
 
       hacerClic("Registrar reparto", fila("beto"));
       expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Reparto a beto");
-      expect(textoDe(dialogoAbierto())).toContain("Se le van a entregar $ 501.");
+      expect(textoDe(dialogoAbierto())).toContain("Se le van a entregar $ 334.");
       hacerClic("Registrar reparto", dialogoAbierto());
 
       expect(aplicacion.grupo().caja().montoPendienteDe("beto")).toBe(0);
       expect(filasDe(elementoConTexto("summary", "Movimientos").parentElement!)).toEqual([
-        [fechaYHora(ahora()), "beto", "reparto", "$ 501"],
-        [fechaYHora(dia(3)), "ana", "cobro", "$ 1.000"],
+        [fechaYHora(ahora()), "beto", "reparto", "$ 334"],
+        ...["dani", "carla", "beto", "ana"].map((nombre) => [fechaYHora(dia(1)), nombre, "cobro", "$ 1.000"]),
       ]);
     });
 
-    it("sin saldos dice que no hay nada para cobrar ni repartir", async () => {
+    it("sin saldos dice que no hay nada para repartir", async () => {
       montar(almacenamientosConGrupoSinParticipantes());
 
       await navegarA("Caja");
 
-      expect(hayElementoConTexto("p", "No hay nada para cobrar ni repartir")).toBe(true);
+      expect(hayElementoConTexto("p", "No hay nada para repartir")).toBe(true);
       expect(document.querySelector("table")).toBeNull();
     });
   });
 
   describe("pantalla del encuentro", () => {
     it("antes de empezar el encuentro sólo se puede empezarlo", () => {
-      montar(almacenamientosConDeudaDeAna());
+      montar(almacenamientosConAnaInactiva());
 
       const botones = [...document.querySelectorAll("main button")].map(textoDe);
 
@@ -395,7 +354,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("empezar el encuentro abre la planilla de asistencia sin nadie marcado", () => {
-      const { aplicacion } = montar(almacenamientosConDeudaDeAna());
+      const { aplicacion } = montar(almacenamientosConAnaInactiva());
 
       hacerClic("Empezar encuentro");
 
@@ -404,8 +363,8 @@ describe("VistaPrincipal", () => {
       expect(hayElementoConTexto("button", "Empezar encuentro")).toBe(false);
     });
 
-    it("registrar el encuentro toma como presentes a los marcados, incluso a quien pagó en la puerta, descarta la planilla y pasa al historial", () => {
-      const { aplicacion, almacenamientos } = montar(almacenamientosConDeudaDeAna());
+    it("registrar el encuentro toma como presentes a los marcados, incluso a quien pagó la garantía en la puerta, descarta la planilla y pasa al historial", () => {
+      const { aplicacion, almacenamientos } = montar(almacenamientosConAnaInactiva());
       expect(pantallaActual()).toBe("Encuentro");
 
       hacerClic("Empezar encuentro");
@@ -413,7 +372,7 @@ describe("VistaPrincipal", () => {
       casillaDeAsistencia("carla").click();
       expect(casillaDeAsistencia("ana").disabled).toBe(true);
       hacerClic("Cobrar y habilitar", fila("ana"));
-      expect(campo("Monto", dialogoAbierto()).value).toBe("1000");
+      expect(textoDe(dialogoAbierto())).toContain("Se le va a cobrar una garantía de $ 1.000.");
       hacerClic("Cobrar", dialogoAbierto());
       expect(casillaDeAsistencia("ana").disabled).toBe(false);
       expect(casillaDeAsistencia("ana").checked).toBe(true);
@@ -424,7 +383,7 @@ describe("VistaPrincipal", () => {
       const [, encuentro] = aplicacion.grupo().encuentros();
       expect(encuentro.fecha()).toEqual(ahora());
       expect(encuentro.asistentes()).toEqual(new Set(["beto", "carla", "ana"]));
-      expect(aplicacion.grupo().participanteActivo("dani")?.estado()).toBe("en deuda");
+      expect(aplicacion.grupo().participante("dani")?.estado()).toBe("inactivo");
       expect(almacenamientos.planilla.leer()).toBeUndefined();
       expect(pantallaActual()).toBe("Historial");
       expect(filasDe(document.querySelector("main")!)[0]).toEqual([
@@ -435,7 +394,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("descartar el encuentro sin nadie marcado no pide confirmación", () => {
-      const { aplicacion, almacenamientos } = montar(almacenamientosConDeudaDeAna());
+      const { aplicacion, almacenamientos } = montar(almacenamientosConAnaInactiva());
       hacerClic("Empezar encuentro");
 
       hacerClic("Descartar");
@@ -447,7 +406,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("descartar el encuentro con alguien marcado pide confirmación antes de perder las marcas", () => {
-      const { aplicacion } = montar(almacenamientosConDeudaDeAna());
+      const { aplicacion } = montar(almacenamientosConAnaInactiva());
       hacerClic("Empezar encuentro");
       casillaDeAsistencia("beto").click();
 
@@ -461,7 +420,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("volver de la confirmación de descarte conserva la planilla de asistencia con sus marcas", () => {
-      const { aplicacion } = montar(almacenamientosConDeudaDeAna());
+      const { aplicacion } = montar(almacenamientosConAnaInactiva());
       hacerClic("Empezar encuentro");
       casillaDeAsistencia("beto").click();
       hacerClic("Descartar");
@@ -474,7 +433,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("la confirmación del registro dice que el encuentro lleva la fecha del momento de registrarlo", () => {
-      montar(almacenamientosConDeudaDeAna());
+      montar(almacenamientosConAnaInactiva());
       hacerClic("Empezar encuentro");
 
       hacerClic("Registrar encuentro");
@@ -482,11 +441,12 @@ describe("VistaPrincipal", () => {
       expect(textoDe(dialogoAbierto())).toContain(`Se va a registrar el encuentro con fecha ${fechaYHora(ahora())}.`);
     });
 
-    it("la confirmación del registro nombra a los posibles asistentes sin marcar, incluso a quien está en deuda", () => {
-      const almacenamientos = almacenamientosConDeudaDeAna();
+    it("la confirmación del registro nombra a los posibles asistentes sin marcar, incluso a un inactivo que no superó la tolerancia", () => {
+      const almacenamientos = almacenamientosConAnaInactiva();
       const preparacion = nuevaAplicacion(almacenamientos);
       preparacion.ingresar("eva", dia(2));
-      preparacion.registrarEncuentro(dia(3), ["beto", "carla", "dani"], ["ana", "eva"]); // ana queda morosa y eva en deuda
+      preparacion.registrarEncuentro(dia(3), ["beto", "carla", "dani"], ["ana", "eva"]);
+      preparacion.registrarEncuentro(dia(4), ["beto", "carla", "dani"], ["ana", "eva"]); // ana supera la tolerancia y eva no
       montar(almacenamientos);
 
       hacerClic("Empezar encuentro");
@@ -497,10 +457,8 @@ describe("VistaPrincipal", () => {
       expect(textoDe(dialogoAbierto())).not.toContain("ana");
     });
 
-    it("si sólo quedan sin marcar los morosos, la confirmación del registro dice que nadie queda ausente", () => {
-      const almacenamientos = almacenamientosConDeudaDeAna();
-      nuevaAplicacion(almacenamientos).registrarEncuentro(dia(3), ["beto", "carla", "dani"], ["ana"]);
-      montar(almacenamientos);
+    it("si sólo quedan sin marcar quienes superaron la tolerancia, la confirmación del registro dice que nadie queda ausente", () => {
+      montar(almacenamientosConAnaFueraDeLaTolerancia());
 
       hacerClic("Empezar encuentro");
       ["beto", "carla", "dani"].forEach((nombre) => casillaDeAsistencia(nombre).click());
@@ -510,7 +468,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("la planilla de asistencia sobrevive a una recarga y vuelve a abrir la pantalla del encuentro", () => {
-      const almacenamientos = almacenamientosConDeudaDeAna();
+      const almacenamientos = almacenamientosConAnaInactiva();
       montar(almacenamientos);
       hacerClic("Empezar encuentro");
       casillaDeAsistencia("beto").click();
@@ -523,16 +481,15 @@ describe("VistaPrincipal", () => {
       expect(casillaDeAsistencia("carla").checked).toBe(false);
     });
 
-    it("si vuelve un moroso se le cobra, y si paga toda su deuda queda reingresado y marcado como presente", () => {
-      const { aplicacion } = montar(almacenamientosConAnaMorosa());
+    it("si vuelve alguien que ya no participa, se le cobra la garantía y queda marcado como presente", () => {
+      const { aplicacion } = montar(almacenamientosConAnaFueraDeLaTolerancia());
       hacerClic("Empezar encuentro");
 
       hacerClic("Vino alguien nuevo");
       completar("Nombre", "ana", dialogoAbierto());
       hacerClic("Registrar", dialogoAbierto());
-      hacerClic("Cobrar", dialogoAbierto());
 
-      expect(aplicacion.grupo().participanteActivo("ana")?.estado()).toBe("participando");
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
       expect(casillaDeAsistencia("ana").checked).toBe(true);
     });
 
@@ -549,7 +506,7 @@ describe("VistaPrincipal", () => {
 
   describe("pantalla de reglas", () => {
     it("las reglas cambiadas rigen desde el momento del cambio", async () => {
-      const { aplicacion } = montar(almacenamientosConDeudaDeAna());
+      const { aplicacion } = montar(almacenamientosConAnaInactiva());
       await navegarA("Reglas");
       expect(hayEtiqueta("Rige desde")).toBe(false);
 
@@ -563,7 +520,7 @@ describe("VistaPrincipal", () => {
 
   describe("pantalla del historial", () => {
     it("deshacer el registro de un encuentro restaura su planilla de asistencia", async () => {
-      const { aplicacion } = montar(almacenamientosConDeudaDeAna());
+      const { aplicacion } = montar(almacenamientosConAnaInactiva());
       await navegarA("Historial");
       expect(pantallaActual()).toBe("Historial");
 
@@ -575,7 +532,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("deshacer el registro de un encuentro con una planilla empezada que tiene marcas pide confirmación", async () => {
-      const { aplicacion } = montar(almacenamientosConDeudaDeAnaYUnaPlanillaCon(["beto"]));
+      const { aplicacion } = montar(almacenamientosConAnaInactivaYUnaPlanillaCon(["beto"]));
       await navegarA("Historial");
 
       hacerClic("Deshacer");
@@ -589,7 +546,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("confirmar que se deshace el encuentro reemplaza la planilla empezada por la del encuentro deshecho", async () => {
-      const { aplicacion } = montar(almacenamientosConDeudaDeAnaYUnaPlanillaCon(["beto"]));
+      const { aplicacion } = montar(almacenamientosConAnaInactivaYUnaPlanillaCon(["beto"]));
       await navegarA("Historial");
       hacerClic("Deshacer");
 
@@ -602,7 +559,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("volver de la confirmación de deshacer el encuentro conserva la planilla empezada", async () => {
-      const { aplicacion } = montar(almacenamientosConDeudaDeAnaYUnaPlanillaCon(["beto"]));
+      const { aplicacion } = montar(almacenamientosConAnaInactivaYUnaPlanillaCon(["beto"]));
       await navegarA("Historial");
       hacerClic("Deshacer");
 
@@ -615,7 +572,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("deshacer el registro de un encuentro con una planilla empezada sin marcas no pide confirmación", async () => {
-      const { aplicacion } = montar(almacenamientosConDeudaDeAnaYUnaPlanillaCon([]));
+      const { aplicacion } = montar(almacenamientosConAnaInactivaYUnaPlanillaCon([]));
       await navegarA("Historial");
 
       hacerClic("Deshacer");
@@ -627,8 +584,8 @@ describe("VistaPrincipal", () => {
     });
 
     it("deshacer un comando que no es un registro de encuentro, con una planilla empezada, deja la pantalla del historial", async () => {
-      const almacenamientos = almacenamientosConDeudaDeAnaYUnaPlanillaCon(["beto"]);
-      nuevaAplicacion(almacenamientos).cobrar("ana", 500, dia(3));
+      const almacenamientos = almacenamientosConAnaInactivaYUnaPlanillaCon(["beto"]);
+      nuevaAplicacion(almacenamientos).cobrarGarantia("ana", dia(3));
       montar(almacenamientos);
       await navegarA("Historial");
 
@@ -640,8 +597,8 @@ describe("VistaPrincipal", () => {
     });
 
     it("deshacer un comando que no es un registro de encuentro, sin planilla empezada, deja la pantalla del historial", async () => {
-      const almacenamientos = almacenamientosConDeudaDeAna();
-      nuevaAplicacion(almacenamientos).cobrar("ana", 500, dia(3));
+      const almacenamientos = almacenamientosConAnaInactiva();
+      nuevaAplicacion(almacenamientos).cobrarGarantia("ana", dia(3));
       montar(almacenamientos);
       await navegarA("Historial");
 
@@ -651,7 +608,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("un encuentro registrado dice cuántos vinieron de los posibles asistentes, y su detalle quién estuvo presente y quién ausente", async () => {
-      montar(almacenamientosConDeudaDeAna());
+      montar(almacenamientosConAnaInactiva());
       await navegarA("Historial");
 
       hacerClic("Ver", fila("Encuentro con 3/4 presentes"));
@@ -669,7 +626,7 @@ describe("VistaPrincipal", () => {
     });
 
     it("importar en un dispositivo nuevo lo exportado en otro reproduce los mismos participantes", async () => {
-      const { aplicacion: original } = montar(almacenamientosConDeudaDeAna());
+      const { aplicacion: original } = montar(almacenamientosConAnaInactiva());
       await navegarA("Historial");
       const exportado = await exportar();
       const almacenamientos = nuevosAlmacenamientos();
@@ -684,7 +641,7 @@ describe("VistaPrincipal", () => {
 
       expect(aplicacion.grupo().nombre()).toBe("Fútbol de los jueves");
       expect(nombresDeParticipantes(aplicacion)).toEqual(nombresDeParticipantes(original));
-      expect(aplicacion.grupo().participanteActivo("ana")?.estado()).toBe("en deuda");
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
       expect(textoDe(document.querySelector("h1")!)).toBe("Fútbol de los jueves");
     });
   });

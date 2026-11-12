@@ -4,7 +4,7 @@ import { formatoInvalido, lista, numero, objeto } from "./json/Campos.ts";
 import type { Desempate } from "../models/Desempate.ts";
 import type { Grupo } from "../models/Grupo.ts";
 
-const VERSION = 1;
+const VERSION = 2;
 
 export type BitacoraJson = { version: typeof VERSION; comandos: ComandoJson[] };
 

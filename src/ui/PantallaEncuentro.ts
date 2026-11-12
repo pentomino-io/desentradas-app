@@ -2,7 +2,7 @@ import { fechaYHora, monto } from "../app/Formato.ts";
 import type { PlanillaDeAsistencia } from "../app/PlanillaDeAsistencia.ts";
 import type { Participante } from "../models/Participante.ts";
 import { Dialogo } from "./Dialogo.ts";
-import { DialogoDeCobro } from "./DialogoDeCobro.ts";
+import { DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGarantia.ts";
 import { DialogoDeRegistro } from "./DialogoDeRegistro.ts";
 import { alerta, boton, botonDeEnvio, crear, fila, formulario, type Hijo, tablaOAviso } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
@@ -96,9 +96,7 @@ export class PantallaEncuentro {
 
   private _accionDe(participante: Participante): HTMLElement | false {
     const nombre = participante.nombre();
-    if (participante.soloLeFaltaPagarParaAsistir()) {
-      return boton("Cobrar y habilitar", () => this._abrirCobro(participante));
-    }
+    if (!participante.puedeAsistir()) return boton("Cobrar y habilitar", () => this._abrirCobro(nombre));
     if (!this._planillaDeAsistencia().asiste(nombre)) return false;
 
     const pendiente = this._entorno.grupo().caja().montoPendienteDe(nombre);
@@ -118,12 +116,8 @@ export class PantallaEncuentro {
     this._entorno.refrescar();
   }
 
-  private _abrirCobro(participante: Participante): void {
-    const nombre = participante.nombre();
-    const deuda = participante.deudaAl(this._entorno.ahora());
-    new DialogoDeCobro(this._entorno, nombre, deuda, (monto) =>
-      this._entorno.aplicacion().cobrarEnLaPuerta(nombre, monto, this._entorno.ahora()),
-    ).abrir();
+  private _abrirCobro(nombre: string): void {
+    new DialogoDeCobroDeGarantia(this._entorno, nombre, () => this._ingresar(nombre)).abrir();
   }
 
   private _repartir(nombre: string): void {
@@ -134,16 +128,11 @@ export class PantallaEncuentro {
   }
 
   private _abrirIngreso(): void {
-    new DialogoDeRegistro(this._entorno, "Vino alguien nuevo", (nombre) => this._ingresar(nombre.trim())).abrir();
+    new DialogoDeRegistro(this._entorno, "Vino alguien nuevo", (nombre) => this._ingresar(nombre)).abrir();
   }
 
   private _ingresar(nombre: string): void {
-    const participante = this._entorno.grupo().participanteActivo(nombre);
-    if (participante?.soloLeFaltaPagarParaReingresar()) {
-      this._abrirCobro(participante);
-    } else {
-      this._entorno.aplicacion().ingresarAsistente(nombre, this._entorno.ahora());
-    }
+    this._entorno.aplicacion().ingresarAsistente(nombre, this._entorno.ahora());
   }
 
   private _pedirConfirmacion(): void {

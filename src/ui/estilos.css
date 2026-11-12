@@ -297,17 +297,6 @@ dialog p:has(button) {
   text-align: center;
 }
 
-/* Los totales van separados por un punto medio. */
-main p > span + span::before {
-  content: "·";
-  margin-inline: 0.75rem;
-  color: var(--tinta);
-}
-
-.debe {
-  color: var(--negativo);
-}
-
 .a-favor {
   color: var(--positivo);
 }

@@ -1,17 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { CrearGrupo } from "../../src/app/comandos/CrearGrupo.ts";
 import { Ingresar } from "../../src/app/comandos/Ingresar.ts";
-import { Reingresar } from "../../src/app/comandos/Reingresar.ts";
+import { CobrarGarantia } from "../../src/app/comandos/CobrarGarantia.ts";
 import { RegistrarEncuentro } from "../../src/app/comandos/RegistrarEncuentro.ts";
-import { Cobrar } from "../../src/app/comandos/Cobrar.ts";
 import { Repartir } from "../../src/app/comandos/Repartir.ts";
 import { CambiarReglas } from "../../src/app/comandos/CambiarReglas.ts";
 import { comandoDesdeJson } from "../../src/app/json/ComandoJson.ts";
 import { reglasAJson } from "../../src/app/json/ReglasJson.ts";
-import { monto } from "../../src/app/Formato.ts";
 import { desempate, dia, nuevoEncuentro, nuevoGrupo, reglas } from "../models/factories.ts";
 
-const grupoConDeudaDeAna = () => {
+const grupoConAnaInactiva = () => {
   const grupo = nuevoGrupo();
   grupo.ingresar("ana", dia(1));
   grupo.ingresar("beto", dia(1));
@@ -100,7 +98,7 @@ describe("ComandoSobreElGrupo", () => {
     const resultado = comando.ejecutar(grupo, desempate);
 
     expect(resultado).toBe(grupo);
-    expect(grupo.participanteActivo("ana")).toBeDefined();
+    expect(grupo.participante("ana")).toBeDefined();
   });
 
   it("no tiene asistencia salvo que sea el registro de un encuentro", () => {
@@ -121,13 +119,13 @@ describe("ComandoSobreElGrupo", () => {
 });
 
 describe("Ingresar", () => {
-  it("deja a la persona como participante activo desde la fecha indicada", () => {
+  it("deja a la persona como participante del grupo desde la fecha indicada", () => {
     const grupo = nuevoGrupo();
     const comando = new Ingresar("ana", dia(1));
 
     comando.ejecutar(grupo, desempate);
 
-    const ana = grupo.participanteActivo("ana");
+    const ana = grupo.participante("ana");
     expect(ana?.historial().at(0)?.fecha()).toEqual(dia(1));
   });
 
@@ -151,37 +149,34 @@ describe("Ingresar", () => {
   });
 });
 
-describe("Reingresar", () => {
-  it("vuelve a dejar como participante activo a quien ya participó, desde la fecha indicada", () => {
-    const grupo = grupoConDeudaDeAna();
-    grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"], ausentes: ["ana"] })); // ana queda morosa
-    grupo.cobrar("ana", 1000, dia(10)); // y finalizada por pagar la morosidad
-    const [ana] = grupo.participantesFinalizados();
-    const comando = new Reingresar("ana", dia(11));
+describe("CobrarGarantia", () => {
+  it("le cobra la garantía a la persona en la fecha indicada", () => {
+    const grupo = grupoConAnaInactiva();
+    const comando = new CobrarGarantia("ana", dia(3));
 
     comando.ejecutar(grupo, desempate);
 
-    expect(grupo.participanteActivo("ana")).toBe(ana);
-    expect(ana.fechaDelUltimoCambio()).toEqual(dia(11));
+    expect(grupo.participante("ana")?.estado()).toBe("participando");
+    expect(grupo.participante("ana")?.fechaDelUltimoCambio()).toEqual(dia(3));
   });
 
   it("se convierte a JSON con el nombre y la fecha en formato ISO, y vuelve igual", () => {
-    const comando = new Reingresar("ana", dia(11));
+    const comando = new CobrarGarantia("ana", dia(3));
 
     const json = comando.aJson();
 
-    expect(json).toEqual({ tipo: "reingresar", nombre: "ana", fecha: dia(11).toISOString() });
+    expect(json).toEqual({ tipo: "cobrar garantía", nombre: "ana", fecha: dia(3).toISOString() });
     expect(comandoDesdeJson(json).aJson()).toEqual(json);
   });
 
   it("recuerda el nombre sin los espacios de los extremos, tanto al describirse como en JSON", () => {
-    const comando = new Reingresar(" ana  ", dia(11));
+    const comando = new CobrarGarantia(" ana  ", dia(3));
 
     const descripcion = comando.describir();
     const json = comando.aJson();
 
-    expect(descripcion).toBe("Reingresó ana");
-    expect(json).toEqual({ tipo: "reingresar", nombre: "ana", fecha: dia(11).toISOString() });
+    expect(descripcion).toBe("Se cobró la garantía a ana");
+    expect(json).toEqual({ tipo: "cobrar garantía", nombre: "ana", fecha: dia(3).toISOString() });
   });
 });
 
@@ -198,7 +193,7 @@ describe("RegistrarEncuentro", () => {
     expect(encuentro.fecha()).toEqual(dia(2));
     expect(encuentro.asistentes()).toEqual(new Set(["beto"]));
     expect(encuentro.ausentes()).toEqual(new Set(["ana"]));
-    expect(grupo.participanteActivo("ana")?.estado()).toBe("en deuda");
+    expect(grupo.participante("ana")?.estado()).toBe("inactivo");
   });
 
   it("recuerda la asistencia: quiénes vinieron y qué posibles asistentes no", () => {
@@ -224,32 +219,9 @@ describe("RegistrarEncuentro", () => {
   });
 });
 
-describe("Cobrar", () => {
-  it("registra el cobro a la persona por el monto y en la fecha indicados", () => {
-    const grupo = grupoConDeudaDeAna();
-    const comando = new Cobrar("ana", 400, dia(3));
-
-    comando.ejecutar(grupo, desempate);
-
-    expect(grupo.participanteActivo("ana")?.deudaAl(dia(3))).toBe(600);
-    const [cobro] = grupo.caja().cobros();
-    expect(cobro.fecha()).toEqual(dia(3));
-  });
-
-  it("se convierte a JSON con el nombre, el monto y la fecha en formato ISO, y vuelve igual", () => {
-    const comando = new Cobrar("ana", 400, dia(3));
-
-    const json = comando.aJson();
-
-    expect(json).toEqual({ tipo: "cobrar", nombre: "ana", monto: 400, fecha: dia(3).toISOString() });
-    expect(comandoDesdeJson(json).aJson()).toEqual(json);
-  });
-});
-
 describe("Repartir", () => {
   it("entrega los créditos pendientes de la persona en la fecha indicada", () => {
-    const grupo = grupoConDeudaDeAna();
-    grupo.cobrar("ana", 1000, dia(3));
+    const grupo = grupoConAnaInactiva();
     const comando = new Repartir("beto", dia(4));
 
     comando.ejecutar(grupo, desempate);
@@ -320,11 +292,11 @@ describe("Descripción de los comandos", () => {
     expect(comando.describir()).toBe("Ingresó ana");
   });
 
-  it("reingresar lleva la fecha de reingreso y se describe como que reingresó la persona", () => {
-    const comando = new Reingresar("ana", dia(11));
+  it("cobrar garantía lleva la fecha del cobro y se describe como que se le cobró la garantía a la persona", () => {
+    const comando = new CobrarGarantia("ana", dia(3));
 
-    expect(comando.fecha()).toEqual(dia(11));
-    expect(comando.describir()).toBe("Reingresó ana");
+    expect(comando.fecha()).toEqual(dia(3));
+    expect(comando.describir()).toBe("Se cobró la garantía a ana");
   });
 
   it("registrar encuentro lleva la fecha del encuentro y se describe como un encuentro con cuántos vinieron de los posibles asistentes", () => {
@@ -332,13 +304,6 @@ describe("Descripción de los comandos", () => {
 
     expect(comando.fecha()).toEqual(dia(2));
     expect(comando.describir()).toBe("Encuentro con 3/4 presentes");
-  });
-
-  it("cobrar lleva la fecha del cobro y se describe como que se le cobró el monto a la persona", () => {
-    const comando = new Cobrar("ana", 1000, dia(3));
-
-    expect(comando.fecha()).toEqual(dia(3));
-    expect(comando.describir()).toBe(`Se cobró ${monto(1000)} a ana`);
   });
 
   it("repartir lleva la fecha del reparto y se describe como que se le repartió a la persona", () => {

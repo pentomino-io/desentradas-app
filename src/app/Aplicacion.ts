@@ -4,9 +4,8 @@ import { PlanillaDeAsistencia } from "./PlanillaDeAsistencia.ts";
 import type { Comando } from "./Comando.ts";
 import { CrearGrupo } from "./comandos/CrearGrupo.ts";
 import { Ingresar } from "./comandos/Ingresar.ts";
-import { Reingresar } from "./comandos/Reingresar.ts";
+import { CobrarGarantia } from "./comandos/CobrarGarantia.ts";
 import { RegistrarEncuentro } from "./comandos/RegistrarEncuentro.ts";
-import { Cobrar } from "./comandos/Cobrar.ts";
 import { Repartir } from "./comandos/Repartir.ts";
 import { CambiarReglas } from "./comandos/CambiarReglas.ts";
 import type { Desempate } from "../models/Desempate.ts";
@@ -81,8 +80,8 @@ export class Aplicacion {
     this._ejecutar(new Ingresar(nombre, fecha));
   }
 
-  reingresar(nombre: string, fecha: Date): void {
-    this._ejecutar(new Reingresar(nombre, fecha));
+  cobrarGarantia(nombre: string, fecha: Date): void {
+    this._ejecutar(new CobrarGarantia(nombre, fecha));
   }
 
   registrarEncuentro(fecha: Date, asistentes: Iterable<string>, ausentes: Iterable<string>): void {
@@ -92,8 +91,8 @@ export class Aplicacion {
   ingresarAsistente(nombre: string, fecha: Date): void {
     const planilla = this.planillaDeAsistencia();
     const nombreLimpio = nombre.trim();
-    if (this.grupo().yaParticipo(nombreLimpio)) {
-      this.reingresar(nombreLimpio, fecha);
+    if (this.grupo().participante(nombreLimpio) !== undefined) {
+      this.cobrarGarantia(nombreLimpio, fecha);
     } else {
       this.ingresar(nombreLimpio, fecha);
     }
@@ -112,24 +111,6 @@ export class Aplicacion {
     const planilla = this.planillaDeAsistencia();
     this.registrarEncuentro(fecha, planilla.asistentes(), this.ausentesEnPlanillaDeAsistencia());
     this.descartarPlanillaDeAsistencia();
-  }
-
-  cobrar(nombre: string, monto: number, fecha: Date): void {
-    this._ejecutar(new Cobrar(nombre, monto, fecha));
-  }
-
-  cobrarYReingresar(nombre: string, monto: number, fecha: Date): void {
-    this._asertarQueSoloLeFaltaPagarParaReingresar(nombre);
-
-    this._cobrarYReingresarSiQuedaFinalizado(nombre, monto, fecha);
-  }
-
-  cobrarEnLaPuerta(nombre: string, monto: number, fecha: Date): void {
-    this._asertarQueSoloLeFaltaPagar(nombre);
-    const planilla = this.planillaDeAsistencia();
-
-    this._cobrarYReingresarSiQuedaFinalizado(nombre, monto, fecha);
-    if (this._puedeAsistir(nombre)) planilla.marcarComoPresente(nombre);
   }
 
   repartir(nombre: string, fecha: Date): void {
@@ -189,30 +170,7 @@ export class Aplicacion {
   }
 
   private _puedeAsistir(nombre: string): boolean {
-    return this.grupo().participanteActivo(nombre)?.puedeAsistir() ?? false;
-  }
-
-  // Sólo un moroso queda finalizado al pagar.
-  private _cobrarYReingresarSiQuedaFinalizado(nombre: string, monto: number, fecha: Date): void {
-    this.cobrar(nombre, monto, fecha);
-    if (this.grupo().participanteActivo(nombre) === undefined) this.reingresar(nombre, fecha);
-  }
-
-  private _asertarQueSoloLeFaltaPagarParaReingresar(nombre: string): void {
-    if (!this.grupo().participanteActivo(nombre)?.soloLeFaltaPagarParaReingresar()) {
-      throw new Error("Cobrar y reingresar sólo aplica a un moroso");
-    }
-  }
-
-  private _asertarQueSoloLeFaltaPagar(nombre: string): void {
-    const participante = this.grupo().participanteActivo(nombre);
-    if (
-      participante !== undefined &&
-      !participante.soloLeFaltaPagarParaAsistir() &&
-      !participante.soloLeFaltaPagarParaReingresar()
-    ) {
-      throw new Error(`Pagar en la puerta no habilita a ${nombre}`);
-    }
+    return this.grupo().participante(nombre)?.puedeAsistir() ?? false;
   }
 
   private _guardar(): void {

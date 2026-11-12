@@ -1,6 +1,3 @@
-import { Deuda } from "./Deuda.ts";
-import type { Encuentro } from "./Encuentro.ts";
-
 export class Reglas {
   private _rigeDesde: Date;
   private _toleranciaDeFaltas: number;
@@ -29,9 +26,5 @@ export class Reglas {
 
   superaLaTolerancia(faltas: number): boolean {
     return faltas > this._toleranciaDeFaltas;
-  }
-
-  deudaPorFaltarA(encuentro: Encuentro): Deuda {
-    return new Deuda(this._garantia, encuentro);
   }
 }

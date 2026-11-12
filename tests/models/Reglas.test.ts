@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Reglas } from "../../src/models/Reglas.ts";
-import { dia, nuevoEncuentro, reglas } from "./factories.ts";
+import { dia, reglas } from "./factories.ts";
 
 describe("Reglas", () => {
   it("la tolerancia de faltas debe ser al menos 1", () => {
@@ -28,15 +28,5 @@ describe("Reglas", () => {
 
     expect(lasReglas.superaLaTolerancia(2)).toBe(false);
     expect(lasReglas.superaLaTolerancia(3)).toBe(true);
-  });
-
-  it("la deuda por faltar a un encuentro es por la garantía", () => {
-    const lasReglas = reglas({ garantia: 1000 });
-    const encuentro = nuevoEncuentro();
-
-    const deuda = lasReglas.deudaPorFaltarA(encuentro);
-
-    expect(deuda.monto()).toBe(1000);
-    expect(deuda.encuentroFaltado()).toBe(encuentro);
   });
 });

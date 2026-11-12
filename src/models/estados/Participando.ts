@@ -1,27 +1,31 @@
-import type { Encuentro } from "../Encuentro.ts";
-import type { Reglas } from "../Reglas.ts";
-import { ConReglas } from "./ConReglas.ts";
-import type { Estado, NombreDeEstado } from "./Estado.ts";
-import { EnDeuda } from "./EnDeuda.ts";
+import { Estado, type NombreDeEstado } from "./Estado.ts";
+import { Inactivo } from "./Inactivo.ts";
 
-export class Participando extends ConReglas {
+export class Participando extends Estado {
+  private _garantia: number;
+
+  constructor(garantia: number) {
+    super();
+    this._garantia = garantia;
+  }
+
   nombre(): NombreDeEstado {
     return "participando";
   }
 
-  override voy(reglas: Reglas): Estado {
-    return new Participando(reglas);
+  override voy(): Estado {
+    return this;
   }
 
-  override falto(encuentro: Encuentro): Estado {
-    return new EnDeuda(this.reglas().deudaPorFaltarA(encuentro), this.reglas());
+  falto(): Estado {
+    return new Inactivo(1);
   }
 
   override puedeAsistir(): boolean {
     return true;
   }
 
-  override estaAlDia(): boolean {
-    return true;
+  override garantia(): number {
+    return this._garantia;
   }
 }

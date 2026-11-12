@@ -1,6 +1,7 @@
 import type { Cobro } from "./Cobro.ts";
 import { Credito } from "./Credito.ts";
 import type { Desempate } from "./Desempate.ts";
+import type { GarantiaPerdida } from "./GarantiaPerdida.ts";
 import type { Movimiento } from "./Movimiento.ts";
 import { Reparto } from "./Reparto.ts";
 
@@ -17,14 +18,12 @@ export class Caja {
     this._repartos = [];
   }
 
-  cobrar(cobro: Cobro): readonly Credito[] {
-    const origen = cobro.origen();
-    if (origen !== "efectivo") this._consumir(origen, cobro.monto());
-
-    const creditos = this._distribuirEnCreditos(cobro);
+  cobrar(cobro: Cobro): void {
     this._cobros.push(cobro);
-    this._creditosPendientes.push(...creditos);
-    return creditos;
+  }
+
+  distribuir(garantiaPerdida: GarantiaPerdida): void {
+    this._creditosPendientes.push(...this._creditosPorDistribuir(garantiaPerdida));
   }
 
   repartir(nombre: string, fecha: Date): Reparto {
@@ -37,17 +36,12 @@ export class Caja {
     return reparto;
   }
 
-  cobros(): readonly Cobro[] {
-    return this._cobros;
-  }
-
   repartos(): readonly Reparto[] {
     return this._repartos;
   }
 
   movimientos(): readonly Movimiento[] {
-    const cobrosEnEfectivo = this._cobros.filter((cobro) => cobro.esEnEfectivo());
-    return [...cobrosEnEfectivo, ...this._repartos].sort((uno, otro) => uno.fecha().getTime() - otro.fecha().getTime());
+    return [...this._cobros, ...this._repartos].sort((uno, otro) => uno.fecha().getTime() - otro.fecha().getTime());
   }
 
   movimientoPosteriorA(fecha: Date): Movimiento | undefined {
@@ -70,21 +64,12 @@ export class Caja {
     return [...new Set(this._creditosPendientes.map((credito) => credito.acreedor()))];
   }
 
-  private _distribuirEnCreditos(cobro: Cobro): Credito[] {
-    const asistentes = this._desempate.ordenar(cobro.encuentroFaltado().asistentes(), cobro);
-    const parte = Math.floor(cobro.monto() / asistentes.length);
-    const sobrante = cobro.monto() % asistentes.length;
+  private _creditosPorDistribuir(garantiaPerdida: GarantiaPerdida): Credito[] {
+    const asistentes = this._desempate.ordenar(garantiaPerdida.encuentroFaltado().asistentes(), garantiaPerdida);
+    const parte = Math.floor(garantiaPerdida.monto() / asistentes.length);
+    const sobrante = garantiaPerdida.monto() % asistentes.length;
     return asistentes
       .map((nombre, posicion) => new Credito(nombre, parte + (posicion < sobrante ? 1 : 0)))
       .filter((credito) => credito.monto() > 0);
-  }
-
-  private _consumir(credito: Credito, monto: number): void {
-    const posicion = this._creditosPendientes.indexOf(credito);
-    if (posicion === -1) throw new Error("El crédito no está pendiente en esta caja");
-
-    const resto = credito.monto() - monto;
-    const restoPendiente = resto > 0 ? [new Credito(credito.acreedor(), resto)] : [];
-    this._creditosPendientes.splice(posicion, 1, ...restoPendiente);
   }
 }

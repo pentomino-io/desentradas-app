@@ -1,26 +1,26 @@
-import type { Cobro } from "./Cobro.ts";
+import type { GarantiaPerdida } from "./GarantiaPerdida.ts";
 
-// Ordena a los asistentes de un cobro: los primeros reciben un peso más del sobrante.
+// Ordena a los asistentes entre quienes se distribuye una garantía perdida: los primeros reciben un peso más del sobrante.
 export interface Desempate {
-  ordenar(nombres: Iterable<string>, cobro: Cobro): string[];
+  ordenar(nombres: Iterable<string>, garantiaPerdida: GarantiaPerdida): string[];
 }
 
 export class DesempateAlfabetico implements Desempate {
-  ordenar(nombres: Iterable<string>, _cobro: Cobro): string[] {
+  ordenar(nombres: Iterable<string>, _garantiaPerdida: GarantiaPerdida): string[] {
     return [...nombres].sort();
   }
 }
 
 export class DesempateAleatorioReproducible implements Desempate {
-  ordenar(nombres: Iterable<string>, cobro: Cobro): string[] {
-    const datos = this._datosDe(cobro);
+  ordenar(nombres: Iterable<string>, garantiaPerdida: GarantiaPerdida): string[] {
+    const datos = this._datosDe(garantiaPerdida);
     const puntajeDe = (nombre: string) => cyrb53(`${datos}|${nombre}`);
     return [...nombres].sort((uno, otro) => puntajeDe(uno) - puntajeDe(otro));
   }
 
-  private _datosDe(cobro: Cobro): string {
-    const encuentroFaltado = cobro.encuentroFaltado();
-    return [cobro.deudor(), cobro.fecha().getTime(), cobro.monto(), encuentroFaltado.fecha().getTime()].join("|");
+  private _datosDe(garantiaPerdida: GarantiaPerdida): string {
+    const encuentroFaltado = garantiaPerdida.encuentroFaltado();
+    return [garantiaPerdida.persona(), encuentroFaltado.fecha().getTime(), garantiaPerdida.monto()].join("|");
   }
 }
 

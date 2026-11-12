@@ -1,8 +1,6 @@
 import type { Estado, NombreDeEstado } from "./estados/Estado.ts";
 
-export type Accion = "voy" | "falto" | "pago" | "reingresar";
-
-export type Disparador = "ingreso" | Accion;
+export type Disparador = "ingreso" | "voy" | "falto" | "cobro de garantía";
 
 export class Transicion {
   private _fecha: Date;
@@ -29,9 +27,5 @@ export class Transicion {
 
   estado(): NombreDeEstado {
     return this._hacia.nombre();
-  }
-
-  iniciaParticipacion(): boolean {
-    return this._disparador === "ingreso" || this._disparador === "reingresar";
   }
 }
