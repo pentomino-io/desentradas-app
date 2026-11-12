@@ -25,8 +25,8 @@ export class Participando extends Estado {
     return new Participando(garantia);
   }
 
-  override puedeAsistir(): boolean {
-    return true;
+  override puedeAsistir(garantiaVigente: number): boolean {
+    return this._garantia >= garantiaVigente;
   }
 
   override garantia(): number {

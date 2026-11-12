@@ -53,8 +53,8 @@ export class Participante {
     return this._ultimaTransicion().fecha();
   }
 
-  puedeAsistir(): boolean {
-    return this._estado().puedeAsistir();
+  puedeAsistir(garantiaVigente: number): boolean {
+    return this._estado().puedeAsistir(garantiaVigente);
   }
 
   garantia(): number {

@@ -111,6 +111,10 @@ export class Grupo {
     return this._participantes.filter((participante) => !this._esPosibleAsistente(participante));
   }
 
+  puedeAsistir(participante: Participante): boolean {
+    return participante.puedeAsistir(this.reglas().garantia());
+  }
+
   saldos(): readonly Saldo[] {
     return this._caja
       .nombresConCreditosPendientes()
@@ -146,7 +150,7 @@ export class Grupo {
   private _asertarQuePuedenAsistir(encuentro: Encuentro): void {
     for (const nombre of encuentro.asistentes()) {
       const participante = this._participanteLlamado(nombre);
-      if (!participante.puedeAsistir()) throw new Error(`${nombre} no puede asistir`);
+      if (!this.puedeAsistir(participante)) throw new Error(`${nombre} no puede asistir`);
     }
   }
 

@@ -19,7 +19,7 @@ export abstract class Estado {
     return this;
   }
 
-  puedeAsistir(): boolean {
+  puedeAsistir(_garantiaVigente: number): boolean {
     return false;
   }
 

@@ -88,7 +88,7 @@ export class PantallaEncuentro {
       value: nombre,
       "aria-label": `Asiste ${nombre}`,
       checked: this._planillaDeAsistencia().asiste(nombre),
-      disabled: !participante.puedeAsistir(),
+      disabled: !this._entorno.grupo().puedeAsistir(participante),
       onchange: () => this._marcar(nombre, casilla.checked),
     });
     return fila(casilla, nombre, participante.estado(), this._accionDe(participante));
@@ -96,7 +96,8 @@ export class PantallaEncuentro {
 
   private _accionDe(participante: Participante): HTMLElement | false {
     const nombre = participante.nombre();
-    if (!participante.puedeAsistir()) return boton("Cobrar garantía y habilitar", () => this._abrirCobro(nombre));
+    if (!this._entorno.grupo().puedeAsistir(participante))
+      return boton("Cobrar garantía y habilitar", () => this._abrirCobro(nombre));
     if (!this._planillaDeAsistencia().asiste(nombre)) return false;
 
     const pendiente = this._entorno.grupo().caja().montoPendienteDe(nombre);

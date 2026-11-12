@@ -1,3 +1,4 @@
+import type { Grupo } from "../models/Grupo.ts";
 import type { Participante } from "../models/Participante.ts";
 import { DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGarantia.ts";
 import { DialogoDeRegistro } from "./DialogoDeRegistro.ts";
@@ -7,16 +8,18 @@ import { porNombre } from "./Orden.ts";
 
 const ultimoCambioDe = (participante: Participante) => participante.fechaDelUltimoCambio().getTime();
 
-const porAtencionYNombre = (uno: Participante, otro: Participante): number => {
-  const unoParticipa = uno.puedeAsistir();
-  const otroParticipa = otro.puedeAsistir();
-  if (unoParticipa !== otroParticipa) return unoParticipa ? 1 : -1;
-  if (!unoParticipa && ultimoCambioDe(uno) !== ultimoCambioDe(otro)) {
-    return ultimoCambioDe(otro) - ultimoCambioDe(uno);
-  }
+const porAtencionYNombre =
+  (grupo: Grupo) =>
+  (uno: Participante, otro: Participante): number => {
+    const unoParticipa = grupo.puedeAsistir(uno);
+    const otroParticipa = grupo.puedeAsistir(otro);
+    if (unoParticipa !== otroParticipa) return unoParticipa ? 1 : -1;
+    if (!unoParticipa && ultimoCambioDe(uno) !== ultimoCambioDe(otro)) {
+      return ultimoCambioDe(otro) - ultimoCambioDe(uno);
+    }
 
-  return porNombre(uno, otro);
-};
+    return porNombre(uno, otro);
+  };
 
 export class PantallaParticipantes {
   private _entorno: Entorno;
@@ -36,7 +39,8 @@ export class PantallaParticipantes {
   }
 
   private _tablaDeActivos(): Hijo[] {
-    const activos = this._entorno.grupo().posiblesAsistentes().toSorted(porAtencionYNombre);
+    const grupo = this._entorno.grupo();
+    const activos = grupo.posiblesAsistentes().toSorted(porAtencionYNombre(grupo));
     return tablaOAviso(
       "Participaciones activas",
       ["Nombre", "Estado"],
@@ -52,7 +56,7 @@ export class PantallaParticipantes {
 
   private _estadoConFaltas(participante: Participante): string {
     const estado = participante.estado();
-    if (participante.puedeAsistir()) return estado;
+    if (this._entorno.grupo().puedeAsistir(participante)) return estado;
 
     const tolerancia = this._entorno.grupo().reglas().toleranciaDeFaltas();
     return `${estado} (${participante.faltas()}/${tolerancia} faltas)`;

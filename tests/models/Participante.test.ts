@@ -17,7 +17,15 @@ describe("Participante", () => {
       expect(ana.estado()).toBe("participando");
       expect(ana.garantia()).toBe(1500);
       expect(ana.faltas()).toBe(0);
-      expect(ana.puedeAsistir()).toBe(true);
+      expect(ana.puedeAsistir(1500)).toBe(true);
+    });
+
+    it("con una garantía menor a la vigente no está habilitado para asistir", () => {
+      const ana = nuevoParticipante(1000);
+
+      const puedeAsistir = ana.puedeAsistir(1500);
+
+      expect(puedeAsistir).toBe(false);
     });
 
     it("ir a un encuentro lo mantiene participando con la misma garantía", () => {
@@ -78,7 +86,7 @@ describe("Participante", () => {
     it("no está habilitado para asistir", () => {
       const ana = inactivo();
 
-      expect(ana.puedeAsistir()).toBe(false);
+      expect(ana.puedeAsistir(1000)).toBe(false);
     });
 
     it("no puede ir a un encuentro", () => {

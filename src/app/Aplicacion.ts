@@ -172,7 +172,8 @@ export class Aplicacion {
   }
 
   private _puedeAsistir(nombre: string): boolean {
-    return this.grupo().participante(nombre)?.puedeAsistir() ?? false;
+    const participante = this.grupo().participante(nombre);
+    return participante !== undefined && this.grupo().puedeAsistir(participante);
   }
 
   private _guardar(): void {

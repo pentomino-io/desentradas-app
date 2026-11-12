@@ -44,7 +44,7 @@ export class DialogoDeRegistro {
     const participante = this._entorno.grupo().participante(nombre);
     if (participante === undefined) {
       this._ingresar(nombre);
-    } else if (participante.puedeAsistir()) {
+    } else if (this._entorno.grupo().puedeAsistir(participante)) {
       throw new Error(pedidoDeOtroNombre(nombre));
     } else {
       this._preguntarSiEsLaMismaPersona(nombre);
