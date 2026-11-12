@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AlmacenamientoEnMemoria } from "../../src/app/AlmacenamientoEnMemoria.ts";
+import { VersionAnterior } from "../../src/app/Bitacora.ts";
 import { CrearGrupo } from "../../src/app/comandos/CrearGrupo.ts";
 import { CobrarGarantia } from "../../src/app/comandos/CobrarGarantia.ts";
 import { Ingresar } from "../../src/app/comandos/Ingresar.ts";
@@ -66,20 +67,30 @@ describe("Aplicacion", () => {
 
       expect(aplicacion.tieneGrupo()).toBe(true);
       expect(aplicacion.grupo().nombre()).toBe("Fútbol de los jueves");
-      expect(aplicacion.avisoDeInicio()).toBeUndefined();
+      expect(aplicacion.errorDeCarga()).toBeUndefined();
     });
 
-    it("si lo guardado no se puede leer, se empieza sin grupo y se avisa que se ignoró", () => {
+    it("si lo guardado no se puede leer, se empieza sin grupo y se recuerda por qué", () => {
       const almacenamiento = new AlmacenamientoEnMemoria();
       almacenamiento.guardar("esto no es JSON");
 
       const aplicacion = nuevaAplicacion({ bitacora: almacenamiento });
 
       expect(aplicacion.tieneGrupo()).toBe(false);
-      expect(aplicacion.avisoDeInicio()).toBe("Los datos guardados no se pudieron leer y se ignoraron");
+      expect(aplicacion.errorDeCarga()?.message).toBe("Formato inválido: el texto no es JSON");
     });
 
-    it("si lo guardado tiene un comando que el grupo rechaza, se empieza sin grupo y se avisa que se ignoró", () => {
+    it("si lo guardado es de una versión anterior, se empieza sin grupo y se recuerda que es de esa versión", () => {
+      const almacenamiento = new AlmacenamientoEnMemoria();
+      almacenamiento.guardar(JSON.stringify({ version: 1, comandos: [] }));
+
+      const aplicacion = nuevaAplicacion({ bitacora: almacenamiento });
+
+      expect(aplicacion.tieneGrupo()).toBe(false);
+      expect(aplicacion.errorDeCarga()).toBeInstanceOf(VersionAnterior);
+    });
+
+    it("si lo guardado tiene un comando que el grupo rechaza, se empieza sin grupo y se recuerda por qué", () => {
       const almacenamiento = new AlmacenamientoEnMemoria();
       almacenamiento.guardar(
         JSON.stringify({
@@ -91,7 +102,7 @@ describe("Aplicacion", () => {
       const aplicacion = nuevaAplicacion({ bitacora: almacenamiento });
 
       expect(aplicacion.tieneGrupo()).toBe(false);
-      expect(aplicacion.avisoDeInicio()).toBe("Los datos guardados no se pudieron leer y se ignoraron");
+      expect(aplicacion.errorDeCarga()?.message).toBe("El grupo no está creado");
     });
 
     it("un comando que el grupo rechaza no modifica lo guardado", () => {

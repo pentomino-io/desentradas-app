@@ -250,6 +250,29 @@ describe("VistaPrincipal", () => {
       expect(textoDe(campoDeGarantia)).toContain(explicacionDeLaGarantia);
     });
 
+    it.each([
+      {
+        caso: "son de una versión anterior",
+        guardado: JSON.stringify({ version: 1, comandos: [] }),
+        aviso:
+          "Los datos guardados son de una versión anterior de la app, sin garantías, y no se pueden usar. Creá el grupo de nuevo.",
+      },
+      {
+        caso: "no se pueden leer",
+        guardado: "esto no es JSON",
+        aviso:
+          "Los datos guardados no se pudieron leer. Si tenés una copia de seguridad, importala; si no, creá el grupo de nuevo.",
+      },
+    ])("si los datos guardados $caso, el formulario inicial dice qué hacer", ({ guardado, aviso }) => {
+      const almacenamientos = nuevosAlmacenamientos();
+      almacenamientos.bitacora.guardar(guardado);
+
+      montar(almacenamientos);
+
+      expect(pantallaActual()).toBe("Crear el grupo");
+      expect(hayElementoConTexto("[role=alert]", aviso)).toBe(true);
+    });
+
     it("deshacer la creación del grupo vuelve al formulario inicial con lo que se había cargado", async () => {
       const almacenamientos = nuevosAlmacenamientos();
       nuevaAplicacion(almacenamientos).crearGrupo(
@@ -1097,17 +1120,21 @@ describe("VistaPrincipal", () => {
     });
 
     it.each([
-      [
-        1,
-        "Esta copia de seguridad es de una versión anterior de la app, sin garantías, y no se puede importar. No se cambió nada.",
-      ],
-      [
-        3,
-        "Esta copia de seguridad es de una versión más nueva de la app. Recargá la página para actualizarla e intentá de nuevo. No se cambió nada.",
-      ],
+      {
+        caso: "anterior",
+        version: 1,
+        explicacion:
+          "Esta copia de seguridad es de una versión anterior de la app, sin garantías, y no se puede importar. No se cambió nada.",
+      },
+      {
+        caso: "más nueva",
+        version: 3,
+        explicacion:
+          "Esta copia de seguridad es de una versión más nueva de la app. Recargá la página para actualizarla e intentá de nuevo. No se cambió nada.",
+      },
     ])(
-      "no se puede importar una copia de seguridad de la versión %i de la bitácora, y se explica por qué",
-      async (version, explicacion) => {
+      "no se puede importar una copia de seguridad de una versión $caso de la app, y se explica por qué",
+      async ({ version, explicacion }) => {
         montar(almacenamientosConGrupoSinParticipantes());
         await navegarA("Historial");
         elegirArchivo("Importar", JSON.stringify({ version, comandos: [] }));

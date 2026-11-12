@@ -19,7 +19,7 @@ export class Aplicacion {
   private _almacenamientoDePlanilla: Almacenamiento;
   private _planillaDeAsistencia: PlanillaDeAsistencia | undefined;
   private _bitacora: Bitacora;
-  private _avisoDeInicio: string | undefined;
+  private _errorDeCarga: Error | undefined;
   private _creacionDeshecha: CrearGrupo | undefined;
 
   constructor(almacenamiento: Almacenamiento, desempate: Desempate, almacenamientoDePlanilla: Almacenamiento) {
@@ -28,7 +28,7 @@ export class Aplicacion {
     this._almacenamientoDePlanilla = almacenamientoDePlanilla;
     this._planillaDeAsistencia = PlanillaDeAsistencia.guardadaEn(almacenamientoDePlanilla);
     this._bitacora = new Bitacora(desempate);
-    this._avisoDeInicio = undefined;
+    this._errorDeCarga = undefined;
     this._creacionDeshecha = undefined;
     this._cargarLaBitacoraGuardada();
     if (!this.tieneGrupo()) this.descartarPlanillaDeAsistencia();
@@ -42,8 +42,8 @@ export class Aplicacion {
     return this._bitacora.grupo();
   }
 
-  avisoDeInicio(): string | undefined {
-    return this._avisoDeInicio;
+  errorDeCarga(): Error | undefined {
+    return this._errorDeCarga;
   }
 
   tienePlanillaDeAsistencia(): boolean {
@@ -188,8 +188,8 @@ export class Aplicacion {
 
     try {
       this._bitacora = this._bitacoraDesde(texto);
-    } catch {
-      this._avisoDeInicio = "Los datos guardados no se pudieron leer y se ignoraron";
+    } catch (error) {
+      this._errorDeCarga = error instanceof Error ? error : new Error(String(error));
     }
   }
 

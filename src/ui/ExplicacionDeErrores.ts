@@ -10,3 +10,8 @@ export const explicacionDeLaImportacionFallida = (error: unknown): string => {
 
   return "El archivo no es una copia de seguridad de Desentradas, o está dañado. No se cambió nada.";
 };
+
+export const explicacionDeLaCargaFallida = (error: Error): string =>
+  error instanceof VersionAnterior
+    ? "Los datos guardados son de una versión anterior de la app, sin garantías, y no se pueden usar. Creá el grupo de nuevo."
+    : "Los datos guardados no se pudieron leer. Si tenés una copia de seguridad, importala; si no, creá el grupo de nuevo.";

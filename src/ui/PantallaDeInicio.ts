@@ -1,6 +1,7 @@
 import { campoDeTexto } from "./Campos.ts";
 import { alerta, botonDeEnvio, crear, formulario, valorDe } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
+import { explicacionDeLaCargaFallida } from "./ExplicacionDeErrores.ts";
 import { camposDeReglas, explicacionDeLaGarantia, reglasDesde } from "./FormularioDeReglas.ts";
 
 export class PantallaDeInicio {
@@ -13,13 +14,13 @@ export class PantallaDeInicio {
   }
 
   elemento(): HTMLElement {
-    const aviso = this._entorno.aplicacion().avisoDeInicio();
+    const errorDeCarga = this._entorno.aplicacion().errorDeCarga();
     const creacionAnterior = this._entorno.aplicacion().creacionDeshecha();
     return crear(
       "section",
       {},
       crear("h2", {}, "Crear el grupo"),
-      aviso !== undefined && crear("p", { role: "alert" }, aviso),
+      errorDeCarga !== undefined && crear("p", { role: "alert" }, explicacionDeLaCargaFallida(errorDeCarga)),
       formulario(
         (completado) => this._crearGrupo(completado),
         campoDeTexto("Nombre del grupo", "nombreDelGrupo", creacionAnterior?.nombreDelGrupo() ?? ""),
