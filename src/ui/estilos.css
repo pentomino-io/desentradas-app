@@ -248,9 +248,8 @@ td > span:has(> button + button) {
         grid-row: 2;
         font-size: 0.85em;
 
-        & + td:not(:has(button))::before {
-          content: "·";
-          margin-right: 0.75rem;
+        & + td:not(:has(button)) {
+          margin-left: 0.75rem;
         }
       }
     }
