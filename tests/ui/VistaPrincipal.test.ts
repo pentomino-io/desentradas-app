@@ -611,7 +611,7 @@ describe("VistaPrincipal", () => {
       casillaDeAsistencia("beto").click();
 
       hacerClic("Descartar");
-      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("¿Descartar registro del encuentro?");
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("¿Descartar el encuentro empezado?");
       expect(textoDe(dialogoAbierto())).toContain("Se van a perder las marcas de asistencia.");
       hacerClic("Sí, descartar", dialogoAbierto());
 
@@ -891,7 +891,7 @@ describe("VistaPrincipal", () => {
 
       expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("¿Deshacer el encuentro?");
       expect(textoDe(dialogoAbierto())).toContain(
-        "Hay una planilla de asistencia empezada. Se va a reemplazar por la del encuentro deshecho.",
+        "Hay un encuentro empezado. Sus marcas de asistencia se van a reemplazar por las del encuentro deshecho.",
       );
       expect(aplicacion.grupo().encuentros()).toHaveLength(1);
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual(["beto"]);

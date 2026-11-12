@@ -102,7 +102,13 @@ export class PantallaHistorial {
       new Dialogo(
         this._entorno,
         "¿Deshacer el encuentro?",
-        [crear("p", {}, "Hay una planilla de asistencia empezada. Se va a reemplazar por la del encuentro deshecho.")],
+        [
+          crear(
+            "p",
+            {},
+            "Hay un encuentro empezado. Sus marcas de asistencia se van a reemplazar por las del encuentro deshecho.",
+          ),
+        ],
         "Sí, deshacer",
         () => this._entorno.deshacer(),
       )
