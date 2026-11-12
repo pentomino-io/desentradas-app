@@ -871,7 +871,7 @@ describe("VistaPrincipal", () => {
       expect([...versiones.querySelectorAll("th")].map(textoDe)).toEqual(["Desde", "Tolerancia", "Garantía"]);
     });
 
-    it("cambiar las reglas pide confirmar antes quiénes deben completar la garantía y quiénes reciben un crédito", async () => {
+    it("cambiar las reglas pide confirmar antes el cambio, quiénes deben completar la garantía para poder asistir y quiénes reciben un crédito", async () => {
       const almacenamientos = almacenamientosConGarantiasIncompletas();
       nuevaAplicacion(almacenamientos).ingresar("eli", dia(3));
       const { aplicacion } = montar(almacenamientos);
@@ -881,7 +881,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Cambiar reglas");
 
       expect(textoDe(dialogoAbierto())).toContain(
-        "beto, carla y dani deben completar $ 200; eli recibe un crédito de $ 300.",
+        "La garantía pasa de $ 1.500 a $ 1.200. beto, carla y dani deben completar $ 200; hasta entonces no pueden asistir. eli recibe un crédito de $ 300.",
       );
       expect(aplicacion.grupo().reglas().garantia()).toBe(1500);
     });
@@ -894,7 +894,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Cambiar reglas");
 
       expect(textoDe(dialogoAbierto())).toContain(
-        "carla y dani deben completar $ 334; beto debe completar $ 334, que puede cubrir con su crédito.",
+        "carla y dani deben completar $ 334; hasta entonces no pueden asistir. beto debe completar $ 334, que puede cubrir con su crédito; hasta entonces no puede asistir.",
       );
     });
 
@@ -905,7 +905,18 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Cambiar reglas");
 
-      expect(textoDe(dialogoAbierto())).toContain("No cambia la plata de nadie.");
+      expect(textoDe(dialogoAbierto())).toContain(
+        "La tolerancia de faltas pasa de 2 a 3. No cambia la plata de nadie.",
+      );
+    });
+
+    it("cambiar las reglas por otras iguales avisa que quedan iguales", async () => {
+      montar(almacenamientosConGarantiasIncompletas());
+      await navegarA("Reglas");
+
+      hacerClic("Cambiar reglas");
+
+      expect(textoDe(dialogoAbierto().querySelector("p")!)).toBe("Las reglas quedan iguales.");
     });
 
     it("la garantía se explica junto a su valor vigente, y no otra vez en el campo para cambiarla", async () => {

@@ -1,4 +1,5 @@
 import { fechaYHora, monto } from "../app/Formato.ts";
+import type { Grupo } from "../models/Grupo.ts";
 import type { Reglas } from "../models/Reglas.ts";
 import type { CambioDeGarantia } from "../models/CambioDeGarantia.ts";
 import { Dialogo } from "./Dialogo.ts";
@@ -15,17 +16,17 @@ const enumeracion = (nombres: readonly string[]): string => formatoDeEnumeracion
 const efecto = (nombres: readonly string[], cambio: CambioDeGarantia): string => {
   const varios = nombres.length > 1;
   if (cambio.monto() > 0) {
-    return `${enumeracion(nombres)} ${varios ? "reciben" : "recibe"} un crédito de ${monto(cambio.monto())}`;
+    return `${enumeracion(nombres)} ${varios ? "reciben" : "recibe"} un crédito de ${monto(cambio.monto())}.`;
   }
 
   const deuda = `${enumeracion(nombres)} ${varios ? "deben" : "debe"} completar ${monto(-cambio.monto())}`;
-  return cambio.loCubrenSusCreditos()
-    ? `${deuda}, ${varios ? "que pueden cubrir con sus créditos" : "que puede cubrir con su crédito"}`
-    : deuda;
+  const cobertura = varios ? ", que pueden cubrir con sus créditos" : ", que puede cubrir con su crédito";
+  const consecuencia = varios ? "hasta entonces no pueden asistir" : "hasta entonces no puede asistir";
+  return `${deuda}${cambio.loCubrenSusCreditos() ? cobertura : ""}; ${consecuencia}.`;
 };
 
-const descripcionDe = (efectos: readonly CambioDeGarantia[]): string => {
-  if (efectos.length === 0) return "No cambia la plata de nadie.";
+const efectosEnLaPlata = (efectos: readonly CambioDeGarantia[]): string[] => {
+  if (efectos.length === 0) return ["No cambia la plata de nadie."];
 
   const grupos = new Map<string, CambioDeGarantia[]>();
   const ordenados = efectos.toSorted(
@@ -35,10 +36,27 @@ const descripcionDe = (efectos: readonly CambioDeGarantia[]): string => {
     const clave = `${cambio.monto()} ${cambio.loCubrenSusCreditos()}`;
     grupos.set(clave, [...(grupos.get(clave) ?? []), cambio]);
   }
-  const frases = [...grupos.values()].map((cambios) =>
+  return [...grupos.values()].map((cambios) =>
     efecto(cambios.map((cambio) => cambio.nombre()).toSorted(alfabetico), cambios[0]),
   );
-  return `${frases.join("; ")}.`;
+};
+
+const cambiosEntre = (vigentes: Reglas, nuevas: Reglas): string[] => {
+  const cambios = [];
+  if (nuevas.toleranciaDeFaltas() !== vigentes.toleranciaDeFaltas()) {
+    cambios.push(`La tolerancia de faltas pasa de ${vigentes.toleranciaDeFaltas()} a ${nuevas.toleranciaDeFaltas()}.`);
+  }
+  if (nuevas.garantia() !== vigentes.garantia()) {
+    cambios.push(`La garantía pasa de ${monto(vigentes.garantia())} a ${monto(nuevas.garantia())}.`);
+  }
+  return cambios;
+};
+
+const descripcionDelCambio = (grupo: Grupo, reglas: Reglas): string => {
+  const cambios = cambiosEntre(grupo.reglas(), reglas);
+  if (cambios.length === 0) return "Las reglas quedan iguales.";
+
+  return [...cambios, ...efectosEnLaPlata(grupo.efectosDeCambiarLasReglas(reglas))].join(" ");
 };
 
 export class PantallaReglas {
@@ -87,8 +105,8 @@ export class PantallaReglas {
   }
 
   private _confirmarCambio(reglas: Reglas): void {
-    const efectos = this._entorno.grupo().efectosDeCambiarLasReglas(reglas);
-    new Dialogo(this._entorno, "Cambiar reglas", [crear("p", {}, descripcionDe(efectos))], "Confirmar", () =>
+    const descripcion = descripcionDelCambio(this._entorno.grupo(), reglas);
+    new Dialogo(this._entorno, "Cambiar reglas", [crear("p", {}, descripcion)], "Confirmar", () =>
       this._entorno.aplicacion().cambiarReglas(reglas),
     ).abrir();
   }
