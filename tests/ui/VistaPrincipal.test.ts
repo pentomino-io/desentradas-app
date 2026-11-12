@@ -302,7 +302,7 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Registrar", dialogoAbierto());
       expect(textoDe(dialogoAbierto())).toContain(
-        "Ya hay alguien con el nombre ana. ¿Es la misma persona? Si es ella, se le cobra la garantía de $ 1.000.",
+        "Ya hay alguien con el nombre ana. ¿Es la misma persona? En ese caso, se le cobra la garantía de $ 1.000.",
       );
       hacerClic("Sí", dialogoAbierto());
 
