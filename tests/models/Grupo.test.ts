@@ -343,6 +343,17 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "cobro", "ana", 500]);
     });
 
+    it("cobrarle la garantía a quien la tiene incompleta usa primero sus créditos pendientes para la diferencia", () => {
+      const { grupo, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 2500 }));
+
+      grupo.cobrarGarantia("beto", dia(4));
+
+      expect(grupo.puedeAsistir(beto)).toBe(true);
+      expect(grupo.caja().montoPendienteDe("beto")).toBe(0);
+      expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "cobro", "beto", 500]);
+    });
+
     it("cobrarle la garantía a quien tiene créditos pendientes que la cubren toda no cobra nada en efectivo y le deja el resto del crédito", () => {
       const { grupo, ana } = grupoConAnaInactivaConCreditos();
       grupo.cambiarReglas(reglas({ rigeDesde: dia(4), garantia: 400 }));

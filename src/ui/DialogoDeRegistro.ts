@@ -1,7 +1,8 @@
 import { campoDeTexto } from "./Campos.ts";
 import { Dialogo } from "./Dialogo.ts";
 import type { Participante } from "../models/Participante.ts";
-import { avisoDeGarantia, montoConCreditos } from "./DialogoDeCobroDeGarantia.ts";
+import { monto } from "../app/Formato.ts";
+import { avisoDeGarantia, laCubrenSusCreditos, parteDeCreditos } from "./DialogoDeCobroDeGarantia.ts";
 import { crear, valorDe } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 
@@ -52,11 +53,20 @@ export class DialogoDeRegistro {
     }
   }
 
+  private _cobroA(participante: Participante): string {
+    const grupo = this._entorno.grupo();
+    const garantia = grupo.garantiaPorCobrarA(participante);
+    if (laCubrenSusCreditos(grupo, participante)) {
+      return `la garantía de ${monto(garantia)} la cubren sus créditos: no hay que cobrarle nada.`;
+    }
+
+    return `se le cobra la garantía de ${monto(garantia)}${parteDeCreditos(grupo, participante)}.`;
+  }
+
   private _preguntarSiEsLaMismaPersona(participante: Participante): void {
     const nombre = participante.nombre();
     const pregunta = `${yaHayAlguien(nombre)} ¿Es la misma persona?`;
-    const garantia = montoConCreditos(this._entorno.grupo(), participante);
-    const cobro = `En ese caso, se le cobra la garantía de ${garantia}.`;
+    const cobro = `En ese caso, ${this._cobroA(participante)}`;
     new Dialogo(this._entorno, this._titulo, [crear("p", {}, `${pregunta} ${cobro}`)], "Sí", () =>
       this._cobrarGarantia(nombre),
     )
