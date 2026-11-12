@@ -44,6 +44,15 @@ const almacenamientosConGarantiasIncompletas = () => {
   return almacenamientos;
 };
 
+const almacenamientosConAnaInactivaConCreditos = () => {
+  const almacenamientos = almacenamientosConGrupoSinParticipantes();
+  const aplicacion = nuevaAplicacion(almacenamientos);
+  ["ana", "beto", "carla"].forEach((nombre) => aplicacion.ingresar(nombre, dia(1)));
+  aplicacion.registrarEncuentro(dia(2), ["ana", "beto"], ["carla"]); // ana recibe 500
+  aplicacion.registrarEncuentro(dia(3), ["beto"], ["ana"]);
+  return almacenamientos;
+};
+
 const almacenamientosConAnaFueraDeLaTolerancia = () => {
   const almacenamientos = almacenamientosConAnaInactiva();
   const aplicacion = nuevaAplicacion(almacenamientos);
@@ -317,6 +326,19 @@ describe("VistaPrincipal", () => {
       expect(hayDialogoAbierto()).toBe(false);
       expect(nombresDeParticipantes(aplicacion)).toEqual(["ana", "beto", "carla", "dani"]);
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
+    });
+
+    it("registrar el nombre de un inactivo con créditos pendientes avisa qué parte de la garantía cubren", async () => {
+      montar(almacenamientosConAnaInactivaConCreditos());
+      await navegarA("Participantes");
+      hacerClic("Registrar participante");
+      completar("Nombre", "ana", dialogoAbierto());
+
+      hacerClic("Registrar", dialogoAbierto());
+
+      expect(textoDe(dialogoAbierto())).toContain(
+        "En ese caso, se le cobra la garantía de $ 1.000 ($ 500 de créditos, $ 500 en efectivo).",
+      );
     });
 
     it("registrar el nombre de quien ya no participa, si es otra persona, pide otro nombre para registrarla", async () => {
@@ -638,6 +660,36 @@ describe("VistaPrincipal", () => {
         "garantía incompleta",
         "Cobrar garantía y habilitar",
       ]);
+    });
+
+    it("a quien tiene créditos pendientes se le cobra la garantía en parte con ellos, y el resto en efectivo", () => {
+      const { aplicacion } = montar(almacenamientosConAnaInactivaConCreditos());
+      hacerClic("Empezar encuentro");
+
+      hacerClic("Cobrar garantía y habilitar", fila("ana"));
+      expect(textoDe(dialogoAbierto())).toContain(
+        "Se le va a cobrar una garantía de $ 1.000 ($ 500 de créditos, $ 500 en efectivo).",
+      );
+      hacerClic("Cobrar", dialogoAbierto());
+
+      expect(aplicacion.grupo().caja().movimientos().at(-1)?.monto()).toBe(500);
+      expect(casillaDeAsistencia("ana").checked).toBe(true);
+    });
+
+    it("a quien tiene créditos pendientes que cubren toda la garantía no se le cobra nada en efectivo", () => {
+      const almacenamientos = almacenamientosConAnaInactivaConCreditos();
+      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 400 }));
+      const { aplicacion } = montar(almacenamientos);
+      hacerClic("Empezar encuentro");
+
+      hacerClic("Cobrar garantía y habilitar", fila("ana"));
+      expect(textoDe(dialogoAbierto())).toContain(
+        "Se le va a cobrar una garantía de $ 400 (todo de créditos, nada en efectivo).",
+      );
+      hacerClic("Cobrar", dialogoAbierto());
+
+      expect(aplicacion.grupo().caja().movimientos()).toHaveLength(3);
+      expect(casillaDeAsistencia("ana").checked).toBe(true);
     });
 
     it("sin posibles asistentes dice que todavía no hay nadie", async () => {
