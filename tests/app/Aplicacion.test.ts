@@ -442,6 +442,16 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual(["beto"]);
     });
 
+    it("subir la garantía desmarca a quienes quedan con la garantía incompleta, porque ya no pueden asistir", () => {
+      const aplicacion = aplicacionConAnaYBeto();
+      aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("ana");
+      aplicacion.ingresarAsistente("carla", dia(3));
+
+      aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+
+      expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual([]);
+    });
+
     it("deshacer la creación del grupo descarta la planilla de asistencia", () => {
       const aplicacion = aplicacionConGrupo();
       aplicacion.empezarPlanillaDeAsistencia();

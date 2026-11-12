@@ -121,6 +121,7 @@ export class Aplicacion {
 
   cambiarReglas(reglas: Reglas): void {
     this._ejecutar(new CambiarReglas(reglas));
+    this._desmarcarAQuienesNoPuedenAsistir();
   }
 
   deshacer(): Comando {
