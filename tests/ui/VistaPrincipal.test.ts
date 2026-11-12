@@ -36,6 +36,12 @@ const almacenamientosConAnaInactivaYUnaPlanillaCon = (presentes: string[]) => {
   return almacenamientos;
 };
 
+const almacenamientosConGarantiasIncompletas = () => {
+  const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
+  nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+  return almacenamientos;
+};
+
 const almacenamientosConAnaFueraDeLaTolerancia = () => {
   const almacenamientos = almacenamientosConAnaInactiva();
   const aplicacion = nuevaAplicacion(almacenamientos);
@@ -340,6 +346,27 @@ describe("VistaPrincipal", () => {
         "Ya hay alguien con el nombre beto. Escribí otro nombre.",
       );
       expect(nombresDeParticipantes(aplicacion)).toEqual(["ana", "beto", "carla", "dani"]);
+    });
+
+    it("quien tiene la garantía incompleta figura entre los activos con ese estado", async () => {
+      montar(almacenamientosConGarantiasIncompletas());
+
+      await navegarA("Participantes");
+
+      expect(filasDeActivos()).toContainEqual(["beto", "garantía incompleta"]);
+    });
+
+    it("registrar el nombre de alguien con la garantía incompleta pide otro nombre", async () => {
+      montar(almacenamientosConGarantiasIncompletas());
+      await navegarA("Participantes");
+      hacerClic("Registrar participante");
+      completar("Nombre", "beto", dialogoAbierto());
+
+      hacerClic("Registrar", dialogoAbierto());
+
+      expect(textoDe(dialogoAbierto().querySelector("[role=alert]")!)).toBe(
+        "Ya hay alguien con el nombre beto. Escribí otro nombre.",
+      );
     });
 
     it("quien superó la tolerancia de faltas figura entre quienes ya no participan, para reingresarlo, y no entre los activos", async () => {

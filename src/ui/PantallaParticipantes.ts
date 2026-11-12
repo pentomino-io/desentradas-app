@@ -55,11 +55,11 @@ export class PantallaParticipantes {
   }
 
   private _estadoConFaltas(participante: Participante): string {
-    const estado = participante.estado();
-    if (this._entorno.grupo().puedeAsistir(participante)) return estado;
+    const situacion = this._entorno.grupo().situacionDe(participante);
+    if (situacion !== "inactivo") return situacion;
 
     const tolerancia = this._entorno.grupo().reglas().toleranciaDeFaltas();
-    return `${estado} (${participante.faltas()}/${tolerancia} faltas)`;
+    return `${situacion} (${participante.faltas()}/${tolerancia} faltas)`;
   }
 
   private _tablaDeQuienesYaNoParticipan(): HTMLElement | undefined {
