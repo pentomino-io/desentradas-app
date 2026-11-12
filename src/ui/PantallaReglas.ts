@@ -9,8 +9,8 @@ import { alfabetico } from "./Orden.ts";
 
 const valoresDe = (reglas: Reglas): string[] => [String(reglas.toleranciaDeFaltas()), monto(reglas.garantia())];
 
-const enumeracion = (nombres: readonly string[]): string =>
-  nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(", ")} y ${nombres.at(-1)}`;
+const formatoDeEnumeracion = new Intl.ListFormat("es-AR", { type: "conjunction" });
+const enumeracion = (nombres: readonly string[]): string => formatoDeEnumeracion.format(nombres);
 
 const efecto = (nombres: readonly string[], saldo: number): string => {
   const varios = nombres.length > 1;

@@ -20,14 +20,14 @@ export class PantallaCaja {
       "section",
       {},
       crear("h2", {}, "Caja"),
-      saldos.length > 0 && this._totales(saldos),
+      saldos.length > 0 && this._totales(),
       ...this._tablaDeSaldos(saldos),
       desplegable("Movimientos", this._tablaDeMovimientos()),
     );
   }
 
-  private _totales(saldos: readonly Saldo[]): HTMLParagraphElement {
-    const porCobrar = saldos.filter((saldo) => saldo.debe()).reduce((total, saldo) => total - saldo.monto(), 0);
+  private _totales(): HTMLParagraphElement {
+    const porCobrar = this._entorno.grupo().totalPorCobrar();
     const porRepartir = this._entorno.grupo().caja().totalPendiente();
     return crear(
       "p",
@@ -77,10 +77,7 @@ export class PantallaCaja {
   }
 
   private _abrirCobro(nombre: string): void {
-    const participante = this._entorno.grupo().participante(nombre)!;
-    new DialogoDeCobroDeGarantia(this._entorno, participante, () =>
-      this._entorno.aplicacion().cobrarGarantia(nombre, this._entorno.ahora()),
-    ).abrir();
+    new DialogoDeCobroDeGarantia(this._entorno, this._entorno.grupo().participante(nombre)!).abrir();
   }
 
   private _abrirReparto(saldo: Saldo): void {

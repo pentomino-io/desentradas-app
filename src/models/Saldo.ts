@@ -1,4 +1,3 @@
-// Lo que una persona le debe al grupo (negativo) o el grupo le debe a ella (positivo).
 export class Saldo {
   private _nombre: string;
   private _monto: number;

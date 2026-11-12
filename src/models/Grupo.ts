@@ -56,7 +56,7 @@ export class Grupo {
     if (this.participante(nombreLimpio) !== undefined) throw new Error(`${nombreLimpio} ya está en el grupo`);
     this._asertarQueNoEsAnteriorAlUltimoMovimiento("El ingreso", fecha);
 
-    const garantia = this.reglas().garantia();
+    const garantia = this._garantiaVigente();
     const participante = new Participante(nombreLimpio, fecha, garantia);
     this._participantes.push(participante);
     this._caja.cobrar(Cobro.alIngresar(nombreLimpio, garantia, fecha));
@@ -68,7 +68,7 @@ export class Grupo {
     this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cobro de la garantía", fecha);
 
     const monto = this.garantiaPorCobrarA(participante);
-    participante.cobrarGarantia(fecha, this.reglas().garantia());
+    participante.cobrarGarantia(fecha, this._garantiaVigente());
     this._caja.cobrar(Cobro.deGarantia(participante.nombre(), monto, fecha));
   }
 
@@ -112,37 +112,48 @@ export class Grupo {
   }
 
   puedeAsistir(participante: Participante): boolean {
-    return participante.puedeAsistir(this.reglas().garantia());
+    return participante.puedeAsistir(this._garantiaVigente());
   }
 
   situacionDe(participante: Participante): Situacion {
-    return participante.situacion(this.reglas().garantia());
+    return participante.situacion(this._garantiaVigente());
   }
 
   garantiaPorCobrarA(participante: Participante): number {
-    return participante.garantiaPorCobrar(this.reglas().garantia());
+    return participante.garantiaPorCobrar(this._garantiaVigente());
   }
 
   saldos(): readonly Saldo[] {
-    const deudas = this._participantes
-      .map((participante) => new Saldo(participante.nombre(), participante.saldoDeGarantia(this.reglas().garantia())))
-      .filter((saldo) => saldo.monto() < 0);
     const creditos = this._caja
       .nombresConCreditosPendientes()
       .map((nombre) => new Saldo(nombre, this._caja.montoPendienteDe(nombre)));
-    return [...deudas, ...creditos];
+    return [...this._deudas(), ...creditos];
+  }
+
+  totalPorCobrar(): number {
+    return this._deudas().reduce((total, deuda) => total - deuda.monto(), 0);
   }
 
   efectosDeCambiarLasReglas(reglas: Reglas): readonly Saldo[] {
     return this._participantes.flatMap((participante) => {
       const nuevoSaldo = participante.saldoDeGarantia(reglas.garantia());
-      const cambia = nuevoSaldo !== 0 && nuevoSaldo !== participante.saldoDeGarantia(this.reglas().garantia());
+      const cambia = nuevoSaldo !== 0 && nuevoSaldo !== participante.saldoDeGarantia(this._garantiaVigente());
       return cambia ? [new Saldo(participante.nombre(), nuevoSaldo)] : [];
     });
   }
 
   participante(nombre: string): Participante | undefined {
     return this._participantes.find((participante) => participante.nombre() === nombre);
+  }
+
+  private _garantiaVigente(): number {
+    return this.reglas().garantia();
+  }
+
+  private _deudas(): readonly Saldo[] {
+    return this._participantes
+      .map((participante) => new Saldo(participante.nombre(), participante.saldoDeGarantia(this._garantiaVigente())))
+      .filter((saldo) => saldo.debe());
   }
 
   private _devolverLosExcedentesDeGarantia(reglas: Reglas): void {

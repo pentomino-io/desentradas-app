@@ -20,7 +20,7 @@ export abstract class Estado {
   }
 
   bajarGarantia(_garantia: number): Estado {
-    return this;
+    throw new TransicionInvalida("bajar la garantía", this.nombre());
   }
 
   garantia(): number {
