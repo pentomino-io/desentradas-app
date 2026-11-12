@@ -106,6 +106,10 @@ export class Grupo {
     return this._participantes.filter((participante) => this._esPosibleAsistente(participante));
   }
 
+  quienesYaNoParticipan(): readonly Participante[] {
+    return this._participantes.filter((participante) => !this._esPosibleAsistente(participante));
+  }
+
   saldos(): readonly Saldo[] {
     return this._caja
       .nombresConCreditosPendientes()
@@ -138,7 +142,7 @@ export class Grupo {
     }
   }
 
-  // Quien superó la tolerancia no puede quedar ausente, así que sus faltas seguidas no pasan de la tolerancia más una.
+  // Quien superó la tolerancia no queda ausente, así sus faltas seguidas no pasan de la tolerancia más una.
   private _asertarQuePuedenFaltar(encuentro: Encuentro): void {
     for (const nombre of encuentro.ausentes()) {
       const participante = this._participanteLlamado(nombre);

@@ -452,7 +452,7 @@ describe("Grupo", () => {
       expect(grupo.encuentros()).toHaveLength(1);
     });
 
-    it("quien ingresó el mismo día del encuentro sí participa", () => {
+    it("quien ingresó el mismo día del encuentro puede faltar a él", () => {
       const grupo = nuevoGrupo();
       grupo.ingresar("beto", dia(1));
       const ana = grupo.ingresar("ana", dia(2));
@@ -475,6 +475,19 @@ describe("Grupo", () => {
       const posibles = grupo.posiblesAsistentes();
 
       expect(posibles).toEqual([beto, carla]);
+    });
+
+    it("quienes ya no participan son los que superaron la tolerancia de faltas", () => {
+      const grupo = nuevoGrupo(reglas({ toleranciaDeFaltas: 1 }));
+      const ana = grupo.ingresar("ana", dia(1));
+      grupo.ingresar("beto", dia(1));
+      grupo.ingresar("carla", dia(1));
+      grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana", "carla"] }));
+      grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"], ausentes: ["ana"] })); // ana supera la tolerancia
+
+      const quienesYaNoParticipan = grupo.quienesYaNoParticipan();
+
+      expect(quienesYaNoParticipan).toEqual([ana]);
     });
 
     it("la tolerancia de faltas es la de las reglas actuales", () => {

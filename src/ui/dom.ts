@@ -78,11 +78,8 @@ export const tablaOAviso = (
   return elemento !== undefined ? [elemento] : [crear("p", {}, aviso), pie !== undefined && crear("p", {}, pie)];
 };
 
-export const desplegable = (
-  titulo: string,
-  contenido: HTMLElement | undefined,
-  alerta?: HTMLOutputElement,
-): HTMLElement | undefined => contenido && crear("details", {}, crear("summary", {}, titulo), contenido, alerta);
+export const desplegable = (titulo: string, contenido: HTMLElement | undefined): HTMLElement | undefined =>
+  contenido && crear("details", {}, crear("summary", {}, titulo), contenido);
 
 export const fila = (...celdas: Hijo[]): HTMLTableRowElement =>
   crear("tr", {}, ...celdas.map((celda) => crear("td", {}, celda)));

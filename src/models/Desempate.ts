@@ -1,6 +1,6 @@
 import type { GarantiaPerdida } from "./GarantiaPerdida.ts";
 
-// Ordena a los asistentes entre quienes se distribuye una garantía perdida: los primeros reciben un peso más del sobrante.
+// Los primeros reciben un peso más del sobrante de la garantía perdida.
 export interface Desempate {
   ordenar(nombres: Iterable<string>, garantiaPerdida: GarantiaPerdida): string[];
 }

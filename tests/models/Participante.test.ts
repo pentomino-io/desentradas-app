@@ -17,11 +17,6 @@ describe("Participante", () => {
       expect(ana.estado()).toBe("participando");
       expect(ana.garantia()).toBe(1500);
       expect(ana.faltas()).toBe(0);
-    });
-
-    it("está habilitado para asistir", () => {
-      const ana = nuevoParticipante();
-
       expect(ana.puedeAsistir()).toBe(true);
     });
 
@@ -54,6 +49,7 @@ describe("Participante", () => {
       expect(() => {
         ana.cobrarGarantia(dia(2), 1000);
       }).toThrow(TransicionInvalida);
+      expect(ana.historial()).toHaveLength(1);
     });
   });
 
@@ -119,16 +115,6 @@ describe("Participante", () => {
       ana.falto(nuevoEncuentro({ numero: 9 }));
 
       expect(ana.fechaDelUltimoCambio()).toEqual(dia(9));
-    });
-
-    it("una acción rechazada no deja rastro en el historial", () => {
-      const ana = nuevoParticipante();
-
-      expect(() => {
-        ana.cobrarGarantia(dia(2), 1000);
-      }).toThrow(TransicionInvalida);
-
-      expect(ana.historial()).toHaveLength(1);
     });
   });
 });

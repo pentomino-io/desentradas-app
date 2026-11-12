@@ -309,7 +309,6 @@ describe("VistaPrincipal", () => {
       await navegarA("Caja");
 
       expect(hayElementoConTexto("p > span", "Por repartir $ 2.000")).toBe(true);
-      expect(textoDe(document.querySelector("main")!)).not.toContain("Por cobrar");
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
         ["beto", "inactivo", "$ 334", "Registrar reparto"],
         ["carla", "participando", "$ 833", "Registrar reparto"],

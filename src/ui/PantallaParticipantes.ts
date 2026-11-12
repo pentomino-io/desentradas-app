@@ -7,7 +7,6 @@ import { porNombre } from "./Orden.ts";
 
 const ultimoCambioDe = (participante: Participante) => participante.fechaDelUltimoCambio().getTime();
 
-// Primero los inactivos, del cambio más reciente al más antiguo; después quienes participan, por nombre.
 const porAtencionYNombre = (uno: Participante, otro: Participante): number => {
   const unoParticipa = uno.puedeAsistir();
   const otroParticipa = otro.puedeAsistir();
@@ -60,14 +59,12 @@ export class PantallaParticipantes {
   }
 
   private _tablaDeQuienesYaNoParticipan(): HTMLElement | undefined {
-    const grupo = this._entorno.grupo();
-    const posiblesAsistentes = grupo.posiblesAsistentes();
     return tabla(
       undefined,
       ["Nombre", ""],
-      grupo
-        .participantes()
-        .filter((participante) => !posiblesAsistentes.includes(participante))
+      this._entorno
+        .grupo()
+        .quienesYaNoParticipan()
         .toSorted(porNombre)
         .map((participante) => this._filaDeQuienYaNoParticipa(participante.nombre())),
     );

@@ -360,14 +360,18 @@ describe("Aplicacion", () => {
       const aplicacion = aplicacionConAnaInactiva();
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
 
-      expect(aplicacion.ausentesEnPlanillaDeAsistencia()).toEqual(["ana"]);
+      const ausentes = aplicacion.ausentesEnPlanillaDeAsistencia();
+
+      expect(ausentes).toEqual(["ana"]);
     });
 
     it("quien superó la tolerancia de faltas no figura entre los ausentes en la planilla", () => {
       const aplicacion = aplicacionConAnaFueraDeLaTolerancia();
       aplicacion.empezarPlanillaDeAsistencia();
 
-      expect(aplicacion.ausentesEnPlanillaDeAsistencia()).toEqual(["beto"]);
+      const ausentes = aplicacion.ausentesEnPlanillaDeAsistencia();
+
+      expect(ausentes).toEqual(["beto"]);
     });
 
     it("no se puede registrar el encuentro según la planilla sin una planilla de asistencia empezada", () => {
