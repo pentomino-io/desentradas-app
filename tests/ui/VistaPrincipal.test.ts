@@ -464,12 +464,17 @@ describe("VistaPrincipal", () => {
       expect(hayElementoConTexto("p > span", "Por cobrar $ 1.002")).toBe(true);
       expect(hayElementoConTexto("p > span", "Por repartir $ 1.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
-        ["beto", "garantía incompleta (la cubren sus créditos)", "-$ 334 $ 334", "Cobrar garantía Registrar reparto"],
-        ["carla", "garantía incompleta", "-$ 334 $ 333", "Cobrar garantía Registrar reparto"],
-        ["dani", "garantía incompleta", "-$ 334 $ 333", "Cobrar garantía Registrar reparto"],
+        [
+          "beto",
+          "garantía incompleta (la cubren sus créditos)",
+          "falta $ 334, a favor $ 334",
+          "Cobrar garantía Registrar reparto",
+        ],
+        ["carla", "garantía incompleta", "falta $ 334, a favor $ 333", "Cobrar garantía Registrar reparto"],
+        ["dani", "garantía incompleta", "falta $ 334, a favor $ 333", "Cobrar garantía Registrar reparto"],
       ]);
-      expect(textoDe(fila("beto").querySelector(".debe")!)).toBe("-$ 334");
-      expect(textoDe(fila("beto").querySelector(".a-favor")!)).toBe("$ 334");
+      expect(textoDe(fila("beto").querySelector(".debe")!)).toBe("falta $ 334");
+      expect(textoDe(fila("beto").querySelector(".a-favor")!)).toBe("a favor $ 334");
     });
 
     it("cobrar la garantía desde la caja cobra lo que falta para completarla", async () => {

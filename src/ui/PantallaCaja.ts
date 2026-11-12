@@ -52,13 +52,7 @@ export class PantallaCaja {
     return fila(
       saldo.nombre(),
       this._estadoDe(saldo),
-      crear(
-        "span",
-        {},
-        saldo.debe() && crear("span", { class: "debe" }, monto(-saldo.porCobrar())),
-        ambos && " ",
-        saldo.tieneAFavor() && crear("span", { class: "a-favor" }, monto(saldo.aFavor())),
-      ),
+      ambos ? this._montosRotulados(saldo) : this._montoDe(saldo),
       crear(
         "span",
         {},
@@ -66,6 +60,23 @@ export class PantallaCaja {
         ambos && " ",
         saldo.tieneAFavor() && boton("Registrar reparto", () => this._abrirReparto(saldo)),
       ),
+    );
+  }
+
+  private _montoDe(saldo: Saldo): HTMLSpanElement {
+    return saldo.debe()
+      ? crear("span", { class: "debe" }, monto(-saldo.porCobrar()))
+      : crear("span", { class: "a-favor" }, monto(saldo.aFavor()));
+  }
+
+  // Sin rótulos, los dos montos sólo se distinguirían por el color.
+  private _montosRotulados(saldo: Saldo): HTMLSpanElement {
+    return crear(
+      "span",
+      {},
+      crear("span", { class: "debe" }, `falta ${monto(saldo.porCobrar())}`),
+      ", ",
+      crear("span", { class: "a-favor" }, `a favor ${monto(saldo.aFavor())}`),
     );
   }
 
