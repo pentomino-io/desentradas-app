@@ -2,6 +2,7 @@ import { campoDeTexto } from "./Campos.ts";
 import { alerta, botonDeEnvio, crear, formulario, valorDe } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 import { explicacionDeLaCargaFallida } from "./ExplicacionDeErrores.ts";
+import { Importacion } from "./Importacion.ts";
 import { camposDeReglas, explicacionDeLaGarantia, reglasDesde } from "./FormularioDeReglas.ts";
 
 export class PantallaDeInicio {
@@ -27,6 +28,12 @@ export class PantallaDeInicio {
         ...camposDeReglas(creacionAnterior?.reglas(), explicacionDeLaGarantia),
         this._errores,
         botonDeEnvio("Crear"),
+      ),
+      crear(
+        "form",
+        { onsubmit: (evento: Event) => evento.preventDefault() },
+        crear("h3", {}, "Copia de seguridad"),
+        ...new Importacion(this._entorno).elementos(),
       ),
     );
   }

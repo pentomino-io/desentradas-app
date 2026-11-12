@@ -28,10 +28,18 @@ export class Importacion {
 
     this._errores.textContent = "";
     archivo.text().then(
-      (texto) => this._confirmar(archivo.name, texto),
+      (texto) => this._confirmarSiHayQueReemplazar(archivo.name, texto),
       () => (this._errores.textContent = "No se pudo leer el archivo. Probá elegirlo de nuevo."),
     );
     entrada.value = "";
+  }
+
+  private _confirmarSiHayQueReemplazar(nombreDelArchivo: string, texto: string): void {
+    if (this._entorno.aplicacion().tieneGrupo()) {
+      this._confirmar(nombreDelArchivo, texto);
+    } else {
+      this._entorno.intentarYRefrescar(() => this._importar(texto), this._errores);
+    }
   }
 
   private _confirmar(nombreDelArchivo: string, texto: string): void {

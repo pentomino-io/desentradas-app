@@ -273,6 +273,20 @@ describe("VistaPrincipal", () => {
       expect(hayElementoConTexto("[role=alert]", aviso)).toBe(true);
     });
 
+    it("en vez de crear el grupo se puede importar una copia de seguridad, sin confirmar porque no hay nada que reemplazar", async () => {
+      const exportado = nuevaAplicacion(almacenamientosConAnaInactiva()).exportar();
+      const almacenamientos = nuevosAlmacenamientos();
+      almacenamientos.bitacora.guardar("esto no es JSON");
+      const { aplicacion } = montar(almacenamientos);
+
+      elegirArchivo("Importar", exportado);
+      await vi.waitFor(() => expect(aplicacion.tieneGrupo()).toBe(true));
+
+      expect(hayDialogoAbierto()).toBe(false);
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
+      expect(textoDe(document.querySelector("h1")!)).toBe("Fútbol de los jueves");
+    });
+
     it("deshacer la creación del grupo vuelve al formulario inicial con lo que se había cargado", async () => {
       const almacenamientos = nuevosAlmacenamientos();
       nuevaAplicacion(almacenamientos).crearGrupo(
