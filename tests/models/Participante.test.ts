@@ -72,8 +72,34 @@ describe("Participante", () => {
       expect(ana.historial()).toHaveLength(1);
     });
 
-    it("no se le puede cobrar la garantía", () => {
-      const ana = nuevoParticipante();
+    it("con la garantía incompleta, le falta cobrar la diferencia con la vigente", () => {
+      const ana = nuevoParticipante(1000);
+
+      const porCobrar = ana.garantiaPorCobrar(1500);
+
+      expect(porCobrar).toBe(500);
+    });
+
+    it("con la garantía completa, no le falta cobrar nada", () => {
+      const ana = nuevoParticipante(1000);
+
+      const porCobrar = ana.garantiaPorCobrar(1000);
+
+      expect(porCobrar).toBe(0);
+    });
+
+    it("con la garantía incompleta, cobrarle la garantía lo deja participando con la vigente", () => {
+      const ana = nuevoParticipante(1000);
+
+      ana.cobrarGarantia(dia(2), 1500);
+
+      expect(ana.estado()).toBe("participando");
+      expect(ana.garantia()).toBe(1500);
+      expect(ana.puedeAsistir(1500)).toBe(true);
+    });
+
+    it("con la garantía completa no se le puede cobrar la garantía", () => {
+      const ana = nuevoParticipante(1000);
 
       expect(() => {
         ana.cobrarGarantia(dia(2), 1000);
@@ -105,6 +131,14 @@ describe("Participante", () => {
       expect(perdida).toBeUndefined();
       expect(ana.estado()).toBe("inactivo");
       expect(ana.faltas()).toBe(2);
+    });
+
+    it("le falta cobrar toda la garantía vigente", () => {
+      const ana = inactivo();
+
+      const porCobrar = ana.garantiaPorCobrar(1500);
+
+      expect(porCobrar).toBe(1500);
     });
 
     it("bajarle la garantía no le devuelve nada, porque no tiene garantía", () => {

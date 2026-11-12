@@ -54,7 +54,11 @@ export class Participante {
   }
 
   puedeAsistir(garantiaVigente: number): boolean {
-    return this._estado().puedeAsistir(garantiaVigente);
+    return this.garantiaPorCobrar(garantiaVigente) === 0;
+  }
+
+  garantiaPorCobrar(garantiaVigente: number): number {
+    return Math.max(0, garantiaVigente - this.garantia());
   }
 
   garantia(): number {

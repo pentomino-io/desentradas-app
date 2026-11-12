@@ -1,5 +1,6 @@
 import { Estado, type NombreDeEstado } from "./Estado.ts";
 import { Inactivo } from "./Inactivo.ts";
+import { TransicionInvalida } from "./TransicionInvalida.ts";
 
 export class Participando extends Estado {
   private _garantia: number;
@@ -25,8 +26,10 @@ export class Participando extends Estado {
     return new Participando(garantia);
   }
 
-  override puedeAsistir(garantiaVigente: number): boolean {
-    return this._garantia >= garantiaVigente;
+  override cobrarGarantia(garantia: number): Estado {
+    if (this._garantia >= garantia) throw new TransicionInvalida("cobrar la garantía", "con la garantía completa");
+
+    return new Participando(garantia);
   }
 
   override garantia(): number {

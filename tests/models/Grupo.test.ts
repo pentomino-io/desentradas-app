@@ -252,6 +252,31 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "cobro", "ana", 2000]);
     });
 
+    it("cobrarle la garantía a quien la tiene incompleta cobra en efectivo la diferencia y lo habilita para asistir", () => {
+      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+      const ana = grupo.ingresar("ana", dia(1));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), garantia: 1500 }));
+
+      grupo.cobrarGarantia("ana", dia(3));
+
+      expect(ana.garantia()).toBe(1500);
+      expect(grupo.puedeAsistir(ana)).toBe(true);
+      expect(movimientosDe(grupo).at(-1)).toEqual([dia(3), "cobro", "ana", 500]);
+    });
+
+    it("la garantía por cobrar es lo que falta para llegar a la actual: toda para un inactivo, la diferencia para quien la tiene incompleta, nada para quien la tiene completa", () => {
+      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+      const ana = grupo.ingresar("ana", dia(1));
+      const beto = grupo.ingresar("beto", dia(1));
+      grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana"] }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+      const carla = grupo.ingresar("carla", dia(3));
+
+      const porCobrar = [ana, beto, carla].map((participante) => grupo.garantiaPorCobrarA(participante));
+
+      expect(porCobrar).toEqual([1500, 500, 0]);
+    });
+
     it("el nombre de la persona se toma sin espacios al principio ni al final", () => {
       const { grupo, ana } = grupoConAnaInactiva();
 
@@ -268,7 +293,7 @@ describe("Grupo", () => {
       }).toThrow("ana no es participante del grupo");
     });
 
-    it("no se le puede cobrar la garantía a quien está participando", () => {
+    it("no se le puede cobrar la garantía a quien la tiene completa", () => {
       const { grupo } = grupoConAnaInactiva();
 
       expect(() => {

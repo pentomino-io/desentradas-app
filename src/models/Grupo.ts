@@ -66,9 +66,9 @@ export class Grupo {
     const participante = this._participanteLlamado(nombre.trim());
     this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cobro de la garantía", fecha);
 
-    const garantia = this.reglas().garantia();
-    participante.cobrarGarantia(fecha, garantia);
-    this._caja.cobrar(Cobro.deGarantia(participante.nombre(), garantia, fecha));
+    const monto = this.garantiaPorCobrarA(participante);
+    participante.cobrarGarantia(fecha, this.reglas().garantia());
+    this._caja.cobrar(Cobro.deGarantia(participante.nombre(), monto, fecha));
   }
 
   repartir(nombre: string, fecha: Date): Reparto {
@@ -113,6 +113,10 @@ export class Grupo {
 
   puedeAsistir(participante: Participante): boolean {
     return participante.puedeAsistir(this.reglas().garantia());
+  }
+
+  garantiaPorCobrarA(participante: Participante): number {
+    return participante.garantiaPorCobrar(this.reglas().garantia());
   }
 
   saldos(): readonly Saldo[] {
