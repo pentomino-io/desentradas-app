@@ -9,15 +9,12 @@ const yaHayAlguien = (nombre: string): string => `Ya hay alguien con el nombre $
 
 const pedidoDeOtroNombre = (nombre: string): string => `${yaHayAlguien(nombre)} Escribí otro nombre.`;
 
-const pedidoDeIrALaLista = (nombre: string, accion: string): string =>
-  `${nombre} ya está en la lista de asistencia: ${accion} ahí. Si es otra persona, escribí otro nombre.`;
-
 export class DialogoDeRegistro {
   private _entorno: Entorno;
   private _titulo: string;
   private _ingresar: (nombre: string) => void;
   private _cobrarGarantia: (nombre: string) => void;
-  private _conListaDeAsistencia: boolean;
+  private _pedidoPorNombreUsado: (participante: Participante) => string;
 
   constructor(
     entorno: Entorno,
@@ -29,11 +26,11 @@ export class DialogoDeRegistro {
     this._titulo = titulo;
     this._ingresar = ingresar;
     this._cobrarGarantia = cobrarGarantia;
-    this._conListaDeAsistencia = false;
+    this._pedidoPorNombreUsado = (participante) => pedidoDeOtroNombre(participante.nombre());
   }
 
-  conListaDeAsistencia(): this {
-    this._conListaDeAsistencia = true;
+  conPedidoPorNombreUsado(pedido: (participante: Participante) => string): this {
+    this._pedidoPorNombreUsado = pedido;
     return this;
   }
 
@@ -55,18 +52,10 @@ export class DialogoDeRegistro {
     const participante = this._entorno.grupo().participante(nombre);
     if (participante === undefined) {
       this._ingresar(nombre);
-      return;
-    }
-
-    const situacion = this._entorno.grupo().situacionDe(participante);
-    if (situacion === "inactivo") {
+    } else if (this._entorno.grupo().situacionDe(participante) === "inactivo") {
       this._preguntarSiEsLaMismaPersona(participante);
-    } else if (!this._conListaDeAsistencia) {
-      throw new Error(pedidoDeOtroNombre(nombre));
-    } else if (situacion === "participando") {
-      throw new Error(pedidoDeIrALaLista(nombre, "marcala"));
     } else {
-      throw new Error(pedidoDeIrALaLista(nombre, "completá su garantía"));
+      throw new Error(this._pedidoPorNombreUsado(participante));
     }
   }
 

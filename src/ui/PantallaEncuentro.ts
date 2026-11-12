@@ -2,12 +2,12 @@ import { fechaYHora, monto } from "../app/Formato.ts";
 import type { PlanillaDeAsistencia } from "../app/PlanillaDeAsistencia.ts";
 import type { Participante } from "../models/Participante.ts";
 import { Dialogo, mostrarEnDialogo } from "./Dialogo.ts";
-import { DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGarantia.ts";
+import { DialogoDeCobroDeGarantia, tituloDelCobroDeLaGarantiaA } from "./DialogoDeCobroDeGarantia.ts";
 import { DialogoDeRegistro } from "./DialogoDeRegistro.ts";
 import { alerta, boton, botonDeEnvio, crear, fila, formulario, type Hijo, tablaOAviso } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
-import { estadoDe } from "./Estado.ts";
 import { alfabetico, porNombre } from "./Orden.ts";
+import { estadoDe } from "./TextoDeEstado.ts";
 
 export class PantallaEncuentro {
   private _entorno: Entorno;
@@ -124,7 +124,7 @@ export class PantallaEncuentro {
 
   private _abrirCobro(participante: Participante): void {
     const nombre = participante.nombre();
-    new DialogoDeCobroDeGarantia(this._entorno, participante, `Cobrar la garantía a ${nombre}`, () =>
+    new DialogoDeCobroDeGarantia(this._entorno, participante, tituloDelCobroDeLaGarantiaA(nombre), () =>
       this._cobrarGarantia(nombre),
     ).abrir();
   }
@@ -147,8 +147,14 @@ export class PantallaEncuentro {
       (nombre) => this._entorno.aplicacion().ingresarAsistente(nombre, this._entorno.ahora()),
       (nombre) => this._cobrarGarantia(nombre),
     )
-      .conListaDeAsistencia()
+      .conPedidoPorNombreUsado((participante) => this._pedidoDeIrALaListaPor(participante))
       .abrir();
+  }
+
+  private _pedidoDeIrALaListaPor(participante: Participante): string {
+    const participando = this._entorno.grupo().situacionDe(participante) === "participando";
+    const accion = participando ? "marcala" : "completá su garantía";
+    return `${participante.nombre()} ya está en la lista de asistencia: ${accion} ahí. Si es otra persona, escribí otro nombre.`;
   }
 
   private _registrar(): void {

@@ -8,6 +8,8 @@ import type { Entorno } from "./Entorno.ts";
 export const avisoDeGarantia = (grupo: Grupo): HTMLParagraphElement =>
   crear("p", {}, `Hay que cobrarle ${monto(grupo.reglas().garantia())} de garantía.`);
 
+export const tituloDelCobroDeLaGarantiaA = (nombre: string): string => `Cobrar la garantía a ${nombre}`;
+
 const efectivoParaLaGarantiaDe = (grupo: Grupo, participante: Participante): number =>
   grupo.garantiaPorCobrarA(participante) - grupo.creditosParaLaGarantiaDe(participante);
 
@@ -19,7 +21,7 @@ export const cobroDeLaGarantiaA = (grupo: Grupo, participante: Participante): st
   const deCreditos = grupo.creditosParaLaGarantiaDe(participante);
   if (deCreditos === 0) return `hay que cobrarle ${monto(porCobrar)} de garantía.`;
 
-  const enEfectivo = monto(efectivoParaLaGarantiaDe(grupo, participante));
+  const enEfectivo = monto(porCobrar - deCreditos);
   return `hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} de la garantía de ${monto(porCobrar)} salen de su crédito.`;
 };
 
@@ -35,7 +37,7 @@ const avisoDeCompletarLaGarantia = (grupo: Grupo, participante: Participante): s
   if (grupo.susCreditosCubrenLaGarantiaDe(participante))
     return `${faltante} Lo cubre su crédito: no hay que cobrarle nada.`;
 
-  const enEfectivo = monto(efectivoParaLaGarantiaDe(grupo, participante));
+  const enEfectivo = monto(porCobrar - deCreditos);
   return `${faltante} Hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} salen de su crédito.`;
 };
 

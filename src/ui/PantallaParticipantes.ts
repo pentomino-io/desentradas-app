@@ -4,8 +4,8 @@ import { DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGarantia.ts";
 import { DialogoDeRegistro } from "./DialogoDeRegistro.ts";
 import { boton, crear, desplegable, fila, type Hijo, tabla, tablaOAviso } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
-import { estadoDe } from "./Estado.ts";
 import { porNombre } from "./Orden.ts";
+import { estadoDe } from "./TextoDeEstado.ts";
 
 const ultimoCambioDe = (participante: Participante) => participante.fechaDelUltimoCambio().getTime();
 

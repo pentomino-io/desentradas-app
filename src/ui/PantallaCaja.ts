@@ -2,7 +2,7 @@ import { fechaYHora, monto } from "../app/Formato.ts";
 import type { Movimiento } from "../models/Movimiento.ts";
 import type { Saldo } from "../models/Saldo.ts";
 import { Dialogo } from "./Dialogo.ts";
-import { DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGarantia.ts";
+import { DialogoDeCobroDeGarantia, tituloDelCobroDeLaGarantiaA } from "./DialogoDeCobroDeGarantia.ts";
 import { boton, crear, desplegable, fila, type Hijo, tabla, tablaOAviso } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 import { porNombre } from "./Orden.ts";
@@ -30,8 +30,8 @@ export class PantallaCaja {
     const porCompletar = this._entorno.grupo().totalPorCobrar();
     const porEntregar = this._entorno.grupo().caja().totalPendiente();
     return [
-      porCompletar > 0 && crear("p", {}, this._falta(`Garantías por completar ${monto(porCompletar)}`)),
-      porEntregar > 0 && crear("p", {}, this._credito(`Créditos por entregar ${monto(porEntregar)}`)),
+      porCompletar > 0 && crear("p", { class: "falta" }, `Garantías por completar ${monto(porCompletar)}`),
+      porEntregar > 0 && crear("p", { class: "credito" }, `Créditos por entregar ${monto(porEntregar)}`),
     ];
   }
 
@@ -45,7 +45,6 @@ export class PantallaCaja {
   }
 
   private _filaDeSaldo(saldo: Saldo): HTMLTableRowElement {
-    const ambos = saldo.debe() && saldo.tieneAFavor();
     return fila(
       saldo.nombre(),
       this._estadoDe(saldo),
@@ -54,7 +53,7 @@ export class PantallaCaja {
         "span",
         {},
         saldo.debe() && boton("Cobrar garantía", () => this._abrirCobro(saldo.nombre())),
-        ambos && " ",
+        saldo.debe() && saldo.tieneAFavor() && " ",
         saldo.tieneAFavor() && boton("Entregar crédito", () => this._abrirEntrega(saldo)),
       ),
     );
@@ -64,18 +63,10 @@ export class PantallaCaja {
     return crear(
       "span",
       {},
-      saldo.debe() && this._falta(`falta ${monto(saldo.porCobrar())}`),
+      saldo.debe() && crear("span", { class: "falta" }, `falta ${monto(saldo.porCobrar())}`),
       saldo.debe() && saldo.tieneAFavor() && ", ",
-      saldo.tieneAFavor() && this._credito(`crédito ${monto(saldo.aFavor())}`),
+      saldo.tieneAFavor() && crear("span", { class: "credito" }, `crédito ${monto(saldo.aFavor())}`),
     );
-  }
-
-  private _falta(texto: string): HTMLSpanElement {
-    return crear("span", { class: "debe" }, texto);
-  }
-
-  private _credito(texto: string): HTMLSpanElement {
-    return crear("span", { class: "a-favor" }, texto);
   }
 
   private _estadoDe(saldo: Saldo): string {
@@ -99,7 +90,7 @@ export class PantallaCaja {
 
   private _abrirCobro(nombre: string): void {
     const participante = this._entorno.grupo().participante(nombre)!;
-    new DialogoDeCobroDeGarantia(this._entorno, participante, `Cobrar la garantía a ${nombre}`).abrir();
+    new DialogoDeCobroDeGarantia(this._entorno, participante, tituloDelCobroDeLaGarantiaA(nombre)).abrir();
   }
 
   private _abrirEntrega(saldo: Saldo): void {

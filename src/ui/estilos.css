@@ -296,11 +296,11 @@ dialog p:has(button) {
   text-align: center;
 }
 
-.debe {
+.falta {
   color: var(--negativo);
 }
 
-.a-favor {
+.credito {
   color: var(--positivo);
 }
 

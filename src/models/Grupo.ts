@@ -219,19 +219,19 @@ export class Grupo {
 
   private _asertarQueNoEsAnteriorAlUltimoMovimiento(movimiento: string, fecha: Date): void {
     if (this._huboEncuentrosDespuesDe(fecha)) {
-      throw new Error(`${movimiento} no puede ser anterior ${precedidoDeA("el último encuentro")}`);
+      throw new Error(`${movimiento} no puede ser anterior al último encuentro`);
     }
     const posterior = this._caja.movimientoPosteriorA(fecha);
     if (posterior !== undefined) {
       throw new Error(`${movimiento} no puede ser anterior ${precedidoDeA(posterior.describir())}`);
     }
     if (fecha < this.reglas().rigeDesde()) {
-      throw new Error(`${movimiento} no puede ser anterior ${precedidoDeA(this._origenDeLasReglas())}`);
+      throw new Error(`${movimiento} no puede ser anterior ${this._origenDeLasReglas()}`);
     }
   }
 
   private _origenDeLasReglas(): string {
-    return this.reglasAnteriores().length === 0 ? "la creación del grupo" : "el último cambio de reglas";
+    return this.reglasAnteriores().length === 0 ? "a la creación del grupo" : "al último cambio de reglas";
   }
 
   private _esPosteriorAlUltimoEncuentro(fecha: Date): boolean {

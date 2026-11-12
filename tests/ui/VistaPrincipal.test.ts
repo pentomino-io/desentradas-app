@@ -476,8 +476,8 @@ describe("VistaPrincipal", () => {
         ["carla", "garantía incompleta", "falta $ 334, crédito $ 333", "Cobrar garantía Entregar crédito"],
         ["dani", "garantía incompleta", "falta $ 334, crédito $ 333", "Cobrar garantía Entregar crédito"],
       ]);
-      expect(textoDe(fila("beto").querySelector(".debe")!)).toBe("falta $ 334");
-      expect(textoDe(fila("beto").querySelector(".a-favor")!)).toBe("crédito $ 334");
+      expect(textoDe(fila("beto").querySelector(".falta")!)).toBe("falta $ 334");
+      expect(textoDe(fila("beto").querySelector(".credito")!)).toBe("crédito $ 334");
     });
 
     it("cobrar la garantía desde la caja cobra lo que falta para completarla", async () => {
@@ -497,7 +497,7 @@ describe("VistaPrincipal", () => {
         "falta $ 500",
         "Cobrar garantía",
       ]);
-      expect(textoDe(fila("carla").querySelector(".debe")!)).toBe("falta $ 500");
+      expect(textoDe(fila("carla").querySelector(".falta")!)).toBe("falta $ 500");
     });
 
     it("a quien tiene un crédito que cubre lo que le falta de la garantía se la completa con él, sin cobrarle nada", async () => {
