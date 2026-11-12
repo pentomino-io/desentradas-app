@@ -7,22 +7,24 @@ export class Cobro implements Movimiento {
   private _monto: number;
   private _fecha: Date;
   private _motivo: Motivo;
+  private _deCreditos: number;
 
   static alIngresar(persona: string, monto: number, fecha: Date): Cobro {
     return new Cobro(persona, monto, fecha, "ingreso");
   }
 
-  static deGarantia(persona: string, monto: number, fecha: Date): Cobro {
-    return new Cobro(persona, monto, fecha, "garantía");
+  static deGarantia(persona: string, monto: number, fecha: Date, deCreditos = 0): Cobro {
+    return new Cobro(persona, monto, fecha, "garantía", deCreditos);
   }
 
-  private constructor(persona: string, monto: number, fecha: Date, motivo: Motivo) {
+  private constructor(persona: string, monto: number, fecha: Date, motivo: Motivo, deCreditos = 0) {
     if (monto <= 0) throw new Error("El monto del cobro debe ser positivo");
 
     this._persona = persona;
     this._monto = monto;
     this._fecha = fecha;
     this._motivo = motivo;
+    this._deCreditos = deCreditos;
   }
 
   tipo(): TipoDeMovimiento {
@@ -34,7 +36,11 @@ export class Cobro implements Movimiento {
   }
 
   monto(): number {
-    return this._monto;
+    return this._monto - this._deCreditos;
+  }
+
+  montoDeCreditos(): number {
+    return this._deCreditos;
   }
 
   fecha(): Date {

@@ -18,6 +18,16 @@ const grupoConGarantiaInactivaIncompletaYCompleta = () => {
   return { grupo, ana, beto, carla };
 };
 
+const grupoConAnaInactivaConCreditos = () => {
+  const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+  const ana = grupo.ingresar("ana", dia(1));
+  grupo.ingresar("beto", dia(1));
+  grupo.ingresar("carla", dia(1));
+  grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["ana", "beto"], ausentes: ["carla"] })); // ana recibe 500
+  grupo.registrarEncuentro(nuevoEncuentro({ numero: 3, asistentes: ["beto"], ausentes: ["ana"] }));
+  return { grupo, ana };
+};
+
 const movimientosDe = (grupo: Grupo) =>
   grupo
     .caja()
@@ -291,6 +301,29 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo).at(-1)).toEqual([dia(3), "cobro", "ana", 500]);
     });
 
+    it("cobrarle la garantía a quien tiene créditos pendientes los usa para cubrir parte, y cobra en efectivo sólo el resto", () => {
+      const { grupo, ana } = grupoConAnaInactivaConCreditos();
+
+      grupo.cobrarGarantia("ana", dia(4));
+
+      expect(ana.garantia()).toBe(1000);
+      expect(grupo.caja().montoPendienteDe("ana")).toBe(0);
+      expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "cobro", "ana", 500]);
+    });
+
+    it("cobrarle la garantía a quien tiene créditos pendientes que la cubren toda no cobra nada en efectivo y le deja el resto del crédito", () => {
+      const { grupo, ana } = grupoConAnaInactivaConCreditos();
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(4), garantia: 400 }));
+
+      grupo.cobrarGarantia("ana", dia(5));
+
+      expect(grupo.puedeAsistir(ana)).toBe(true);
+      expect(grupo.caja().montoPendienteDe("ana")).toBe(100);
+      expect(movimientosDe(grupo).filter(([, , persona]) => persona === "ana")).toEqual([
+        [dia(1), "cobro", "ana", 1000],
+      ]);
+    });
+
     it("la garantía por cobrar es lo que falta para llegar a la actual: toda para un inactivo, la diferencia para quien la tiene incompleta, nada para quien la tiene completa", () => {
       const { grupo, ana, beto, carla } = grupoConGarantiaInactivaIncompletaYCompleta();
 
@@ -468,6 +501,17 @@ describe("Grupo", () => {
         grupo.registrarEncuentro(nuevoEncuentro({ numero: 4, asistentes: ["beto"] }));
       }).toThrow("El encuentro no puede ser anterior al cobro de la garantía a ana");
       expect(grupo.encuentros()).toHaveLength(1);
+    });
+
+    it("no se puede registrar un encuentro anterior al cobro de una garantía cubierta con créditos", () => {
+      const { grupo } = grupoConAnaInactivaConCreditos();
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(4), garantia: 400 }));
+      grupo.cobrarGarantia("ana", dia(6));
+
+      expect(() => {
+        grupo.registrarEncuentro(nuevoEncuentro({ numero: 5, asistentes: ["beto"] }));
+      }).toThrow("El encuentro no puede ser anterior al cobro de la garantía a ana");
+      expect(grupo.encuentros()).toHaveLength(2);
     });
 
     it("no se puede registrar un encuentro anterior al último reparto", () => {

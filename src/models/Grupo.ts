@@ -68,8 +68,9 @@ export class Grupo {
     this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cobro de la garantía", fecha);
 
     const monto = this.garantiaPorCobrarA(participante);
+    const deCreditos = this.creditosParaLaGarantiaDe(participante);
     participante.cobrarGarantia(fecha, this._garantiaVigente());
-    this._caja.cobrar(Cobro.deGarantia(participante.nombre(), monto, fecha));
+    this._caja.cobrar(Cobro.deGarantia(participante.nombre(), monto, fecha, deCreditos));
   }
 
   repartir(nombre: string, fecha: Date): Reparto {
@@ -121,6 +122,10 @@ export class Grupo {
 
   garantiaPorCobrarA(participante: Participante): number {
     return participante.garantiaPorCobrar(this._garantiaVigente());
+  }
+
+  creditosParaLaGarantiaDe(participante: Participante): number {
+    return Math.min(this.garantiaPorCobrarA(participante), this._caja.montoPendienteDe(participante.nombre()));
   }
 
   saldos(): readonly Saldo[] {
