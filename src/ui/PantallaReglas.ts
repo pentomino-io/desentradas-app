@@ -1,10 +1,34 @@
 import { fechaYHora, monto } from "../app/Formato.ts";
 import type { Reglas } from "../models/Reglas.ts";
-import { alerta, botonDeEnvio, crear, desplegable, fila, formulario, tabla } from "./dom.ts";
+import type { Saldo } from "../models/Saldo.ts";
+import { Dialogo } from "./Dialogo.ts";
+import { alerta, botonDeEnvio, crear, desplegable, fila, formulario, intentar, tabla } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 import { camposDeReglas, explicacionDeLaGarantia, reglasDesde } from "./FormularioDeReglas.ts";
+import { alfabetico } from "./Orden.ts";
 
 const valoresDe = (reglas: Reglas): string[] => [String(reglas.toleranciaDeFaltas()), monto(reglas.garantia())];
+
+const enumeracion = (nombres: readonly string[]): string =>
+  nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(", ")} y ${nombres.at(-1)}`;
+
+const efecto = (nombres: readonly string[], saldo: number): string => {
+  const varios = nombres.length > 1;
+  return saldo < 0
+    ? `${enumeracion(nombres)} ${varios ? "deben" : "debe"} completar ${monto(-saldo)}`
+    : `${enumeracion(nombres)} ${varios ? "reciben" : "recibe"} un crédito de ${monto(saldo)}`;
+};
+
+const descripcionDe = (efectos: readonly Saldo[]): string => {
+  if (efectos.length === 0) return "No cambia la plata de nadie.";
+
+  const nombresPorSaldo = new Map<number, string[]>();
+  for (const saldo of efectos.toSorted((uno, otro) => uno.monto() - otro.monto())) {
+    nombresPorSaldo.set(saldo.monto(), [...(nombresPorSaldo.get(saldo.monto()) ?? []), saldo.nombre()]);
+  }
+  const frases = [...nombresPorSaldo].map(([saldo, nombres]) => efecto(nombres.toSorted(alfabetico), saldo));
+  return `${frases.join("; ")}.`;
+};
 
 export class PantallaReglas {
   private _entorno: Entorno;
@@ -48,9 +72,14 @@ export class PantallaReglas {
   }
 
   private _cambiar(formulario: HTMLFormElement): void {
-    this._entorno.intentarYRefrescar(() => {
-      this._entorno.aplicacion().cambiarReglas(reglasDesde(formulario, this._entorno.ahora()));
-    }, this._errores);
+    intentar(() => this._confirmarCambio(reglasDesde(formulario, this._entorno.ahora())), this._errores);
+  }
+
+  private _confirmarCambio(reglas: Reglas): void {
+    const efectos = this._entorno.grupo().efectosDeCambiarLasReglas(reglas);
+    new Dialogo(this._entorno, "Cambiar reglas", [crear("p", {}, descripcionDe(efectos))], "Confirmar", () =>
+      this._entorno.aplicacion().cambiarReglas(reglas),
+    ).abrir();
   }
 
   private _tablaDeVersiones(): HTMLElement | undefined {

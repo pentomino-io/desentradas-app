@@ -654,9 +654,35 @@ describe("VistaPrincipal", () => {
 
       completar("¿Cuánto se paga de garantía?", "1500");
       hacerClic("Cambiar reglas");
+      hacerClic("Confirmar", dialogoAbierto());
 
       expect(aplicacion.grupo().reglas().garantia()).toBe(1500);
       expect(aplicacion.grupo().reglas().rigeDesde()).toEqual(ahora());
+    });
+
+    it("cambiar las reglas pide confirmar antes quiénes deben completar la garantía y quiénes reciben un crédito", async () => {
+      const almacenamientos = almacenamientosConGarantiasIncompletas();
+      nuevaAplicacion(almacenamientos).ingresar("eli", dia(3));
+      const { aplicacion } = montar(almacenamientos);
+      await navegarA("Reglas");
+      completar("¿Cuánto se paga de garantía?", "1200");
+
+      hacerClic("Cambiar reglas");
+
+      expect(textoDe(dialogoAbierto())).toContain(
+        "beto, carla y dani deben completar $ 200; eli recibe un crédito de $ 300.",
+      );
+      expect(aplicacion.grupo().reglas().garantia()).toBe(1500);
+    });
+
+    it("cambiar las reglas sin que nadie tenga que completar la garantía ni reciba un crédito avisa que no cambia la plata de nadie", async () => {
+      montar(almacenamientosConGarantiasIncompletas());
+      await navegarA("Reglas");
+      completar("¿Cuántas faltas seguidas se toleran antes de quedar afuera?", "3");
+
+      hacerClic("Cambiar reglas");
+
+      expect(textoDe(dialogoAbierto())).toContain("No cambia la plata de nadie.");
     });
 
     it("la garantía se explica junto a su valor vigente, y no otra vez en el campo para cambiarla", async () => {
