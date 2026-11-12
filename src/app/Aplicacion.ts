@@ -99,6 +99,12 @@ export class Aplicacion {
     planilla.marcarComoPresente(nombreLimpio);
   }
 
+  cobrarGarantiaAAsistente(nombre: string, fecha: Date): void {
+    const planilla = this.planillaDeAsistencia();
+    this.cobrarGarantia(nombre, fecha);
+    planilla.marcarComoPresente(nombre);
+  }
+
   ausentesEnPlanillaDeAsistencia(): string[] {
     const planilla = this.planillaDeAsistencia();
     return this.grupo()

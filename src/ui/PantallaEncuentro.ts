@@ -117,7 +117,9 @@ export class PantallaEncuentro {
   }
 
   private _abrirCobro(nombre: string): void {
-    new DialogoDeCobroDeGarantia(this._entorno, nombre, () => this._ingresar(nombre)).abrir();
+    new DialogoDeCobroDeGarantia(this._entorno, nombre, () =>
+      this._entorno.aplicacion().cobrarGarantiaAAsistente(nombre, this._entorno.ahora()),
+    ).abrir();
   }
 
   private _repartir(nombre: string): void {

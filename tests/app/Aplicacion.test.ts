@@ -335,11 +335,11 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asiste("carla")).toBe(true);
     });
 
-    it("ingresar como asistente a un inactivo le cobra la garantía y lo deja marcado como presente", () => {
+    it("cobrarle la garantía a un inactivo como asistente lo deja participando y marcado como presente", () => {
       const aplicacion = aplicacionConAnaFueraDeLaTolerancia();
       aplicacion.empezarPlanillaDeAsistencia();
 
-      aplicacion.ingresarAsistente("ana", dia(5));
+      aplicacion.cobrarGarantiaAAsistente("ana", dia(5));
 
       expect(aplicacion.comandos().at(-1)).toEqual(new CobrarGarantia("ana", dia(5)));
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
@@ -404,7 +404,7 @@ describe("Aplicacion", () => {
     it("deshacer el cobro de la garantía a un asistente lo desmarca, porque vuelve a no poder asistir", () => {
       const aplicacion = aplicacionConAnaInactiva();
       aplicacion.empezarPlanillaDeAsistencia();
-      aplicacion.ingresarAsistente("ana", dia(3));
+      aplicacion.cobrarGarantiaAAsistente("ana", dia(3));
 
       aplicacion.deshacer();
 
