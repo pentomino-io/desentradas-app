@@ -79,60 +79,47 @@ describe("Grupo", () => {
       expect(grupo.reglasAnteriores()).toEqual([reglasIniciales, segundasReglas]);
     });
 
-    it("las nuevas reglas deben regir desde después del último encuentro registrado", () => {
+    it("cambiar las reglas siempre agrega una versión al historial, aunque las vigentes todavía no se hayan usado", () => {
+      const reglasIniciales = reglas();
+      const grupo = nuevoGrupo(reglasIniciales);
+      const nuevasReglas = reglas({ rigeDesde: dia(4) });
+
+      grupo.cambiarReglas(nuevasReglas);
+
+      expect(grupo.historialDeReglas()).toEqual([reglasIniciales, nuevasReglas]);
+    });
+
+    it("no se pueden cambiar las reglas en una fecha anterior al último encuentro", () => {
       const reglasIniciales = reglas();
       const grupo = nuevoGrupo(reglasIniciales);
       grupo.ingresar("beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"] }));
 
       expect(() => {
-        grupo.cambiarReglas(reglas({ rigeDesde: dia(9) }));
-      }).toThrow("Las nuevas reglas deben regir desde después del último encuentro registrado");
+        grupo.cambiarReglas(reglas({ rigeDesde: dia(8) }));
+      }).toThrow("El cambio de reglas no puede ser anterior al último encuentro");
       expect(grupo.historialDeReglas()).toEqual([reglasIniciales]);
     });
 
-    it("las nuevas reglas pueden regir desde una fecha futura", () => {
-      const grupo = nuevoGrupo();
-      grupo.ingresar("beto", dia(1));
-      grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"] }));
-      const nuevasReglas = reglas({ rigeDesde: dia(30) });
-
-      grupo.cambiarReglas(nuevasReglas);
-
-      expect(grupo.reglas()).toBe(nuevasReglas);
-    });
-
-    it("si no hubo encuentros ni cobros desde que rige la versión actual, las nuevas reglas la reemplazan", () => {
+    it("no se pueden cambiar las reglas en una fecha anterior a un ingreso", () => {
       const reglasIniciales = reglas();
       const grupo = nuevoGrupo(reglasIniciales);
-      grupo.ingresar("beto", dia(1));
-      grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"] }));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(3) }));
-      const reglasDefinitivas = reglas({ rigeDesde: dia(4) });
+      grupo.ingresar("ana", dia(5));
 
-      grupo.cambiarReglas(reglasDefinitivas);
-
-      expect(grupo.historialDeReglas()).toEqual([reglasIniciales, reglasDefinitivas]);
+      expect(() => {
+        grupo.cambiarReglas(reglas({ rigeDesde: dia(4) }));
+      }).toThrow("El cambio de reglas no puede ser anterior al ingreso de ana");
+      expect(grupo.historialDeReglas()).toEqual([reglasIniciales]);
     });
 
-    it("las reglas iniciales también se reemplazan si todavía no hubo encuentros ni cobros", () => {
+    it("no se pueden cambiar las reglas en una fecha anterior al último cambio de reglas", () => {
       const grupo = nuevoGrupo();
-      const reglasDefinitivas = reglas({ rigeDesde: dia(4) });
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(5) }));
 
-      grupo.cambiarReglas(reglasDefinitivas);
-
-      expect(grupo.historialDeReglas()).toEqual([reglasDefinitivas]);
-    });
-
-    it("si se cobró alguna garantía desde que rige la versión actual, las nuevas reglas no la reemplazan aunque no haya habido encuentros", () => {
-      const reglasIniciales = reglas();
-      const grupo = nuevoGrupo(reglasIniciales);
-      grupo.ingresar("ana", dia(1));
-      const nuevasReglas = reglas({ rigeDesde: dia(4) });
-
-      grupo.cambiarReglas(nuevasReglas);
-
-      expect(grupo.reglasAnteriores()).toEqual([reglasIniciales]);
+      expect(() => {
+        grupo.cambiarReglas(reglas({ rigeDesde: dia(4) }));
+      }).toThrow("El cambio de reglas no puede ser anterior al último cambio de reglas");
+      expect(grupo.historialDeReglas()).toHaveLength(2);
     });
   });
 
@@ -191,6 +178,24 @@ describe("Grupo", () => {
       }).toThrow("El ingreso no puede ser anterior al último encuentro");
       expect(grupo.participante("carla")).toBeUndefined();
       expect(grupo.caja().movimientos()).toHaveLength(2);
+    });
+
+    it("no se puede ingresar en una fecha anterior al último cambio de reglas, porque las reglas rigen desde que se cambian", () => {
+      const grupo = nuevoGrupo();
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(5) }));
+
+      expect(() => {
+        grupo.ingresar("ana", dia(4));
+      }).toThrow("El ingreso no puede ser anterior al último cambio de reglas");
+      expect(grupo.participante("ana")).toBeUndefined();
+    });
+
+    it("no se puede ingresar en una fecha anterior a la creación del grupo", () => {
+      const grupo = nuevoGrupo(reglas({ rigeDesde: dia(5) }));
+
+      expect(() => {
+        grupo.ingresar("ana", dia(4));
+      }).toThrow("El ingreso no puede ser anterior a la creación del grupo");
     });
 
     it("el nombre de la persona se guarda sin espacios al principio ni al final", () => {

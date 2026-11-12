@@ -30,9 +30,8 @@ export class Grupo {
   }
 
   cambiarReglas(reglas: Reglas): void {
-    this._asertarQueRigenDespuesDelUltimoEncuentro(reglas);
+    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cambio de reglas", reglas.rigeDesde());
 
-    if (!this._seUsaronLasReglasActuales()) this._historialDeReglas.pop();
     this._historialDeReglas.push(reglas);
   }
 
@@ -164,20 +163,13 @@ export class Grupo {
     if (posterior !== undefined) {
       throw new Error(`${movimiento} no puede ser anterior al ${posterior.describir()}`);
     }
-  }
-
-  private _asertarQueRigenDespuesDelUltimoEncuentro(reglas: Reglas): void {
-    if (!this._esPosteriorAlUltimoEncuentro(reglas.rigeDesde())) {
-      throw new Error("Las nuevas reglas deben regir desde después del último encuentro registrado");
+    if (fecha < this.reglas().rigeDesde()) {
+      throw new Error(`${movimiento} no puede ser anterior ${this._origenDeLasReglas()}`);
     }
   }
 
-  private _seUsaronLasReglasActuales(): boolean {
-    const rigeDesde = this.reglas().rigeDesde();
-    return (
-      !this._esPosteriorAlUltimoEncuentro(rigeDesde) ||
-      this._caja.movimientos().some((movimiento) => movimiento.tipo() === "cobro" && movimiento.fecha() >= rigeDesde)
-    );
+  private _origenDeLasReglas(): string {
+    return this.reglasAnteriores().length === 0 ? "a la creación del grupo" : "al último cambio de reglas";
   }
 
   private _esPosteriorAlUltimoEncuentro(fecha: Date): boolean {
