@@ -1,6 +1,6 @@
 import { fechaYHora, monto } from "../app/Formato.ts";
 import type { Reglas } from "../models/Reglas.ts";
-import type { Saldo } from "../models/Saldo.ts";
+import type { CambioDeGarantia } from "../models/CambioDeGarantia.ts";
 import { Dialogo } from "./Dialogo.ts";
 import { alerta, botonDeEnvio, crear, desplegable, fila, formulario, intentar, tabla } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
@@ -19,7 +19,7 @@ const efecto = (nombres: readonly string[], saldo: number): string => {
     : `${enumeracion(nombres)} ${varios ? "reciben" : "recibe"} un crédito de ${monto(saldo)}`;
 };
 
-const descripcionDe = (efectos: readonly Saldo[]): string => {
+const descripcionDe = (efectos: readonly CambioDeGarantia[]): string => {
   if (efectos.length === 0) return "No cambia la plata de nadie.";
 
   const nombresPorSaldo = new Map<number, string[]>();

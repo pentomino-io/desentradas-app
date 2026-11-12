@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TransicionInvalida } from "../../src/models/estados/TransicionInvalida.ts";
+import type { CambioDeGarantia } from "../../src/models/CambioDeGarantia.ts";
 import { Grupo } from "../../src/models/Grupo.ts";
 import { desempate, dia, nuevoEncuentro, nuevoGrupo, reglas } from "./factories.ts";
 
@@ -161,6 +162,8 @@ describe("Grupo", () => {
   });
 
   describe("efectos de cambiar las reglas", () => {
+    const comoLista = (efecto: CambioDeGarantia) => [efecto.nombre(), efecto.monto(), efecto.deCreditos()];
+
     const grupoConGarantiasDistintas = () => {
       const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
       grupo.ingresar("ana", dia(1));
@@ -179,11 +182,27 @@ describe("Grupo", () => {
 
       const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(4), garantia: 1100 }));
 
-      expect(efectos.map((saldo) => [saldo.nombre(), saldo.monto()])).toEqual([
-        ["beto", -100],
-        ["carla", -100],
-        ["dani", 100],
+      expect(efectos.map(comoLista)).toEqual([
+        ["beto", -100, 0],
+        ["carla", -100, 0],
+        ["dani", 100, 0],
       ]);
+    });
+
+    it("quien tiene créditos pendientes que cubren lo que le falta lo completa con ellos", () => {
+      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
+
+      const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+
+      expect(efectos.map(comoLista)).toEqual([["beto", -500, 500]]);
+    });
+
+    it("quien tiene créditos pendientes que no cubren lo que le falta los usa todos", () => {
+      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
+
+      const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(3), garantia: 2500 }));
+
+      expect(efectos.map(comoLista)).toEqual([["beto", -1500, 1000]]);
     });
 
     it("no hay efectos si nadie pasa a deber otra cosa ni tiene un excedente", () => {

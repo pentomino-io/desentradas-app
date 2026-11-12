@@ -1,3 +1,4 @@
+import { CambioDeGarantia } from "./CambioDeGarantia.ts";
 import { Caja } from "./Caja.ts";
 import { Cobro } from "./Cobro.ts";
 import { Credito } from "./Credito.ts";
@@ -142,11 +143,12 @@ export class Grupo {
       .reduce((total, saldo) => total - saldo.monto(), 0);
   }
 
-  efectosDeCambiarLasReglas(reglas: Reglas): readonly Saldo[] {
+  efectosDeCambiarLasReglas(reglas: Reglas): readonly CambioDeGarantia[] {
     return this._participantes.flatMap((participante) => {
       const nuevoSaldo = participante.saldoDeGarantia(reglas.garantia());
       const cambia = nuevoSaldo !== 0 && nuevoSaldo !== participante.saldoDeGarantia(this._garantiaVigente());
-      return cambia ? [new Saldo(participante.nombre(), nuevoSaldo)] : [];
+      const deCreditos = Math.min(Math.max(0, -nuevoSaldo), this._caja.montoPendienteDe(participante.nombre()));
+      return cambia ? [new CambioDeGarantia(participante.nombre(), nuevoSaldo, deCreditos)] : [];
     });
   }
 
@@ -163,7 +165,7 @@ export class Grupo {
   }
 
   private _faltanteDeGarantiaDe(participante: Participante): number {
-    return -Math.min(0, participante.saldoDeGarantia(this._garantiaVigente()));
+    return Math.max(0, -participante.saldoDeGarantia(this._garantiaVigente()));
   }
 
   private _devolverLosExcedentesDeGarantia(reglas: Reglas): void {
