@@ -1,10 +1,20 @@
 import type { Comando } from "./Comando.ts";
 import { comandoDesdeJson, type ComandoJson } from "./json/ComandoJson.ts";
-import { formatoInvalido, lista, numero, objeto } from "./json/Campos.ts";
+import { lista, numero, objeto } from "./json/Campos.ts";
 import type { Desempate } from "../models/Desempate.ts";
 import type { Grupo } from "../models/Grupo.ts";
 
 const VERSION = 2;
+
+abstract class VersionDistinta extends Error {
+  constructor(version: number) {
+    super(`Versión de bitácora ${version}; esta app lee la ${VERSION}`);
+  }
+}
+
+export class VersionAnterior extends VersionDistinta {}
+
+export class VersionPosterior extends VersionDistinta {}
 
 export type BitacoraJson = { version: typeof VERSION; comandos: ComandoJson[] };
 
@@ -17,7 +27,8 @@ export class Bitacora {
   static desdeJson(json: unknown, desempate: Desempate): Bitacora {
     const campos = objeto(json, "La bitácora");
     const version = numero(campos, "version");
-    if (version !== VERSION) throw formatoInvalido(`versión de bitácora desconocida "${version}"`);
+    if (version < VERSION) throw new VersionAnterior(version);
+    if (version > VERSION) throw new VersionPosterior(version);
 
     const bitacora = new Bitacora(desempate);
     lista(campos, "comandos").forEach((comando) => bitacora.ejecutar(comandoDesdeJson(comando)));

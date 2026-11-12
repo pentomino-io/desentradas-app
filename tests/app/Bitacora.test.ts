@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Bitacora } from "../../src/app/Bitacora.ts";
+import { Bitacora, VersionAnterior, VersionPosterior } from "../../src/app/Bitacora.ts";
 import { CrearGrupo } from "../../src/app/comandos/CrearGrupo.ts";
 import { Ingresar } from "../../src/app/comandos/Ingresar.ts";
 import { desempate, dia, reglas } from "../models/factories.ts";
@@ -148,10 +148,16 @@ describe("Bitacora", () => {
       expect(leida.tieneGrupo()).toBe(false);
     });
 
-    it("no se puede leer una bitácora de una versión desconocida", () => {
+    it("no se puede leer una bitácora de una versión anterior", () => {
       expect(() => {
         Bitacora.desdeJson({ version: 1, comandos: [] }, desempate);
-      }).toThrow('Formato inválido: versión de bitácora desconocida "1"');
+      }).toThrow(VersionAnterior);
+    });
+
+    it("no se puede leer una bitácora de una versión posterior", () => {
+      expect(() => {
+        Bitacora.desdeJson({ version: 3, comandos: [] }, desempate);
+      }).toThrow(VersionPosterior);
     });
 
     it("no se puede leer una bitácora con un comando que el grupo rechaza", () => {
