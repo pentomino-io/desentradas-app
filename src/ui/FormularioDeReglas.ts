@@ -6,7 +6,7 @@ export const explicacionDeLaGarantia = "Se paga al ingresar; quien falta la pier
 
 export const camposDeReglas = (reglas?: Reglas, ayudaDeLaGarantia?: string): HTMLElement[] => [
   campoNumerico(
-    "¿Cuántas faltas seguidas se toleran antes de quedar afuera?",
+    "¿Hasta cuántas faltas seguidas sigue apareciendo alguien en la lista de asistencia?",
     "toleranciaDeFaltas",
     reglas?.toleranciaDeFaltas() ?? 1,
     1,

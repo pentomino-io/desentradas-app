@@ -223,7 +223,7 @@ describe("VistaPrincipal", () => {
       expect(hayEtiqueta("Rige desde")).toBe(false);
 
       completar("Nombre del grupo", "Fútbol de los jueves");
-      completar("¿Cuántas faltas seguidas se toleran", "2");
+      completar("¿Hasta cuántas faltas seguidas sigue apareciendo alguien en la lista de asistencia?", "2");
       completar("¿Cuánto se paga de garantía?", "1000");
       hacerClic("Crear");
 
@@ -264,7 +264,9 @@ describe("VistaPrincipal", () => {
       expect(aplicacion.tieneGrupo()).toBe(false);
       expect(pantallaActual()).toBe("Crear el grupo");
       expect(campo("Nombre del grupo").value).toBe("Fútbol de los jueves");
-      expect(campo("¿Cuántas faltas seguidas se toleran").value).toBe("3");
+      expect(campo("¿Hasta cuántas faltas seguidas sigue apareciendo alguien en la lista de asistencia?").value).toBe(
+        "3",
+      );
       expect(campo("¿Cuánto se paga de garantía?").value).toBe("1500");
     });
   });
@@ -801,7 +803,7 @@ describe("VistaPrincipal", () => {
     it("cambiar las reglas sin que nadie tenga que completar la garantía ni reciba un crédito avisa que no cambia la plata de nadie", async () => {
       montar(almacenamientosConGarantiasIncompletas());
       await navegarA("Reglas");
-      completar("¿Cuántas faltas seguidas se toleran antes de quedar afuera?", "3");
+      completar("¿Hasta cuántas faltas seguidas sigue apareciendo alguien en la lista de asistencia?", "3");
 
       hacerClic("Cambiar reglas");
 
