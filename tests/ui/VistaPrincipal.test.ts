@@ -723,18 +723,44 @@ describe("VistaPrincipal", () => {
       ]);
     });
 
-    it("si vino alguien nuevo con el nombre de alguien de la lista de asistencia, pide marcarlo ahí u otro nombre", () => {
+    it("si vino alguien nuevo con el nombre de alguien que puede asistir, pide marcarlo en la lista de asistencia u otro nombre", () => {
       const { aplicacion } = montar(almacenamientosConAnaInactiva());
+      hacerClic("Empezar encuentro");
+      hacerClic("Vino alguien nuevo");
+      completar("Nombre", "beto", dialogoAbierto());
+
+      hacerClic("Registrar", dialogoAbierto());
+
+      expect(textoDe(dialogoAbierto().querySelector("[role=alert]")!)).toBe(
+        "beto ya está en la lista de asistencia: marcala ahí. Si es otra persona, escribí otro nombre.",
+      );
+      expect(nombresDeParticipantes(aplicacion)).toEqual(["ana", "beto", "carla", "dani"]);
+    });
+
+    it("si vino alguien nuevo con el nombre de alguien con la garantía incompleta, pide completarla en la lista de asistencia u otro nombre", () => {
+      montar(almacenamientosConGarantiasIncompletas());
+      hacerClic("Empezar encuentro");
+      hacerClic("Vino alguien nuevo");
+      completar("Nombre", "beto", dialogoAbierto());
+
+      hacerClic("Registrar", dialogoAbierto());
+
+      expect(textoDe(dialogoAbierto().querySelector("[role=alert]")!)).toBe(
+        "beto ya está en la lista de asistencia: completá su garantía ahí. Si es otra persona, escribí otro nombre.",
+      );
+    });
+
+    it("si vino alguien nuevo con el nombre de un inactivo de la lista de asistencia, pregunta si es la misma persona", () => {
+      montar(almacenamientosConAnaInactiva());
       hacerClic("Empezar encuentro");
       hacerClic("Vino alguien nuevo");
       completar("Nombre", "ana", dialogoAbierto());
 
       hacerClic("Registrar", dialogoAbierto());
 
-      expect(textoDe(dialogoAbierto().querySelector("[role=alert]")!)).toBe(
-        "ana ya está en la lista de asistencia: marcala ahí. Si es otra persona, escribí otro nombre.",
+      expect(textoDe(dialogoAbierto())).toContain(
+        "Ya hay alguien con el nombre ana. ¿Es la misma persona? En ese caso, hay que cobrarle $ 1.000 de garantía.",
       );
-      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
     });
 
     it("a quien tiene la garantía incompleta se le cobra la diferencia para habilitarlo, y queda marcado como presente", () => {

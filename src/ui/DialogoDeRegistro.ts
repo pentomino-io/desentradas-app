@@ -9,8 +9,8 @@ const yaHayAlguien = (nombre: string): string => `Ya hay alguien con el nombre $
 
 const pedidoDeOtroNombre = (nombre: string): string => `${yaHayAlguien(nombre)} Escribí otro nombre.`;
 
-const pedidoDeMarcarlo = (nombre: string): string =>
-  `${nombre} ya está en la lista de asistencia: marcala ahí. Si es otra persona, escribí otro nombre.`;
+const pedidoDeIrALaLista = (nombre: string, accion: string): string =>
+  `${nombre} ya está en la lista de asistencia: ${accion} ahí. Si es otra persona, escribí otro nombre.`;
 
 export class DialogoDeRegistro {
   private _entorno: Entorno;
@@ -55,17 +55,19 @@ export class DialogoDeRegistro {
     const participante = this._entorno.grupo().participante(nombre);
     if (participante === undefined) {
       this._ingresar(nombre);
-    } else if (this._figuraEnLaListaDeAsistencia(participante)) {
-      throw new Error(pedidoDeMarcarlo(nombre));
-    } else if (this._entorno.grupo().situacionDe(participante) === "inactivo") {
-      this._preguntarSiEsLaMismaPersona(participante);
-    } else {
-      throw new Error(pedidoDeOtroNombre(nombre));
+      return;
     }
-  }
 
-  private _figuraEnLaListaDeAsistencia(participante: Participante): boolean {
-    return this._conListaDeAsistencia && this._entorno.grupo().posiblesAsistentes().includes(participante);
+    const situacion = this._entorno.grupo().situacionDe(participante);
+    if (situacion === "inactivo") {
+      this._preguntarSiEsLaMismaPersona(participante);
+    } else if (!this._conListaDeAsistencia) {
+      throw new Error(pedidoDeOtroNombre(nombre));
+    } else if (situacion === "participando") {
+      throw new Error(pedidoDeIrALaLista(nombre, "marcala"));
+    } else {
+      throw new Error(pedidoDeIrALaLista(nombre, "completá su garantía"));
+    }
   }
 
   private _preguntarSiEsLaMismaPersona(participante: Participante): void {
