@@ -284,6 +284,52 @@ describe("VistaPrincipal", () => {
       expect(filasDeActivos()).toEqual([["ana", "participando"]]);
     });
 
+    it("registrar el nombre de quien ya no participa pregunta si es la misma persona, y si lo es le cobra la garantía", async () => {
+      const { aplicacion } = montar(almacenamientosConAnaFueraDeLaTolerancia());
+      await navegarA("Participantes");
+      hacerClic("Registrar participante");
+      completar("Nombre", "ana", dialogoAbierto());
+
+      hacerClic("Registrar", dialogoAbierto());
+      expect(textoDe(dialogoAbierto())).toContain("Ya hay una ana. ¿Es la misma persona?");
+      hacerClic("Sí", dialogoAbierto());
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Cobrar la garantía a ana");
+      hacerClic("Cobrar", dialogoAbierto());
+
+      expect(hayDialogoAbierto()).toBe(false);
+      expect(nombresDeParticipantes(aplicacion)).toEqual(["ana", "beto", "carla", "dani"]);
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
+    });
+
+    it("registrar el nombre de quien ya no participa, si es otra persona, pide otro nombre para registrarla", async () => {
+      const { aplicacion } = montar(almacenamientosConAnaFueraDeLaTolerancia());
+      await navegarA("Participantes");
+      hacerClic("Registrar participante");
+      completar("Nombre", "ana", dialogoAbierto());
+      hacerClic("Registrar", dialogoAbierto());
+
+      hacerClic("No, es otra persona", dialogoAbierto());
+      expect(textoDe(dialogoAbierto())).toContain("Ya hay una ana. Escribí otro nombre.");
+      completar("Nombre", "ana g", dialogoAbierto());
+      hacerClic("Registrar", dialogoAbierto());
+
+      expect(hayDialogoAbierto()).toBe(false);
+      expect(aplicacion.grupo().participante("ana g")?.estado()).toBe("participando");
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
+    });
+
+    it("registrar el nombre de alguien que participa pide otro nombre", async () => {
+      const { aplicacion } = montar(almacenamientosConAnaInactiva());
+      await navegarA("Participantes");
+      hacerClic("Registrar participante");
+      completar("Nombre", "beto", dialogoAbierto());
+
+      hacerClic("Registrar", dialogoAbierto());
+
+      expect(textoDe(dialogoAbierto().querySelector("[role=alert]")!)).toBe("Ya hay una beto. Escribí otro nombre.");
+      expect(nombresDeParticipantes(aplicacion)).toEqual(["ana", "beto", "carla", "dani"]);
+    });
+
     it("quien superó la tolerancia de faltas figura entre quienes ya no participan, para reingresarlo, y no entre los activos", async () => {
       montar(almacenamientosConAnaFueraDeLaTolerancia());
 
@@ -493,13 +539,15 @@ describe("VistaPrincipal", () => {
       expect(casillaDeAsistencia("carla").checked).toBe(false);
     });
 
-    it("si vuelve alguien que ya no participa, se le cobra la garantía y queda marcado como presente", () => {
+    it("si vuelve alguien que ya no participa y es la misma persona, se le cobra la garantía y queda marcado como presente", () => {
       const { aplicacion } = montar(almacenamientosConAnaFueraDeLaTolerancia());
       hacerClic("Empezar encuentro");
 
       hacerClic("Vino alguien nuevo");
       completar("Nombre", "ana", dialogoAbierto());
       hacerClic("Registrar", dialogoAbierto());
+      hacerClic("Sí", dialogoAbierto());
+      hacerClic("Cobrar", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
       expect(casillaDeAsistencia("ana").checked).toBe(true);

@@ -117,9 +117,11 @@ export class PantallaEncuentro {
   }
 
   private _abrirCobro(nombre: string): void {
-    new DialogoDeCobroDeGarantia(this._entorno, nombre, () =>
-      this._entorno.aplicacion().cobrarGarantiaAAsistente(nombre, this._entorno.ahora()),
-    ).abrir();
+    new DialogoDeCobroDeGarantia(this._entorno, nombre, () => this._cobrarGarantia(nombre)).abrir();
+  }
+
+  private _cobrarGarantia(nombre: string): void {
+    this._entorno.aplicacion().cobrarGarantiaAAsistente(nombre, this._entorno.ahora());
   }
 
   private _repartir(nombre: string): void {
@@ -130,11 +132,12 @@ export class PantallaEncuentro {
   }
 
   private _abrirIngreso(): void {
-    new DialogoDeRegistro(this._entorno, "Vino alguien nuevo", (nombre) => this._ingresar(nombre)).abrir();
-  }
-
-  private _ingresar(nombre: string): void {
-    this._entorno.aplicacion().ingresarAsistente(nombre, this._entorno.ahora());
+    new DialogoDeRegistro(
+      this._entorno,
+      "Vino alguien nuevo",
+      (nombre) => this._entorno.aplicacion().ingresarAsistente(nombre, this._entorno.ahora()),
+      (nombre) => this._cobrarGarantia(nombre),
+    ).abrir();
   }
 
   private _pedirConfirmacion(): void {

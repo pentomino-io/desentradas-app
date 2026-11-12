@@ -4,9 +4,10 @@ import type { Entorno } from "./Entorno.ts";
 export class Dialogo {
   private _entorno: Entorno;
   private _titulo: string;
-  private _campos: HTMLElement[];
+  private _campos: Hijo[];
   private _textoDeConfirmacion: string;
   private _textoDeCancelacion: string;
+  private _alCancelar: () => void;
   private _alConfirmar: (formulario: HTMLFormElement) => void;
   private _errores: HTMLOutputElement;
   private _elemento: HTMLDialogElement | undefined;
@@ -14,7 +15,7 @@ export class Dialogo {
   constructor(
     entorno: Entorno,
     titulo: string,
-    campos: HTMLElement[],
+    campos: Hijo[],
     textoDeConfirmacion: string,
     alConfirmar: (formulario: HTMLFormElement) => void,
   ) {
@@ -23,13 +24,15 @@ export class Dialogo {
     this._campos = campos;
     this._textoDeConfirmacion = textoDeConfirmacion;
     this._textoDeCancelacion = "Cancelar";
+    this._alCancelar = () => {};
     this._alConfirmar = alConfirmar;
     this._errores = alerta();
     this._elemento = undefined;
   }
 
-  conTextoDeCancelacion(texto: string): this {
+  conTextoDeCancelacion(texto: string, alCancelar = () => {}): this {
     this._textoDeCancelacion = texto;
+    this._alCancelar = alCancelar;
     return this;
   }
 
@@ -43,12 +46,17 @@ export class Dialogo {
         crear(
           "p",
           {},
-          boton(this._textoDeCancelacion, () => this._cerrar()),
+          boton(this._textoDeCancelacion, () => this._cancelar()),
           " ",
           botonDeEnvio(this._textoDeConfirmacion),
         ),
       ),
     );
+  }
+
+  private _cancelar(): void {
+    this._cerrar();
+    this._alCancelar();
   }
 
   private _cerrar(): void {

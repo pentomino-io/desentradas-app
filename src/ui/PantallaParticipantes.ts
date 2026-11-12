@@ -78,8 +78,11 @@ export class PantallaParticipantes {
   }
 
   private _abrirIngreso(): void {
-    new DialogoDeRegistro(this._entorno, "Registrar participante", (nombre) =>
-      this._entorno.aplicacion().ingresar(nombre, this._entorno.ahora()),
+    new DialogoDeRegistro(
+      this._entorno,
+      "Registrar participante",
+      (nombre) => this._entorno.aplicacion().ingresar(nombre, this._entorno.ahora()),
+      (nombre) => this._entorno.aplicacion().cobrarGarantia(nombre, this._entorno.ahora()),
     ).abrir();
   }
 
