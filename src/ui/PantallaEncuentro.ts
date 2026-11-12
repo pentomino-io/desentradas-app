@@ -157,7 +157,7 @@ export class PantallaEncuentro {
         this._entorno,
         "Registrar encuentro",
         "Volver",
-        crear("p", {}, "No se puede registrar el encuentro sin asistentes"),
+        crear("p", {}, "No se puede registrar el encuentro sin asistentes."),
       );
     } else {
       this._pedirConfirmacion();

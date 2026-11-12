@@ -56,7 +56,7 @@ export class PantallaReglas {
       {},
       crear("h2", {}, "Reglas"),
       this._reglasVigentes(),
-      desplegable("Cambiar las reglas", this._formularioDeCambio()),
+      desplegable("Cambiar reglas", this._formularioDeCambio()),
       desplegable("Versiones anteriores", this._tablaDeVersiones()),
     );
   }
@@ -97,7 +97,7 @@ export class PantallaReglas {
     const anteriores = this._entorno.grupo().reglasAnteriores().toReversed();
     return tabla(
       undefined,
-      ["Rigieron desde", "Tolerancia", "Garantía"],
+      ["Desde", "Tolerancia", "Garantía"],
       anteriores.map((reglas) => fila(fechaYHora(reglas.rigeDesde()), ...valoresDe(reglas))),
     );
   }

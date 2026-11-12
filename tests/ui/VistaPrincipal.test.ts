@@ -648,7 +648,7 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Registrar encuentro");
       expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Registrar encuentro");
-      expect(textoDe(dialogoAbierto().querySelector("p")!)).toBe("No se puede registrar el encuentro sin asistentes");
+      expect(textoDe(dialogoAbierto().querySelector("p")!)).toBe("No se puede registrar el encuentro sin asistentes.");
       expect([...dialogoAbierto().querySelectorAll("button")].map(textoDe)).toEqual(["Volver"]);
       hacerClic("Volver", dialogoAbierto());
 
@@ -835,6 +835,8 @@ describe("VistaPrincipal", () => {
 
       expect(aplicacion.grupo().reglas().garantia()).toBe(1500);
       expect(aplicacion.grupo().reglas().rigeDesde()).toEqual(ahora());
+      const versiones = elementoConTexto("summary", "Versiones anteriores").parentElement!;
+      expect([...versiones.querySelectorAll("th")].map(textoDe)).toEqual(["Desde", "Tolerancia", "Garantía"]);
     });
 
     it("cambiar las reglas pide confirmar antes quiénes deben completar la garantía y quiénes reciben un crédito", async () => {
@@ -880,7 +882,8 @@ describe("VistaPrincipal", () => {
       await navegarA("Reglas");
 
       expect(textoDe(elementoConTexto("dt", "Garantía").nextElementSibling!)).toContain(explicacionDeLaGarantia);
-      expect(textoDe(etiqueta("¿Cuánto se paga de garantía?")!)).not.toContain(explicacionDeLaGarantia);
+      const cambio = elementoConTexto("summary", "Cambiar reglas").parentElement!;
+      expect(textoDe(etiqueta("¿Cuánto se paga de garantía?", cambio)!)).not.toContain(explicacionDeLaGarantia);
     });
   });
 
