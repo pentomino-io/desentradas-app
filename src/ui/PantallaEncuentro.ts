@@ -6,6 +6,7 @@ import { DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGarantia.ts";
 import { DialogoDeRegistro } from "./DialogoDeRegistro.ts";
 import { alerta, boton, botonDeEnvio, crear, fila, formulario, type Hijo, tablaOAviso } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
+import { estadoDe } from "./Estado.ts";
 import { alfabetico, porNombre } from "./Orden.ts";
 
 export class PantallaEncuentro {
@@ -91,7 +92,7 @@ export class PantallaEncuentro {
       disabled: !this._entorno.grupo().puedeAsistir(participante),
       onchange: () => this._marcar(nombre, casilla.checked),
     });
-    return fila(casilla, nombre, this._entorno.grupo().situacionDe(participante), this._accionDe(participante));
+    return fila(casilla, nombre, estadoDe(this._entorno.grupo(), participante), this._accionDe(participante));
   }
 
   private _accionDe(participante: Participante): HTMLElement | false {

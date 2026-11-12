@@ -709,6 +709,19 @@ describe("VistaPrincipal", () => {
       expect(casillaDeAsistencia("ana").checked).toBe(true);
     });
 
+    it("un inactivo figura en la asistencia con sus faltas contra la tolerancia", () => {
+      montar(almacenamientosConAnaInactiva());
+
+      hacerClic("Empezar encuentro");
+
+      expect(textosDeLasCeldas(fila("ana"))).toEqual([
+        "",
+        "ana",
+        "inactivo (1/2 faltas)",
+        "Cobrar garantía y habilitar",
+      ]);
+    });
+
     it("a quien tiene la garantía incompleta se le cobra la diferencia para habilitarlo, y queda marcado como presente", () => {
       const { aplicacion } = montar(almacenamientosConGarantiasIncompletas());
       hacerClic("Empezar encuentro");

@@ -4,6 +4,7 @@ import { DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGarantia.ts";
 import { DialogoDeRegistro } from "./DialogoDeRegistro.ts";
 import { boton, crear, desplegable, fila, type Hijo, tabla, tablaOAviso } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
+import { estadoDe } from "./Estado.ts";
 import { porNombre } from "./Orden.ts";
 
 const ultimoCambioDe = (participante: Participante) => participante.fechaDelUltimoCambio().getTime();
@@ -51,15 +52,7 @@ export class PantallaParticipantes {
   }
 
   private _filaDeActivo(participante: Participante): HTMLTableRowElement {
-    return fila(participante.nombre(), this._estadoConFaltas(participante));
-  }
-
-  private _estadoConFaltas(participante: Participante): string {
-    const situacion = this._entorno.grupo().situacionDe(participante);
-    if (situacion !== "inactivo") return situacion;
-
-    const tolerancia = this._entorno.grupo().reglas().toleranciaDeFaltas();
-    return `${situacion} (${participante.faltas()}/${tolerancia} faltas)`;
+    return fila(participante.nombre(), estadoDe(this._entorno.grupo(), participante));
   }
 
   private _tablaDeQuienesYaNoParticipan(): HTMLElement | undefined {
