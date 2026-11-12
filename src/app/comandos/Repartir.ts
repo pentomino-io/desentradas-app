@@ -13,7 +13,7 @@ export class Repartir extends ComandoSobreUnaPersona {
   }
 
   describir(): string {
-    return `Se repartió a ${this._nombre}`;
+    return `Se le entregó su crédito a ${this._nombre}`;
   }
 
   aJson(): ComandoJson {

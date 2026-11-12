@@ -1,4 +1,4 @@
-export type TipoDeMovimiento = "cobro" | "reparto";
+export type TipoDeMovimiento = "cobro" | "entrega";
 
 // Plata que entra a la caja o sale de ella, con la persona que la dio o la recibió.
 export interface Movimiento {

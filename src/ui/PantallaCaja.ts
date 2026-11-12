@@ -43,7 +43,7 @@ export class PantallaCaja {
       "Saldos",
       ["Nombre", "Estado", "Saldo", ""],
       saldos.map((saldo) => this._filaDeSaldo(saldo)),
-      "No hay nada para cobrar ni repartir",
+      "No hay nada para cobrar ni entregar",
     );
   }
 
@@ -58,7 +58,7 @@ export class PantallaCaja {
         {},
         saldo.debe() && boton("Cobrar garantía", () => this._abrirCobro(saldo.nombre())),
         ambos && " ",
-        saldo.tieneAFavor() && boton("Registrar reparto", () => this._abrirReparto(saldo)),
+        saldo.tieneAFavor() && boton("Entregar crédito", () => this._abrirEntrega(saldo)),
       ),
     );
   }
@@ -103,13 +103,13 @@ export class PantallaCaja {
     new DialogoDeCobroDeGarantia(this._entorno, this._entorno.grupo().participante(nombre)!).abrir();
   }
 
-  private _abrirReparto(saldo: Saldo): void {
+  private _abrirEntrega(saldo: Saldo): void {
     const nombre = saldo.nombre();
     new Dialogo(
       this._entorno,
-      `Reparto a ${nombre}`,
+      `Entregar crédito a ${nombre}`,
       [crear("p", {}, `Hay que entregarle ${monto(saldo.aFavor())}.`)],
-      "Registrar reparto",
+      "Entregar",
       () => this._entorno.aplicacion().repartir(nombre, this._entorno.ahora()),
     ).abrir();
   }

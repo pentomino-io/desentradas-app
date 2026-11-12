@@ -21,7 +21,7 @@ export class Reparto implements Movimiento {
   }
 
   tipo(): TipoDeMovimiento {
-    return "reparto";
+    return "entrega";
   }
 
   persona(): string {
@@ -29,7 +29,7 @@ export class Reparto implements Movimiento {
   }
 
   describir(): string {
-    return `reparto a ${this.acreedor()}`;
+    return `la entrega a ${this.acreedor()}`;
   }
 
   creditos(): readonly Credito[] {

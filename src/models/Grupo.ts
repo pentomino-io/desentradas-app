@@ -10,6 +10,8 @@ import { Participante } from "./Participante.ts";
 import { Saldo } from "./Saldo.ts";
 import type { Situacion } from "./estados/Estado.ts";
 
+const precedidoDeA = (frase: string): string => (frase.startsWith("el ") ? `al ${frase.slice(3)}` : `a ${frase}`);
+
 export class Grupo {
   private _nombre: string;
   private _historialDeReglas: Reglas[];
@@ -75,7 +77,7 @@ export class Grupo {
   }
 
   repartir(nombre: string, fecha: Date): Reparto {
-    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El reparto", fecha);
+    this._asertarQueNoEsAnteriorAlUltimoMovimiento("La entrega", fecha);
 
     return this._caja.repartir(nombre, fecha);
   }
@@ -217,19 +219,19 @@ export class Grupo {
 
   private _asertarQueNoEsAnteriorAlUltimoMovimiento(movimiento: string, fecha: Date): void {
     if (this._huboEncuentrosDespuesDe(fecha)) {
-      throw new Error(`${movimiento} no puede ser anterior al último encuentro`);
+      throw new Error(`${movimiento} no puede ser anterior ${precedidoDeA("el último encuentro")}`);
     }
     const posterior = this._caja.movimientoPosteriorA(fecha);
     if (posterior !== undefined) {
-      throw new Error(`${movimiento} no puede ser anterior al ${posterior.describir()}`);
+      throw new Error(`${movimiento} no puede ser anterior ${precedidoDeA(posterior.describir())}`);
     }
     if (fecha < this.reglas().rigeDesde()) {
-      throw new Error(`${movimiento} no puede ser anterior ${this._origenDeLasReglas()}`);
+      throw new Error(`${movimiento} no puede ser anterior ${precedidoDeA(this._origenDeLasReglas())}`);
     }
   }
 
   private _origenDeLasReglas(): string {
-    return this.reglasAnteriores().length === 0 ? "a la creación del grupo" : "al último cambio de reglas";
+    return this.reglasAnteriores().length === 0 ? "la creación del grupo" : "el último cambio de reglas";
   }
 
   private _esPosteriorAlUltimoEncuentro(fecha: Date): boolean {

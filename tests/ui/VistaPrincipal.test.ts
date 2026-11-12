@@ -450,9 +450,9 @@ describe("VistaPrincipal", () => {
       expect(buscar("p > span", (texto) => texto.startsWith("Por cobrar"), document)).toBeUndefined();
       expect(hayElementoConTexto("p > span", "Por repartir $ 2.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
-        ["beto", "inactivo", "$ 334", "Registrar reparto"],
-        ["carla", "participando", "$ 833", "Registrar reparto"],
-        ["dani", "participando", "$ 833", "Registrar reparto"],
+        ["beto", "inactivo", "$ 334", "Entregar crédito"],
+        ["carla", "participando", "$ 833", "Entregar crédito"],
+        ["dani", "participando", "$ 833", "Entregar crédito"],
       ]);
     });
 
@@ -470,10 +470,10 @@ describe("VistaPrincipal", () => {
           "beto",
           "garantía incompleta (la cubren sus créditos)",
           "falta $ 334, a favor $ 334",
-          "Cobrar garantía Registrar reparto",
+          "Cobrar garantía Entregar crédito",
         ],
-        ["carla", "garantía incompleta", "falta $ 334, a favor $ 333", "Cobrar garantía Registrar reparto"],
-        ["dani", "garantía incompleta", "falta $ 334, a favor $ 333", "Cobrar garantía Registrar reparto"],
+        ["carla", "garantía incompleta", "falta $ 334, a favor $ 333", "Cobrar garantía Entregar crédito"],
+        ["dani", "garantía incompleta", "falta $ 334, a favor $ 333", "Cobrar garantía Entregar crédito"],
       ]);
       expect(textoDe(fila("beto").querySelector(".debe")!)).toBe("falta $ 334");
       expect(textoDe(fila("beto").querySelector(".a-favor")!)).toBe("a favor $ 334");
@@ -504,31 +504,31 @@ describe("VistaPrincipal", () => {
       hacerClic("Completar con créditos", dialogoAbierto());
 
       expect(aplicacion.grupo().puedeAsistir(aplicacion.grupo().participante("beto")!)).toBe(true);
-      expect(textosDeLasCeldas(fila("beto"))).toEqual(["beto", "participando", "$ 34", "Registrar reparto"]);
+      expect(textosDeLasCeldas(fila("beto"))).toEqual(["beto", "participando", "$ 34", "Entregar crédito"]);
     });
 
-    it("repartir entrega los créditos pendientes y queda entre los movimientos, junto a los cobros de garantía", async () => {
+    it("entregar el crédito entrega los créditos pendientes y queda entre los movimientos, junto a los cobros de garantía", async () => {
       const { aplicacion } = montar(almacenamientosConAnaInactiva()); // beto recibe 334
       await navegarA("Caja");
 
-      hacerClic("Registrar reparto", fila("beto"));
-      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Reparto a beto");
+      hacerClic("Entregar crédito", fila("beto"));
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Entregar crédito a beto");
       expect(textoDe(dialogoAbierto())).toContain("Hay que entregarle $ 334.");
-      hacerClic("Registrar reparto", dialogoAbierto());
+      hacerClic("Entregar", dialogoAbierto());
 
       expect(aplicacion.grupo().caja().montoPendienteDe("beto")).toBe(0);
       expect(filasDe(elementoConTexto("summary", "Movimientos").parentElement!)).toEqual([
-        [fechaYHora(ahora()), "beto", "reparto", "$ 334"],
+        [fechaYHora(ahora()), "beto", "entrega", "$ 334"],
         ...["dani", "carla", "beto", "ana"].map((nombre) => [fechaYHora(dia(1)), nombre, "cobro", "$ 1.000"]),
       ]);
     });
 
-    it("sin saldos dice que no hay nada para cobrar ni repartir", async () => {
+    it("sin saldos dice que no hay nada para cobrar ni entregar", async () => {
       montar(almacenamientosConGrupoSinParticipantes());
 
       await navegarA("Caja");
 
-      expect(hayElementoConTexto("p", "No hay nada para cobrar ni repartir")).toBe(true);
+      expect(hayElementoConTexto("p", "No hay nada para cobrar ni entregar")).toBe(true);
       expect(document.querySelector("table")).toBeNull();
     });
   });
@@ -762,6 +762,16 @@ describe("VistaPrincipal", () => {
 
       expect(aplicacion.grupo().caja().movimientos().at(-1)?.monto()).toBe(166);
       expect(casillaDeAsistencia("beto").checked).toBe(true);
+    });
+
+    it("a un presente con créditos pendientes se le pueden entregar desde el encuentro", () => {
+      const { aplicacion } = montar(almacenamientosConAnaInactiva()); // beto recibe 334
+      hacerClic("Empezar encuentro");
+      casillaDeAsistencia("beto").click();
+
+      hacerClic("Entregar $ 334", fila("beto"));
+
+      expect(aplicacion.grupo().caja().montoPendienteDe("beto")).toBe(0);
     });
 
     it("sin posibles asistentes dice que todavía no hay nadie", async () => {

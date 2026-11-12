@@ -17,7 +17,7 @@ describe("Cobro", () => {
 
     const descripcion = cobro.describir();
 
-    expect(descripcion).toBe("ingreso de ana");
+    expect(descripcion).toBe("el ingreso de ana");
   });
 
   it("el cobro de una garantía se describe como tal, con la persona a quien se le cobró", () => {
@@ -25,7 +25,7 @@ describe("Cobro", () => {
 
     const descripcion = cobro.describir();
 
-    expect(descripcion).toBe("cobro de la garantía a ana");
+    expect(descripcion).toBe("el cobro de la garantía a ana");
   });
 
   it("el monto de un cobro debe ser positivo", () => {

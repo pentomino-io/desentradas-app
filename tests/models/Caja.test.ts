@@ -96,7 +96,7 @@ describe("Caja", () => {
   });
 
   describe("movimientos", () => {
-    it("los movimientos son los cobros y los repartos, en orden cronológico, sin las garantías perdidas", () => {
+    it("los movimientos son los cobros y las entregas de créditos, en orden cronológico, sin las garantías perdidas", () => {
       const caja = nuevaCaja();
       caja.cobrar(Cobro.alIngresar("ana", 1000, dia(1)));
       caja.distribuir(garantiaPerdida({ persona: "ana", monto: 1000, numero: 3, asistentes: ["beto"] }));
@@ -114,7 +114,7 @@ describe("Caja", () => {
         ]),
       ).toEqual([
         [dia(1), "cobro", "ana", 1000],
-        [dia(5), "reparto", "beto", 1000],
+        [dia(5), "entrega", "beto", 1000],
         [dia(6), "cobro", "dario", 300],
       ]);
     });

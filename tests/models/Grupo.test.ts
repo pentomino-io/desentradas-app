@@ -419,13 +419,13 @@ describe("Grupo", () => {
       expect(grupo.caja().movimientos()).toHaveLength(2);
     });
 
-    it("no se puede cobrar la garantía en una fecha anterior al último reparto", () => {
+    it("no se puede cobrar la garantía en una fecha anterior a la última entrega de créditos", () => {
       const { grupo, ana } = grupoConAnaInactiva();
       grupo.repartir("beto", dia(5));
 
       expect(() => {
         grupo.cobrarGarantia("ana", dia(4));
-      }).toThrow("El cobro de la garantía no puede ser anterior al reparto a beto");
+      }).toThrow("El cobro de la garantía no puede ser anterior a la entrega a beto");
       expect(ana.estado()).toBe("inactivo");
     });
   });
@@ -566,17 +566,17 @@ describe("Grupo", () => {
       expect(grupo.encuentros()).toHaveLength(2);
     });
 
-    it("no se puede registrar un encuentro anterior al último reparto", () => {
+    it("no se puede registrar un encuentro anterior a la última entrega de créditos", () => {
       const { grupo } = grupoConAnaInactiva();
       grupo.repartir("beto", dia(5));
 
       expect(() => {
         grupo.registrarEncuentro(nuevoEncuentro({ numero: 4, asistentes: ["beto"] }));
-      }).toThrow("El encuentro no puede ser anterior al reparto a beto");
+      }).toThrow("El encuentro no puede ser anterior a la entrega a beto");
       expect(grupo.encuentros()).toHaveLength(1);
     });
 
-    it("se puede registrar un encuentro en la misma fecha que el último cobro y el último reparto", () => {
+    it("se puede registrar un encuentro en la misma fecha que el último cobro y la última entrega de créditos", () => {
       const { grupo, ana } = grupoConAnaInactiva();
       grupo.cobrarGarantia("ana", dia(9));
       grupo.repartir("beto", dia(9));
@@ -748,17 +748,17 @@ describe("Grupo", () => {
       expect(grupo.caja().repartos()).toEqual([reparto]);
     });
 
-    it("no se puede repartir en una fecha anterior al último cobro", () => {
+    it("no se pueden entregar créditos en una fecha anterior al último cobro", () => {
       const { grupo } = grupoConAnaInactiva();
       grupo.cobrarGarantia("ana", dia(5));
 
       expect(() => {
         grupo.repartir("beto", dia(4));
-      }).toThrow("El reparto no puede ser anterior al cobro de la garantía a ana");
+      }).toThrow("La entrega no puede ser anterior al cobro de la garantía a ana");
       expect(grupo.caja().repartos()).toEqual([]);
     });
 
-    it("no se puede repartir en una fecha anterior al último reparto", () => {
+    it("no se pueden entregar créditos en una fecha anterior a la última entrega", () => {
       const grupo = nuevoGrupo();
       grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
@@ -768,18 +768,18 @@ describe("Grupo", () => {
 
       expect(() => {
         grupo.repartir("carla", dia(4));
-      }).toThrow("El reparto no puede ser anterior al reparto a beto");
+      }).toThrow("La entrega no puede ser anterior a la entrega a beto");
       expect(grupo.caja().montoPendienteDe("carla")).toBe(500);
       expect(grupo.caja().repartos()).toEqual([repartoABeto]);
     });
 
-    it("no se puede repartir en una fecha anterior al último encuentro", () => {
+    it("no se pueden entregar créditos en una fecha anterior al último encuentro", () => {
       const { grupo } = grupoConAnaInactiva();
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"] }));
 
       expect(() => {
         grupo.repartir("beto", dia(5));
-      }).toThrow("El reparto no puede ser anterior al último encuentro");
+      }).toThrow("La entrega no puede ser anterior al último encuentro");
       expect(grupo.caja().repartos()).toEqual([]);
     });
   });

@@ -306,11 +306,11 @@ describe("Descripción de los comandos", () => {
     expect(comando.describir()).toBe("Encuentro con 3/4 presentes");
   });
 
-  it("repartir lleva la fecha del reparto y se describe como que se le repartió a la persona", () => {
+  it("repartir lleva la fecha de la entrega y se describe como que se le entregó su crédito a la persona", () => {
     const comando = new Repartir("beto", dia(4));
 
     expect(comando.fecha()).toEqual(dia(4));
-    expect(comando.describir()).toBe("Se repartió a beto");
+    expect(comando.describir()).toBe("Se le entregó su crédito a beto");
   });
 
   it("cambiar reglas lleva la fecha desde la que rigen las nuevas reglas y se describe como que se cambiaron las reglas, sin más datos", () => {
