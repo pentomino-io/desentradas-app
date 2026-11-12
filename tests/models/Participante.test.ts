@@ -43,6 +43,27 @@ describe("Participante", () => {
       expect(ana.faltas()).toBe(1);
     });
 
+    it("bajarle la garantía lo deja participando con la nueva y devuelve el excedente", () => {
+      const ana = nuevoParticipante(1500);
+
+      const excedente = ana.bajarGarantia(dia(2), 1000);
+
+      expect(excedente).toBe(500);
+      expect(ana.estado()).toBe("participando");
+      expect(ana.garantia()).toBe(1000);
+      expect(ana.historial().at(-1)?.disparador()).toBe("cambio de reglas");
+    });
+
+    it("bajarle la garantía a una que no es menor que la suya no la cambia", () => {
+      const ana = nuevoParticipante(1000);
+
+      const excedente = ana.bajarGarantia(dia(2), 1500);
+
+      expect(excedente).toBe(0);
+      expect(ana.garantia()).toBe(1000);
+      expect(ana.historial()).toHaveLength(1);
+    });
+
     it("no se le puede cobrar la garantía", () => {
       const ana = nuevoParticipante();
 
@@ -76,6 +97,15 @@ describe("Participante", () => {
       expect(perdida).toBeUndefined();
       expect(ana.estado()).toBe("inactivo");
       expect(ana.faltas()).toBe(2);
+    });
+
+    it("bajarle la garantía no le devuelve nada, porque no tiene garantía", () => {
+      const ana = inactivo();
+
+      const excedente = ana.bajarGarantia(dia(3), 500);
+
+      expect(excedente).toBe(0);
+      expect(ana.historial()).toHaveLength(2);
     });
 
     it("cobrarle la garantía lo devuelve a participando con esa garantía y sin faltas", () => {

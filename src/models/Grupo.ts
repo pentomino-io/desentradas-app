@@ -1,5 +1,6 @@
 import { Caja } from "./Caja.ts";
 import { Cobro } from "./Cobro.ts";
+import { Credito } from "./Credito.ts";
 import type { Desempate } from "./Desempate.ts";
 import type { Encuentro } from "./Encuentro.ts";
 import type { Reglas } from "./Reglas.ts";
@@ -33,6 +34,7 @@ export class Grupo {
     this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cambio de reglas", reglas.rigeDesde());
 
     this._historialDeReglas.push(reglas);
+    this._devolverLosExcedentesDeGarantia(reglas);
   }
 
   reglas(): Reglas {
@@ -117,6 +119,13 @@ export class Grupo {
 
   participante(nombre: string): Participante | undefined {
     return this._participantes.find((participante) => participante.nombre() === nombre);
+  }
+
+  private _devolverLosExcedentesDeGarantia(reglas: Reglas): void {
+    for (const participante of this._participantes) {
+      const excedente = participante.bajarGarantia(reglas.rigeDesde(), reglas.garantia());
+      if (excedente > 0) this._caja.acreditar(new Credito(participante.nombre(), excedente));
+    }
   }
 
   private _participantesLlamados(nombres: Iterable<string>): readonly Participante[] {

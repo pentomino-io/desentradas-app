@@ -15,6 +15,10 @@ export abstract class Estado {
     throw new TransicionInvalida("cobrar la garantía", this.nombre());
   }
 
+  bajarGarantia(_garantia: number): Estado {
+    return this;
+  }
+
   puedeAsistir(): boolean {
     return false;
   }

@@ -21,6 +21,10 @@ export class Participando extends Estado {
     return new Inactivo(1);
   }
 
+  override bajarGarantia(garantia: number): Estado {
+    return new Participando(garantia);
+  }
+
   override puedeAsistir(): boolean {
     return true;
   }

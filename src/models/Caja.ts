@@ -22,6 +22,10 @@ export class Caja {
     this._cobros.push(cobro);
   }
 
+  acreditar(credito: Credito): void {
+    this._creditosPendientes.push(credito);
+  }
+
   distribuir(garantiaPerdida: GarantiaPerdida): void {
     this._creditosPendientes.push(...this._creditosPorDistribuir(garantiaPerdida));
   }

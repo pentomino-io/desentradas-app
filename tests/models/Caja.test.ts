@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Caja } from "../../src/models/Caja.ts";
 import { Cobro } from "../../src/models/Cobro.ts";
-import { desempate, dia, garantiaPerdida } from "./factories.ts";
+import { desempate, dia, garantiaPerdida, nuevoCredito } from "./factories.ts";
 
 const nuevaCaja = () => new Caja(desempate);
 
@@ -43,6 +43,14 @@ describe("Caja", () => {
   });
 
   describe("créditos pendientes", () => {
+    it("un crédito acreditado queda pendiente para su acreedor", () => {
+      const caja = nuevaCaja();
+
+      caja.acreditar(nuevoCredito({ acreedor: "beto", monto: 200 }));
+
+      expect(caja.montoPendienteDe("beto")).toBe(200);
+    });
+
     it("conoce el monto de los créditos pendientes, por nombre y en total", () => {
       const caja = nuevaCaja();
       caja.distribuir(garantiaPerdida({ monto: 1000 }));

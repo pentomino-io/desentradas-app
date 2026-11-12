@@ -123,6 +123,19 @@ describe("Grupo", () => {
     });
   });
 
+  describe("cambio de garantía", () => {
+    it("bajar la garantía les devuelve el excedente como crédito pendiente a quienes participan, y nada a los inactivos", () => {
+      const { grupo, ana, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito por la falta de ana
+
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 600 }));
+
+      expect(beto.garantia()).toBe(600);
+      expect(grupo.caja().montoPendienteDe("beto")).toBe(1400);
+      expect(ana.garantia()).toBe(0);
+      expect(grupo.caja().montoPendienteDe("ana")).toBe(0);
+    });
+  });
+
   describe("ingreso", () => {
     it("al ingresar, la persona queda como participante del grupo", () => {
       const grupo = nuevoGrupo();

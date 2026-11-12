@@ -1,6 +1,6 @@
 import type { Estado, NombreDeEstado } from "./estados/Estado.ts";
 
-export type Disparador = "ingreso" | "voy" | "falto" | "cobro de garantía";
+export type Disparador = "ingreso" | "voy" | "falto" | "cobro de garantía" | "cambio de reglas";
 
 export class Transicion {
   private _fecha: Date;
