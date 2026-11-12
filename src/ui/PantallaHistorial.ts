@@ -88,7 +88,7 @@ export class PantallaHistorial {
     const presentes = new Set(asistencia.presentes);
     const filas = [...asistencia.presentes, ...asistencia.ausentes]
       .toSorted(alfabetico)
-      .map((nombre) => fila(nombre, presentes.has(nombre) ? "Presente" : "Ausente"));
+      .map((nombre) => fila(nombre, presentes.has(nombre) ? "presente" : "ausente"));
     mostrarEnDialogo(
       this._entorno,
       `Encuentro del ${fechaYHora(fecha)}`,

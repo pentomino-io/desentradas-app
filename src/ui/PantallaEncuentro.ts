@@ -74,7 +74,7 @@ export class PantallaEncuentro {
     const posiblesAsistentes = this._entorno.grupo().posiblesAsistentes().toSorted(porNombre);
     return tablaOAviso(
       "Asistencia",
-      ["Asiste", "Nombre", "Estado", ""],
+      ["Presente", "Nombre", "Estado", ""],
       posiblesAsistentes.map((participante) => this._filaDe(participante)),
       "Todavía no hay nadie",
       boton("Vino alguien nuevo", () => this._abrirIngreso()),
@@ -87,7 +87,7 @@ export class PantallaEncuentro {
       type: "checkbox",
       name: "asistentes",
       value: nombre,
-      "aria-label": `Asiste ${nombre}`,
+      "aria-label": `Presente ${nombre}`,
       checked: this._planillaDeAsistencia().asiste(nombre),
       disabled: !this._entorno.grupo().puedeAsistir(participante),
       onchange: () => this._marcar(nombre, casilla.checked),

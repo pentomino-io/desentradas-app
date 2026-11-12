@@ -558,6 +558,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Empezar encuentro");
 
       expect(aplicacion.tienePlanillaDeAsistencia()).toBe(true);
+      expect([...document.querySelectorAll("main th")].map(textoDe)).toEqual(["Presente", "Nombre", "Estado", ""]);
       expect(casillaDeAsistencia("beto").checked).toBe(false);
       expect(hayElementoConTexto("button", "Empezar encuentro")).toBe(false);
     });
@@ -966,10 +967,10 @@ describe("VistaPrincipal", () => {
       expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe(`Encuentro del ${fechaYHora(dia(2))}`);
       expect([...dialogoAbierto().querySelectorAll("th")].map(textoDe)).toEqual(["Nombre", "Asistencia"]);
       expect(filasDe(dialogoAbierto())).toEqual([
-        ["ana", "Ausente"],
-        ["beto", "Presente"],
-        ["carla", "Presente"],
-        ["dani", "Presente"],
+        ["ana", "ausente"],
+        ["beto", "presente"],
+        ["carla", "presente"],
+        ["dani", "presente"],
       ]);
       hacerClic("Cerrar", dialogoAbierto());
 
