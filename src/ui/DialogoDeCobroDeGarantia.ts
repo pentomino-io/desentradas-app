@@ -10,12 +10,17 @@ export const avisoDeGarantia = (grupo: Grupo): HTMLParagraphElement =>
 
 export const cobroDeLaGarantiaA = (grupo: Grupo, participante: Participante): string => {
   const porCobrar = grupo.garantiaPorCobrarA(participante);
+  if (grupo.susCreditosCubrenLaGarantiaDe(participante))
+    return `la garantía de ${monto(porCobrar)} la cubren sus créditos: no hay que cobrarle nada.`;
+
   const deCreditos = grupo.creditosParaLaGarantiaDe(participante);
-  if (deCreditos === 0) return `cobrarle ${monto(porCobrar)} de garantía.`;
+  if (deCreditos === 0) return `hay que cobrarle ${monto(porCobrar)} de garantía.`;
 
   const enEfectivo = monto(porCobrar - deCreditos);
-  return `cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} de la garantía de ${monto(porCobrar)} salen de sus créditos.`;
+  return `hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} de la garantía de ${monto(porCobrar)} salen de sus créditos.`;
 };
+
+const conMayuscula = (texto: string): string => texto[0].toUpperCase() + texto.slice(1);
 
 const avisoDeCompletarLaGarantia = (grupo: Grupo, participante: Participante): string => {
   const porCobrar = grupo.garantiaPorCobrarA(participante);
@@ -31,13 +36,10 @@ const avisoDeCompletarLaGarantia = (grupo: Grupo, participante: Participante): s
   return `${faltante} Hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} salen de sus créditos.`;
 };
 
-const avisoDeCobro = (grupo: Grupo, participante: Participante): string => {
-  if (grupo.situacionDe(participante) !== "inactivo") return avisoDeCompletarLaGarantia(grupo, participante);
-
-  return grupo.susCreditosCubrenLaGarantiaDe(participante)
-    ? `La garantía de ${monto(grupo.garantiaPorCobrarA(participante))} la cubren sus créditos: no hay que cobrarle nada.`
-    : `Hay que ${cobroDeLaGarantiaA(grupo, participante)}`;
-};
+const avisoDeCobro = (grupo: Grupo, participante: Participante): string =>
+  grupo.situacionDe(participante) === "inactivo"
+    ? conMayuscula(cobroDeLaGarantiaA(grupo, participante))
+    : avisoDeCompletarLaGarantia(grupo, participante);
 
 const textoDeConfirmacion = (grupo: Grupo, participante: Participante): string => {
   if (!grupo.susCreditosCubrenLaGarantiaDe(participante)) return "Cobrar";
