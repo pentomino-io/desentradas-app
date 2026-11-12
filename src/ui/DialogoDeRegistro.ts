@@ -9,11 +9,15 @@ const yaHayAlguien = (nombre: string): string => `Ya hay alguien con el nombre $
 
 const pedidoDeOtroNombre = (nombre: string): string => `${yaHayAlguien(nombre)} Escribí otro nombre.`;
 
+const pedidoDeMarcarlo = (nombre: string): string =>
+  `${nombre} ya está en la lista de asistencia: marcala ahí. Si es otra persona, escribí otro nombre.`;
+
 export class DialogoDeRegistro {
   private _entorno: Entorno;
   private _titulo: string;
   private _ingresar: (nombre: string) => void;
   private _cobrarGarantia: (nombre: string) => void;
+  private _conListaDeAsistencia: boolean;
 
   constructor(
     entorno: Entorno,
@@ -25,6 +29,12 @@ export class DialogoDeRegistro {
     this._titulo = titulo;
     this._ingresar = ingresar;
     this._cobrarGarantia = cobrarGarantia;
+    this._conListaDeAsistencia = false;
+  }
+
+  conListaDeAsistencia(): this {
+    this._conListaDeAsistencia = true;
+    return this;
   }
 
   abrir(pedido?: string): void {
@@ -45,11 +55,17 @@ export class DialogoDeRegistro {
     const participante = this._entorno.grupo().participante(nombre);
     if (participante === undefined) {
       this._ingresar(nombre);
+    } else if (this._figuraEnLaListaDeAsistencia(participante)) {
+      throw new Error(pedidoDeMarcarlo(nombre));
     } else if (this._entorno.grupo().situacionDe(participante) === "inactivo") {
       this._preguntarSiEsLaMismaPersona(participante);
     } else {
       throw new Error(pedidoDeOtroNombre(nombre));
     }
+  }
+
+  private _figuraEnLaListaDeAsistencia(participante: Participante): boolean {
+    return this._conListaDeAsistencia && this._entorno.grupo().posiblesAsistentes().includes(participante);
   }
 
   private _preguntarSiEsLaMismaPersona(participante: Participante): void {

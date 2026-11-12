@@ -146,7 +146,9 @@ export class PantallaEncuentro {
       "Vino alguien nuevo",
       (nombre) => this._entorno.aplicacion().ingresarAsistente(nombre, this._entorno.ahora()),
       (nombre) => this._cobrarGarantia(nombre),
-    ).abrir();
+    )
+      .conListaDeAsistencia()
+      .abrir();
   }
 
   private _registrar(): void {

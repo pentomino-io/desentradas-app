@@ -723,6 +723,20 @@ describe("VistaPrincipal", () => {
       ]);
     });
 
+    it("si vino alguien nuevo con el nombre de alguien de la lista de asistencia, pide marcarlo ahí u otro nombre", () => {
+      const { aplicacion } = montar(almacenamientosConAnaInactiva());
+      hacerClic("Empezar encuentro");
+      hacerClic("Vino alguien nuevo");
+      completar("Nombre", "ana", dialogoAbierto());
+
+      hacerClic("Registrar", dialogoAbierto());
+
+      expect(textoDe(dialogoAbierto().querySelector("[role=alert]")!)).toBe(
+        "ana ya está en la lista de asistencia: marcala ahí. Si es otra persona, escribí otro nombre.",
+      );
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
+    });
+
     it("a quien tiene la garantía incompleta se le cobra la diferencia para habilitarlo, y queda marcado como presente", () => {
       const { aplicacion } = montar(almacenamientosConGarantiasIncompletas());
       hacerClic("Empezar encuentro");
