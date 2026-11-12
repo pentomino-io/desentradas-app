@@ -85,10 +85,9 @@ export class Grupo {
     this._asertarQuePuedenFaltar(encuentro);
 
     this._participantesLlamados(encuentro.asistentes()).forEach((participante) => participante.voy(encuentro));
-    this._participantesLlamados(encuentro.ausentes()).forEach((participante) => {
-      const perdida = participante.falto(encuentro);
-      if (perdida !== undefined) this._caja.distribuir(perdida);
-    });
+    this._participantesLlamados(encuentro.ausentes()).forEach((participante) =>
+      this._caja.distribuir(participante.falto(encuentro)),
+    );
     this._encuentros.push(encuentro);
   }
 

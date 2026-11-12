@@ -51,9 +51,9 @@ describe("Participante", () => {
 
       const perdida = ana.falto(encuentro);
 
-      expect(perdida?.persona()).toBe("ana");
-      expect(perdida?.monto()).toBe(1500);
-      expect(perdida?.encuentroFaltado()).toBe(encuentro);
+      expect(perdida.persona()).toBe("ana");
+      expect(perdida.monto()).toBe(1500);
+      expect(perdida.encuentroFaltado()).toBe(encuentro);
       expect(ana.estado()).toBe("inactivo");
       expect(ana.garantia()).toBe(0);
       expect(ana.faltas()).toBe(1);
@@ -136,7 +136,7 @@ describe("Participante", () => {
 
       const perdida = ana.falto(nuevoEncuentro({ numero: 9 }));
 
-      expect(perdida).toBeUndefined();
+      expect(perdida.monto()).toBe(0);
       expect(ana.estado()).toBe("inactivo");
       expect(ana.faltas()).toBe(2);
     });

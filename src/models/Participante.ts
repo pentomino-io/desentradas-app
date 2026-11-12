@@ -17,12 +17,10 @@ export class Participante {
     this._transicionar("voy", encuentro.fecha(), this._estado().voy());
   }
 
-  falto(encuentro: Encuentro): GarantiaPerdida | undefined {
-    const garantia = this.garantia();
+  falto(encuentro: Encuentro): GarantiaPerdida {
+    const perdida = new GarantiaPerdida(this._nombre, this.garantia(), encuentro);
     this._transicionar("falto", encuentro.fecha(), this._estado().falto());
-    if (garantia === 0) return undefined;
-
-    return new GarantiaPerdida(this._nombre, garantia, encuentro);
+    return perdida;
   }
 
   cobrarGarantia(fecha: Date, garantia: number): void {
