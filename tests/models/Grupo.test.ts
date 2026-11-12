@@ -3,7 +3,6 @@ import type { Caja } from "../../src/models/Caja.ts";
 import type { Credito } from "../../src/models/Credito.ts";
 import type { Encuentro } from "../../src/models/Encuentro.ts";
 import { Grupo } from "../../src/models/Grupo.ts";
-import { InteresFijoPorDia, InteresMensual } from "../../src/models/PoliticaDeInteres.ts";
 import { desempate, dia, nuevoEncuentro, nuevoGrupo, reglas } from "./factories.ts";
 
 const grupoConAnaMorosa = () => {
@@ -202,34 +201,6 @@ describe("Grupo", () => {
       expect(ana.deudaAl(dia(24))).toBe(1000);
     });
 
-    it("el interés de un moroso es el de las reglas vigentes la última vez que fue, aunque después se agregue", () => {
-      const grupo = nuevoGrupo(reglas({ montoPorFalta: 1000 }));
-      const ana = grupo.ingresar("ana", dia(1));
-      grupo.ingresar("beto", dia(1));
-      grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["ana", "beto"] }));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), politicaDeInteres: new InteresMensual(30) }));
-      grupo.registrarEncuentro(nuevoEncuentro({ numero: 4, asistentes: ["beto"], ausentes: ["ana"] }));
-
-      grupo.registrarEncuentro(nuevoEncuentro({ numero: 5, asistentes: ["beto"], ausentes: ["ana"] }));
-
-      expect(ana.estado()).toBe("moroso");
-      expect(ana.deudaAl(dia(15))).toBe(1000);
-    });
-
-    it("el interés de un moroso es el de las reglas vigentes la última vez que fue, aunque después se quite", () => {
-      const grupo = nuevoGrupo(reglas({ montoPorFalta: 1000, politicaDeInteres: new InteresMensual(30) }));
-      const ana = grupo.ingresar("ana", dia(1));
-      grupo.ingresar("beto", dia(1));
-      grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["ana", "beto"] }));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(3) }));
-      grupo.registrarEncuentro(nuevoEncuentro({ numero: 4, asistentes: ["beto"], ausentes: ["ana"] }));
-
-      grupo.registrarEncuentro(nuevoEncuentro({ numero: 5, asistentes: ["beto"], ausentes: ["ana"] }));
-
-      expect(ana.estado()).toBe("moroso");
-      expect(ana.deudaAl(dia(15))).toBe(1100);
-    });
-
     it("la tolerancia de faltas es la de las reglas vigentes la última vez que fue", () => {
       const grupo = nuevoGrupo(reglas({ toleranciaDeFaltas: 3 }));
       const ana = grupo.ingresar("ana", dia(1));
@@ -264,9 +235,7 @@ describe("Grupo", () => {
       const ana = grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana"] }));
-      grupo.cambiarReglas(
-        reglas({ rigeDesde: dia(5), montoPorFalta: 2000, politicaDeInteres: new InteresFijoPorDia(10) }),
-      );
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(5), montoPorFalta: 2000 }));
 
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"], ausentes: ["ana"] }));
 
@@ -667,16 +636,15 @@ describe("Grupo", () => {
   });
 
   describe("saldos", () => {
-    it("quien debe tiene un saldo negativo por su deuda a la fecha, y quien no debe ni tiene créditos no tiene saldo", () => {
-      const grupo = nuevoGrupo(reglas({ politicaDeInteres: new InteresFijoPorDia(10) }));
+    it("quien debe tiene un saldo negativo por su deuda, y quien no debe ni tiene créditos no tiene saldo", () => {
+      const grupo = nuevoGrupo();
       grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana"] }));
-      grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"], ausentes: ["ana"] })); // ana queda morosa y empieza a sumar interés
 
       const saldos = grupo.saldosAl(dia(11));
 
-      expect(saldos.map((saldo) => [saldo.nombre(), saldo.monto()])).toEqual([["ana", -1020]]);
+      expect(saldos.map((saldo) => [saldo.nombre(), saldo.monto()])).toEqual([["ana", -1000]]);
     });
 
     it("quien tiene créditos pendientes tiene un saldo positivo por ellos, aunque su participación esté finalizada", () => {

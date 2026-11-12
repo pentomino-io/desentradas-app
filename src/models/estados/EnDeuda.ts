@@ -1,4 +1,3 @@
-import type { Encuentro } from "../Encuentro.ts";
 import { ConDeuda } from "./ConDeuda.ts";
 import type { Estado, NombreDeEstado } from "./Estado.ts";
 import { LibreDeDeuda } from "./LibreDeDeuda.ts";
@@ -9,8 +8,8 @@ export class EnDeuda extends ConDeuda {
     return "en deuda";
   }
 
-  override falto(encuentro: Encuentro): Estado {
-    return new Moroso(this._deuda, encuentro.fecha(), this.reglas());
+  override falto(): Estado {
+    return new Moroso(this._deuda, this.reglas());
   }
 
   override soloLeFaltaPagarParaAsistir(): boolean {

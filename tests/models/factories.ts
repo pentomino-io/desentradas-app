@@ -5,7 +5,6 @@ import { Encuentro } from "../../src/models/Encuentro.ts";
 import { Grupo } from "../../src/models/Grupo.ts";
 import { Participante } from "../../src/models/Participante.ts";
 import { Reglas } from "../../src/models/Reglas.ts";
-import { type PoliticaDeInteres, SinInteres } from "../../src/models/PoliticaDeInteres.ts";
 
 export const dia = (numero: number) => new Date(`2026-09-${String(numero).padStart(2, "0")}T19:00:00`);
 
@@ -20,13 +19,11 @@ export const reglas = ({
   rigeDesde = dia(1),
   toleranciaDeFaltas = 2,
   montoPorFalta = 1000,
-  politicaDeInteres = new SinInteres(),
 }: {
   rigeDesde?: Date;
   toleranciaDeFaltas?: number;
   montoPorFalta?: number;
-  politicaDeInteres?: PoliticaDeInteres;
-} = {}) => new Reglas(rigeDesde, toleranciaDeFaltas, montoPorFalta, politicaDeInteres);
+} = {}) => new Reglas(rigeDesde, toleranciaDeFaltas, montoPorFalta);
 
 export const nuevoParticipante = (reglasDeIngreso = reglas()) => new Participante("ana", dia(1), reglasDeIngreso);
 

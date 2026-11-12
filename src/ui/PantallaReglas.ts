@@ -4,11 +4,7 @@ import { alerta, botonDeEnvio, crear, desplegable, fila, formulario, tabla } fro
 import type { Entorno } from "./Entorno.ts";
 import { camposDeReglas, reglasDesde } from "./FormularioDeReglas.ts";
 
-const valoresDe = (reglas: Reglas): string[] => [
-  String(reglas.toleranciaDeFaltas()),
-  monto(reglas.montoPorFalta()),
-  reglas.politicaDeInteres().describir(monto),
-];
+const valoresDe = (reglas: Reglas): string[] => [String(reglas.toleranciaDeFaltas()), monto(reglas.montoPorFalta())];
 
 export class PantallaReglas {
   private _entorno: Entorno;
@@ -31,7 +27,7 @@ export class PantallaReglas {
   }
 
   private _reglasVigentes(): HTMLElement {
-    const titulos = ["Tolerancia de faltas", "Monto por falta", "Interés"];
+    const titulos = ["Tolerancia de faltas", "Monto por falta"];
     const valores = valoresDe(this._entorno.grupo().reglas());
     return crear(
       "dl",
@@ -59,7 +55,7 @@ export class PantallaReglas {
     const anteriores = this._entorno.grupo().reglasAnteriores().toReversed();
     return tabla(
       undefined,
-      ["Rigieron desde", "Tolerancia", "Monto por falta", "Interés"],
+      ["Rigieron desde", "Tolerancia", "Monto por falta"],
       anteriores.map((reglas) => fila(fechaYHora(reglas.rigeDesde()), ...valoresDe(reglas))),
     );
   }

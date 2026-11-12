@@ -1,13 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { Deuda } from "../../src/models/Deuda.ts";
 import { dia, nuevoEncuentro } from "./factories.ts";
-import { InteresFijoPorDia } from "../../src/models/PoliticaDeInteres.ts";
 
 const montoPorFalta = 1000;
-const interesDiario = 10;
 
-const nuevaDeuda = (encuentro = nuevoEncuentro()) =>
-  new Deuda(montoPorFalta, encuentro, new InteresFijoPorDia(interesDiario));
+const nuevaDeuda = (encuentro = nuevoEncuentro()) => new Deuda(montoPorFalta, encuentro);
 
 describe("Deuda", () => {
   it("se origina por faltar a un encuentro, por un monto", () => {
@@ -16,24 +13,6 @@ describe("Deuda", () => {
 
     expect(deuda.monto()).toBe(montoPorFalta);
     expect(deuda.encuentroFaltado()).toBe(encuentro);
-  });
-
-  it("con interés, acumula desde la fecha indicada", () => {
-    const deuda = nuevaDeuda();
-
-    const montoAlComenzar = deuda.montoConInteres(dia(8), dia(8));
-    const montoTresDiasDespues = deuda.montoConInteres(dia(8), dia(11));
-
-    expect(montoAlComenzar).toBe(montoPorFalta);
-    expect(montoTresDiasDespues).toBe(montoPorFalta + 3 * interesDiario);
-  });
-
-  it("con interés, antes de la fecha indicada vale el monto original", () => {
-    const deuda = nuevaDeuda();
-
-    const monto = deuda.montoConInteres(dia(8), dia(5));
-
-    expect(monto).toBe(montoPorFalta);
   });
 
   describe("pagos", () => {
@@ -74,31 +53,6 @@ describe("Deuda", () => {
         deuda.pagar(dia(3), -100);
       }).toThrow("El monto del pago debe ser positivo");
       expect(deuda.monto()).toBe(montoPorFalta);
-    });
-
-    it("un pago con interés capitaliza el interés devengado hasta esa fecha", () => {
-      const deuda = nuevaDeuda();
-
-      deuda.pagarConInteres(dia(8), dia(11), 530);
-
-      expect(deuda.monto()).toBe(500);
-    });
-
-    it("no se puede pagar con interés más de lo que vale la deuda con interés a esa fecha", () => {
-      const deuda = nuevaDeuda();
-
-      expect(() => {
-        deuda.pagarConInteres(dia(8), dia(11), montoPorFalta + 3 * interesDiario + 1);
-      }).toThrow("El pago no puede superar la deuda");
-      expect(deuda.monto()).toBe(montoPorFalta);
-    });
-
-    it("se puede saldar pagando con interés el valor con interés a esa fecha", () => {
-      const deuda = nuevaDeuda();
-
-      deuda.pagarConInteres(dia(8), dia(11), montoPorFalta + 3 * interesDiario);
-
-      expect(deuda.estaSaldada()).toBe(true);
     });
 
     it("no se puede pagar en una fecha anterior al encuentro faltado", () => {

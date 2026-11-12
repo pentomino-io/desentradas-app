@@ -131,7 +131,6 @@ td + td {
 button,
 input[type="text"],
 input[type="number"],
-select,
 ::file-selector-button {
   font: inherit;
   color: inherit;
@@ -290,18 +289,6 @@ dialog label {
   gap: 0.25rem;
   max-width: 24rem;
   margin: 1rem 0;
-}
-
-/* La unidad ($, %) va pegada al control, en su misma línea. */
-label > span:has(> input) {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-
-  input {
-    flex: 1;
-    min-width: 0;
-  }
 }
 
 /* Los párrafos de las pantallas son totales, avisos o filas de botones. */

@@ -118,7 +118,7 @@ export const intentar = (accion: () => void, alerta: HTMLOutputElement): boolean
 
 export const valorDe = (formulario: HTMLFormElement, nombre: string): string => {
   const control = formulario.elements.namedItem(nombre);
-  if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement)) {
+  if (!(control instanceof HTMLInputElement)) {
     throw new Error(`El formulario no tiene el campo "${nombre}"`);
   }
 

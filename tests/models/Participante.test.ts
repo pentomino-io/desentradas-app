@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { TransicionInvalida } from "../../src/models/estados/TransicionInvalida.ts";
 import { dia, nuevoEncuentro, nuevoParticipante, reglas } from "./factories.ts";
-import { InteresFijoPorDia } from "../../src/models/PoliticaDeInteres.ts";
 
 const lasReglas = reglas({ toleranciaDeFaltas: 2 });
-const reglasConInteresDiario = reglas({ politicaDeInteres: new InteresFijoPorDia(10) });
 
 const enDeuda = (encuentro = nuevoEncuentro(), reglasDeIngreso = lasReglas) => {
   const ana = nuevoParticipante(reglasDeIngreso);
@@ -237,14 +235,6 @@ describe("Participante", () => {
       expect(ana.historial()).toHaveLength(2);
     });
 
-    it("su deuda no acumula interés", () => {
-      const ana = enDeuda(nuevoEncuentro({ numero: 2 }), reglasConInteresDiario);
-
-      const deuda = ana.deudaAl(dia(8));
-
-      expect(deuda).toBe(1000);
-    });
-
     it("faltar lo vuelve moroso", () => {
       const ana = enDeuda();
 
@@ -462,15 +452,6 @@ describe("Participante", () => {
       }).toThrow(TransicionInvalida);
     });
 
-    it("su deuda acumula interés desde el encuentro en que se volvió moroso", () => {
-      const ana = enDeuda(nuevoEncuentro({ numero: 2 }), reglasConInteresDiario);
-
-      ana.falto(nuevoEncuentro({ numero: 9 }));
-
-      expect(ana.deudaAl(dia(9))).toBe(1000);
-      expect(ana.deudaAl(dia(12))).toBe(1030);
-    });
-
     it("un pago parcial lo mantiene moroso por el resto", () => {
       const ana = moroso();
 
@@ -478,15 +459,6 @@ describe("Participante", () => {
 
       expect(ana.estado()).toBe("moroso");
       expect(ana.deudaAl(dia(17))).toBe(600);
-    });
-
-    it("un pago parcial capitaliza el interés devengado, que vuelve a correr desde el pago", () => {
-      const ana = moroso(nuevoEncuentro({ numero: 2 }), reglasConInteresDiario);
-
-      ana.pago(dia(12), 530, "efectivo");
-
-      expect(ana.deudaAl(dia(12))).toBe(500);
-      expect(ana.deudaAl(dia(15))).toBe(530);
     });
 
     it("saldar la deuda finaliza la participación por pago de morosidad", () => {

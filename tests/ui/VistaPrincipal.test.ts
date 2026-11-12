@@ -4,7 +4,6 @@ import { AlmacenamientoEnMemoria } from "../../src/app/AlmacenamientoEnMemoria.t
 import type { Aplicacion } from "../../src/app/Aplicacion.ts";
 import { fechaYHora } from "../../src/app/Formato.ts";
 import { VistaPrincipal } from "../../src/ui/VistaPrincipal.ts";
-import { InteresFijoPorDia, InteresMensual, type PoliticaDeInteres } from "../../src/models/PoliticaDeInteres.ts";
 import { ahora, aplicacionConGrupo, nuevaAplicacion } from "../app/factories.ts";
 import { dia, reglas } from "../models/factories.ts";
 
@@ -44,12 +43,6 @@ const almacenamientosConAnaMorosa = () => {
 const almacenamientosConAnaFinalizada = () => {
   const almacenamientos = almacenamientosConAnaMorosa();
   nuevaAplicacion(almacenamientos).cobrar("ana", 1000, dia(4));
-  return almacenamientos;
-};
-
-const almacenamientosConInteres = (politicaDeInteres: PoliticaDeInteres) => {
-  const almacenamientos = nuevosAlmacenamientos();
-  nuevaAplicacion(almacenamientos).crearGrupo("Fútbol de los jueves", reglas({ politicaDeInteres }));
   return almacenamientos;
 };
 
@@ -233,33 +226,11 @@ describe("VistaPrincipal", () => {
       expect(pantallaActual()).toBe("Encuentro");
     });
 
-    it("el valor del interés sólo se pide para las políticas que lo usan, con la pregunta propia de cada una", () => {
-      const { aplicacion } = montar();
-      expect(campo("¿Cómo se calcula el interés").value).toBe("sin interés");
-      expect(document.querySelector("[name=valorDelInteres]")).toBeNull();
-
-      completar("¿Cómo se calcula el interés", "fijo por día");
-      expect(hayEtiqueta("¿Cuánto se cobra por día de mora?")).toBe(true);
-      expect(hayEtiqueta("¿Qué porcentaje se cobra por mes de mora?")).toBe(false);
-      completar("¿Cómo se calcula el interés", "mensual");
-      expect(hayEtiqueta("¿Cuánto se cobra por día de mora?")).toBe(false);
-      expect(hayEtiqueta("¿Qué porcentaje se cobra por mes de mora?")).toBe(true);
-      completar("¿Qué porcentaje se cobra por mes de mora?", "5");
-      completar("Nombre del grupo", "Fútbol de los jueves");
-      completar("¿Cuántas faltas seguidas se toleran", "2");
-      completar("¿Cuánto se paga por falta?", "1000");
-      hacerClic("Crear");
-
-      const politica = aplicacion.grupo().reglas().politicaDeInteres();
-      expect(politica).toBeInstanceOf(InteresMensual);
-      expect((politica as InteresMensual).porcentaje()).toBe(5);
-    });
-
     it("deshacer la creación del grupo vuelve al formulario inicial con lo que se había cargado", async () => {
       const almacenamientos = nuevosAlmacenamientos();
       nuevaAplicacion(almacenamientos).crearGrupo(
         "Fútbol de los jueves",
-        reglas({ toleranciaDeFaltas: 3, montoPorFalta: 1500, politicaDeInteres: new InteresFijoPorDia(10) }),
+        reglas({ toleranciaDeFaltas: 3, montoPorFalta: 1500 }),
       );
       const { aplicacion } = montar(almacenamientos);
       await navegarA("Historial");
@@ -271,9 +242,6 @@ describe("VistaPrincipal", () => {
       expect(campo("Nombre del grupo").value).toBe("Fútbol de los jueves");
       expect(campo("¿Cuántas faltas seguidas se toleran").value).toBe("3");
       expect(campo("¿Cuánto se paga por falta?").value).toBe("1500");
-      expect(campo("¿Cómo se calcula el interés").value).toBe("fijo por día");
-      expect(hayEtiqueta("¿Cuánto se cobra por día de mora?")).toBe(true);
-      expect(campo("¿Cuánto se cobra por día de mora?").value).toBe("10");
     });
   });
 
@@ -590,49 +558,6 @@ describe("VistaPrincipal", () => {
 
       expect(aplicacion.grupo().reglas().montoPorFalta()).toBe(1500);
       expect(aplicacion.grupo().reglas().rigeDesde()).toEqual(ahora());
-    });
-
-    it("el interés fijo por día se muestra como un monto en pesos", async () => {
-      montar(almacenamientosConInteres(new InteresFijoPorDia(1000)));
-
-      await navegarA("Reglas");
-
-      expect(hayElementoConTexto("dd", "$ 1.000 por día de mora")).toBe(true);
-    });
-
-    it("el porcentaje de interés mensual admite decimales", async () => {
-      const { aplicacion } = montar(almacenamientosConDeudaDeAna());
-      await navegarA("Reglas");
-
-      completar("¿Cómo se calcula el interés", "mensual");
-      completar("¿Qué porcentaje se cobra por mes de mora?", "0.5");
-      hacerClic("Cambiar reglas");
-
-      const politica = aplicacion.grupo().reglas().politicaDeInteres();
-      expect(politica).toBeInstanceOf(InteresMensual);
-      expect((politica as InteresMensual).porcentaje()).toBe(0.5);
-    });
-
-    it("al pasar a interés mensual, el porcentaje se puede cargar con decimales", async () => {
-      montar(almacenamientosConInteres(new InteresFijoPorDia(1000)));
-      await navegarA("Reglas");
-
-      completar("¿Cómo se calcula el interés", "mensual");
-
-      const valor = campo("¿Qué porcentaje se cobra por mes de mora?");
-      expect(valor.step).toBe("any");
-      expect(valor.min).toBe("0.01");
-    });
-
-    it("al pasar a interés fijo por día, el monto se carga en pesos enteros", async () => {
-      montar(almacenamientosConInteres(new InteresMensual(0.5)));
-      await navegarA("Reglas");
-
-      completar("¿Cómo se calcula el interés", "fijo por día");
-
-      const valor = campo("¿Cuánto se cobra por día de mora?");
-      expect(valor.step).toBe("1");
-      expect(valor.min).toBe("1");
     });
   });
 
