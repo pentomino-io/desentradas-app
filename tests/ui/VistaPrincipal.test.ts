@@ -919,6 +919,23 @@ describe("VistaPrincipal", () => {
       expect(textoDe(dialogoAbierto().querySelector("p")!)).toBe("Las reglas quedan iguales.");
     });
 
+    it("la tolerancia se cuenta en faltas seguidas y se explica junto a su valor vigente", async () => {
+      const almacenamientos = almacenamientosConAnaInactiva();
+      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), toleranciaDeFaltas: 1 }));
+      montar(almacenamientos);
+
+      await navegarA("Reglas");
+
+      const valorVigente = elementoConTexto("dt", "Tolerancia de faltas").nextElementSibling!;
+      expect(valorVigente.firstChild?.textContent).toBe("1 falta seguida");
+      expect(textoDe(valorVigente.querySelector("small")!)).toBe(
+        "Quien falta más veces seguidas deja de aparecer en la lista de asistencia; para volver hay que usar Reingresar, en Participantes.",
+      );
+      expect(filasDe(elementoConTexto("summary", "Versiones anteriores").parentElement!)).toEqual([
+        [fechaYHora(dia(1)), "2 faltas seguidas", "$ 1.000"],
+      ]);
+    });
+
     it("la garantía se explica junto a su valor vigente, y no otra vez en el campo para cambiarla", async () => {
       montar(almacenamientosConAnaInactiva());
 

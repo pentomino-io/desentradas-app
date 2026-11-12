@@ -8,7 +8,13 @@ import type { Entorno } from "./Entorno.ts";
 import { camposDeReglas, explicacionDeLaGarantia, reglasDesde } from "./FormularioDeReglas.ts";
 import { alfabetico } from "./Orden.ts";
 
-const valoresDe = (reglas: Reglas): string[] => [String(reglas.toleranciaDeFaltas()), monto(reglas.garantia())];
+const faltasSeguidas = (cantidad: number): string =>
+  `${cantidad} ${cantidad === 1 ? "falta seguida" : "faltas seguidas"}`;
+
+const valoresDe = (reglas: Reglas): string[] => [faltasSeguidas(reglas.toleranciaDeFaltas()), monto(reglas.garantia())];
+
+const explicacionDeLaTolerancia =
+  "Quien falta más veces seguidas deja de aparecer en la lista de asistencia; para volver hay que usar Reingresar, en Participantes.";
 
 const formatoDeEnumeracion = new Intl.ListFormat("es-AR", { type: "conjunction" });
 const enumeracion = (nombres: readonly string[]): string => formatoDeEnumeracion.format(nombres);
@@ -85,7 +91,7 @@ export class PantallaReglas {
       "dl",
       {},
       crear("dt", {}, "Tolerancia de faltas"),
-      crear("dd", {}, tolerancia),
+      crear("dd", {}, tolerancia, crear("small", {}, explicacionDeLaTolerancia)),
       crear("dt", {}, "Garantía"),
       crear("dd", {}, garantia, crear("small", {}, explicacionDeLaGarantia)),
     );
