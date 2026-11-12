@@ -32,9 +32,9 @@ export class PantallaCaja {
     return crear(
       "p",
       {},
-      crear("span", { class: "debe" }, `Por cobrar ${monto(porCobrar)}`),
-      " ",
-      crear("span", { class: "a-favor" }, `Por repartir ${monto(porRepartir)}`),
+      porCobrar > 0 && crear("span", { class: "debe" }, `Por cobrar ${monto(porCobrar)}`),
+      porCobrar > 0 && porRepartir > 0 && " ",
+      porRepartir > 0 && crear("span", { class: "a-favor" }, `Por repartir ${monto(porRepartir)}`),
     );
   }
 

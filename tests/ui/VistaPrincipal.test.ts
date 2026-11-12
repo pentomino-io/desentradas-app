@@ -399,14 +399,14 @@ describe("VistaPrincipal", () => {
   });
 
   describe("pantalla de caja", () => {
-    it("los saldos muestran por nombre lo que tiene por recibir cada uno, y los totales por cobrar y por repartir", async () => {
+    it("los saldos muestran por nombre lo que tiene por recibir cada uno, y el total por repartir sin un total por cobrar en cero", async () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
       nuevaAplicacion(almacenamientos).registrarEncuentro(dia(3), ["dani", "carla"], ["ana", "beto"]); // carla y dani reciben 500
       montar(almacenamientos);
 
       await navegarA("Caja");
 
-      expect(hayElementoConTexto("p > span", "Por cobrar $ 0")).toBe(true);
+      expect(buscar("p > span", (texto) => texto.startsWith("Por cobrar"), document)).toBeUndefined();
       expect(hayElementoConTexto("p > span", "Por repartir $ 2.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
         ["beto", "inactivo", "$ 334", "Registrar reparto"],
