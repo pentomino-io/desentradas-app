@@ -31,6 +31,7 @@ export class Aplicacion {
     this._avisoDeInicio = undefined;
     this._creacionDeshecha = undefined;
     this._cargarLaBitacoraGuardada();
+    if (!this.tieneGrupo()) this.descartarPlanillaDeAsistencia();
   }
 
   tieneGrupo(): boolean {

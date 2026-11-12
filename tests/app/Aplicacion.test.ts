@@ -292,6 +292,17 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual(["ana"]);
     });
 
+    it("sin un grupo guardado que se pueda leer, se descarta la planilla de asistencia guardada", () => {
+      const almacenamientos = { bitacora: new AlmacenamientoEnMemoria(), planilla: new AlmacenamientoEnMemoria() };
+      aplicacionConGrupo(almacenamientos).empezarPlanillaDeAsistencia().marcarComoPresente("ana");
+      almacenamientos.bitacora.guardar("esto no es JSON");
+
+      const aplicacion = nuevaAplicacion(almacenamientos);
+
+      expect(aplicacion.tienePlanillaDeAsistencia()).toBe(false);
+      expect(almacenamientos.planilla.leer()).toBeUndefined();
+    });
+
     it("registrar el encuentro según la planilla lo registra en la fecha dada con los asistentes de la planilla, y la descarta", () => {
       const aplicacion = aplicacionConAnaYBeto();
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
