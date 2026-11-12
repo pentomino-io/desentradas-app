@@ -42,7 +42,7 @@ export class PantallaParticipantes {
     const grupo = this._entorno.grupo();
     const activos = grupo.posiblesAsistentes().toSorted(porAtencionYNombre(grupo));
     return tablaOAviso(
-      "Participaciones activas",
+      "Quienes participan",
       ["Nombre", "Estado"],
       activos.map((participante) => this._filaDeActivo(participante)),
       "Todavía no hay nadie",

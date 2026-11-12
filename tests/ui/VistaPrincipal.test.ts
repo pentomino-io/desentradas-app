@@ -172,7 +172,7 @@ const dialogoAbierto = () => {
 
 const filasDe = (raiz: ParentNode) => [...raiz.querySelectorAll("tbody tr")].map(textosDeLasCeldas);
 
-const filasDeActivos = () => filasDe(elementoConTexto("caption", "Participaciones activas").parentElement!);
+const filasDeQuienesParticipan = () => filasDe(elementoConTexto("caption", "Quienes participan").parentElement!);
 
 const filasDeQuienesYaNoParticipan = () =>
   filasDe(elementoConTexto("summary", "Quienes ya no participan").parentElement!);
@@ -287,7 +287,7 @@ describe("VistaPrincipal", () => {
       expect(aplicacion.grupo().participante("ana")?.fechaDelUltimoCambio()).toEqual(ahora());
     });
 
-    it("reingresar pide confirmar el cobro de la garantía, y después figura entre los activos", async () => {
+    it("reingresar pide confirmar el cobro de la garantía, y después figura entre quienes participan", async () => {
       const { aplicacion } = montar(almacenamientosConAnaFueraDeLaTolerancia());
       await navegarA("Participantes");
 
@@ -296,11 +296,11 @@ describe("VistaPrincipal", () => {
       hacerClic("Cobrar", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
-      expect(filasDeActivos()).toContainEqual(["ana", "participando"]);
+      expect(filasDeQuienesParticipan()).toContainEqual(["ana", "participando"]);
       expect(hayDesplegable("Quienes ya no participan")).toBe(false);
     });
 
-    it("registrar un participante pide confirmar el cobro de la garantía, y después figura entre los activos", async () => {
+    it("registrar un participante pide confirmar el cobro de la garantía, y después figura entre quienes participan", async () => {
       const { aplicacion } = montar(almacenamientosConGrupoSinParticipantes());
       await navegarA("Participantes");
 
@@ -310,7 +310,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Registrar", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("ana")?.garantia()).toBe(1000);
-      expect(filasDeActivos()).toEqual([["ana", "participando"]]);
+      expect(filasDeQuienesParticipan()).toEqual([["ana", "participando"]]);
     });
 
     it("registrar el nombre de quien ya no participa pregunta si es la misma persona, y si lo es le cobra la garantía", async () => {
@@ -389,12 +389,12 @@ describe("VistaPrincipal", () => {
       expect(nombresDeParticipantes(aplicacion)).toEqual(["ana", "beto", "carla", "dani"]);
     });
 
-    it("quien tiene la garantía incompleta figura entre los activos con ese estado", async () => {
+    it("quien tiene la garantía incompleta figura entre quienes participan con ese estado", async () => {
       montar(almacenamientosConGarantiasIncompletas());
 
       await navegarA("Participantes");
 
-      expect(filasDeActivos()).toContainEqual(["beto", "garantía incompleta"]);
+      expect(filasDeQuienesParticipan()).toContainEqual(["beto", "garantía incompleta"]);
     });
 
     it("registrar el nombre de alguien con la garantía incompleta pide otro nombre", async () => {
@@ -410,13 +410,13 @@ describe("VistaPrincipal", () => {
       );
     });
 
-    it("quien superó la tolerancia de faltas figura entre quienes ya no participan, para reingresarlo, y no entre los activos", async () => {
+    it("quien superó la tolerancia de faltas figura entre quienes ya no participan, para reingresarlo, y no entre quienes participan", async () => {
       montar(almacenamientosConAnaFueraDeLaTolerancia());
 
       await navegarA("Participantes");
 
       expect(filasDeQuienesYaNoParticipan()).toEqual([["ana", "Reingresar"]]);
-      expect(filasDeActivos().map(([nombre]) => nombre)).toEqual(["beto", "carla", "dani"]);
+      expect(filasDeQuienesParticipan().map(([nombre]) => nombre)).toEqual(["beto", "carla", "dani"]);
     });
 
     it("las faltas de un inactivo se cuentan contra la tolerancia de las reglas actuales", async () => {
@@ -429,7 +429,7 @@ describe("VistaPrincipal", () => {
       expect(textosDeLasCeldas(fila("ana"))).toEqual(["ana", "inactivo (1/3 faltas)"]);
     });
 
-    it("sin participaciones activas dice que todavía no hay nadie", async () => {
+    it("sin nadie que participe dice que todavía no hay nadie", async () => {
       montar(almacenamientosConGrupoSinParticipantes());
 
       await navegarA("Participantes");
