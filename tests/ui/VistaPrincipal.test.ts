@@ -370,7 +370,7 @@ describe("VistaPrincipal", () => {
       casillaDeAsistencia("beto").click();
       casillaDeAsistencia("carla").click();
       expect(casillaDeAsistencia("ana").disabled).toBe(true);
-      hacerClic("Cobrar y habilitar", fila("ana"));
+      hacerClic("Cobrar garantía y habilitar", fila("ana"));
       expect(textoDe(dialogoAbierto())).toContain("Se le va a cobrar una garantía de $ 1.000.");
       hacerClic("Cobrar", dialogoAbierto());
       expect(casillaDeAsistencia("ana").disabled).toBe(false);

@@ -96,7 +96,7 @@ export class PantallaEncuentro {
 
   private _accionDe(participante: Participante): HTMLElement | false {
     const nombre = participante.nombre();
-    if (!participante.puedeAsistir()) return boton("Cobrar y habilitar", () => this._abrirCobro(nombre));
+    if (!participante.puedeAsistir()) return boton("Cobrar garantía y habilitar", () => this._abrirCobro(nombre));
     if (!this._planillaDeAsistencia().asiste(nombre)) return false;
 
     const pendiente = this._entorno.grupo().caja().montoPendienteDe(nombre);
