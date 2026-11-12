@@ -1,7 +1,7 @@
 import { campoDeTexto } from "./Campos.ts";
 import { alerta, botonDeEnvio, crear, formulario, valorDe } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
-import { camposDeReglas, reglasDesde } from "./FormularioDeReglas.ts";
+import { camposDeReglas, explicacionDeLaGarantia, reglasDesde } from "./FormularioDeReglas.ts";
 
 export class PantallaDeInicio {
   private _entorno: Entorno;
@@ -23,7 +23,7 @@ export class PantallaDeInicio {
       formulario(
         (completado) => this._crearGrupo(completado),
         campoDeTexto("Nombre del grupo", "nombreDelGrupo", creacionAnterior?.nombreDelGrupo() ?? ""),
-        ...camposDeReglas(creacionAnterior?.reglas()),
+        ...camposDeReglas(creacionAnterior?.reglas(), explicacionDeLaGarantia),
         this._errores,
         botonDeEnvio("Crear"),
       ),

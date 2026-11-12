@@ -7,6 +7,8 @@ import { VistaPrincipal } from "../../src/ui/VistaPrincipal.ts";
 import { ahora, aplicacionConGrupo, nuevaAplicacion } from "../app/factories.ts";
 import { dia, reglas } from "../models/factories.ts";
 
+const explicacionDeLaGarantia = "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
+
 const nuevosAlmacenamientos = () => ({
   bitacora: new AlmacenamientoEnMemoria(),
   planilla: new AlmacenamientoEnMemoria(),
@@ -221,6 +223,14 @@ describe("VistaPrincipal", () => {
         "Reglas",
       ]);
       expect(pantallaActual()).toBe("Encuentro");
+    });
+
+    it("el formulario inicial explica la garantía en su campo", () => {
+      montar();
+
+      const campoDeGarantia = etiqueta("¿Cuánto se paga de garantía?")!;
+
+      expect(textoDe(campoDeGarantia)).toContain(explicacionDeLaGarantia);
     });
 
     it("deshacer la creación del grupo vuelve al formulario inicial con lo que se había cargado", async () => {
@@ -578,14 +588,13 @@ describe("VistaPrincipal", () => {
       expect(aplicacion.grupo().reglas().rigeDesde()).toEqual(ahora());
     });
 
-    it("la garantía se explica junto a su valor vigente y en el campo para cambiarla", async () => {
+    it("la garantía se explica junto a su valor vigente, y no otra vez en el campo para cambiarla", async () => {
       montar(almacenamientosConAnaInactiva());
 
       await navegarA("Reglas");
 
-      const explicacion = "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
-      expect(textoDe(elementoConTexto("dt", "Garantía").nextElementSibling!)).toContain(explicacion);
-      expect(textoDe(etiqueta("¿Cuánto se paga de garantía?")!)).toContain(explicacion);
+      expect(textoDe(elementoConTexto("dt", "Garantía").nextElementSibling!)).toContain(explicacionDeLaGarantia);
+      expect(textoDe(etiqueta("¿Cuánto se paga de garantía?")!)).not.toContain(explicacionDeLaGarantia);
     });
   });
 
