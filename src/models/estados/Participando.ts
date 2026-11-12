@@ -15,7 +15,7 @@ export class Participando extends Estado {
   }
 
   situacion(garantiaVigente: number): Situacion {
-    return this._garantia < garantiaVigente ? "garantía incompleta" : "participando";
+    return this.saldoDeGarantia(garantiaVigente) < 0 ? "garantía incompleta" : "participando";
   }
 
   override voy(): Estado {
@@ -38,5 +38,9 @@ export class Participando extends Estado {
 
   override garantia(): number {
     return this._garantia;
+  }
+
+  override saldoDeGarantia(garantiaVigente: number): number {
+    return this._garantia - garantiaVigente;
   }
 }

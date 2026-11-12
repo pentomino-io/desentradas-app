@@ -28,7 +28,7 @@ export class Participante {
   }
 
   bajarGarantia(fecha: Date, garantia: number): number {
-    const excedente = Math.max(0, this.garantia() - garantia);
+    const excedente = Math.max(0, this.saldoDeGarantia(garantia));
     if (excedente === 0) return 0;
 
     this._transicionar("cambio de reglas", fecha, this._estado().bajarGarantia(garantia));
@@ -57,6 +57,10 @@ export class Participante {
 
   puedeAsistir(garantiaVigente: number): boolean {
     return this.garantiaPorCobrar(garantiaVigente) === 0;
+  }
+
+  saldoDeGarantia(garantiaVigente: number): number {
+    return this._estado().saldoDeGarantia(garantiaVigente);
   }
 
   garantiaPorCobrar(garantiaVigente: number): number {

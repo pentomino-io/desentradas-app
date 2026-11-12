@@ -27,6 +27,10 @@ export abstract class Estado {
     return 0;
   }
 
+  saldoDeGarantia(_garantiaVigente: number): number {
+    return 0;
+  }
+
   faltas(): number {
     return 0;
   }

@@ -125,12 +125,20 @@ export class Grupo {
 
   saldos(): readonly Saldo[] {
     const deudas = this._participantes
-      .filter((participante) => this.situacionDe(participante) === "garantía incompleta")
-      .map((participante) => new Saldo(participante.nombre(), -this.garantiaPorCobrarA(participante)));
+      .map((participante) => new Saldo(participante.nombre(), participante.saldoDeGarantia(this.reglas().garantia())))
+      .filter((saldo) => saldo.monto() < 0);
     const creditos = this._caja
       .nombresConCreditosPendientes()
       .map((nombre) => new Saldo(nombre, this._caja.montoPendienteDe(nombre)));
     return [...deudas, ...creditos];
+  }
+
+  efectosDeCambiarLasReglas(reglas: Reglas): readonly Saldo[] {
+    return this._participantes.flatMap((participante) => {
+      const nuevoSaldo = participante.saldoDeGarantia(reglas.garantia());
+      const cambia = nuevoSaldo !== 0 && nuevoSaldo !== participante.saldoDeGarantia(this.reglas().garantia());
+      return cambia ? [new Saldo(participante.nombre(), nuevoSaldo)] : [];
+    });
   }
 
   participante(nombre: string): Participante | undefined {

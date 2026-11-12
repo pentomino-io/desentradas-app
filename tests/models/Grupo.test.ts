@@ -136,6 +136,41 @@ describe("Grupo", () => {
     });
   });
 
+  describe("efectos de cambiar las reglas", () => {
+    const grupoConGarantiasDistintas = () => {
+      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+      grupo.ingresar("ana", dia(1));
+      grupo.ingresar("beto", dia(1));
+      grupo.ingresar("carla", dia(1));
+      grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto", "carla"], ausentes: ["ana"] }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1200 })); // beto y carla deben $ 200
+      grupo.ingresar("dani", dia(3));
+      return grupo;
+    };
+
+    it("son lo que pasa a deber quien queda con la garantía incompleta y el crédito que recibe quien tiene un excedente, sin nada para los inactivos", () => {
+      const grupo = grupoConGarantiasDistintas();
+
+      const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(4), garantia: 1100 }));
+
+      expect(efectos.map((saldo) => [saldo.nombre(), saldo.monto()])).toEqual([
+        ["beto", -100],
+        ["carla", -100],
+        ["dani", 100],
+      ]);
+    });
+
+    it("no hay efectos si nadie pasa a deber otra cosa ni tiene un excedente", () => {
+      const grupo = grupoConGarantiasDistintas();
+
+      const efectos = grupo.efectosDeCambiarLasReglas(
+        reglas({ rigeDesde: dia(4), garantia: 1200, toleranciaDeFaltas: 3 }),
+      );
+
+      expect(efectos).toEqual([]);
+    });
+  });
+
   describe("ingreso", () => {
     it("al ingresar, la persona queda como participante del grupo", () => {
       const grupo = nuevoGrupo();
