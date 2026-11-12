@@ -336,7 +336,7 @@ describe("Grupo", () => {
       expect(grupo.caja().montoPendienteDe("beto")).toBe(1000);
     });
 
-    it("sólo un posible asistente puede faltar, así que las faltas seguidas no pasan de la tolerancia más una", () => {
+    it("no se puede marcar ausente a quien superó la tolerancia de faltas", () => {
       const grupo = nuevoGrupo(reglas({ toleranciaDeFaltas: 1 }));
       const ana = grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));

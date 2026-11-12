@@ -138,7 +138,7 @@ export class Grupo {
     }
   }
 
-  // Como sólo un posible asistente puede faltar, las faltas seguidas no pasan de la tolerancia más una.
+  // Quien superó la tolerancia no puede quedar ausente, así que sus faltas seguidas no pasan de la tolerancia más una.
   private _asertarQuePuedenFaltar(encuentro: Encuentro): void {
     for (const nombre of encuentro.ausentes()) {
       const participante = this._participanteLlamado(nombre);
