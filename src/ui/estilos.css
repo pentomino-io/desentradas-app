@@ -330,6 +330,10 @@ dd {
   margin: 0 0 0.5rem;
 }
 
+dd small {
+  display: block;
+}
+
 dialog {
   border: 2px solid;
   padding: 1rem;

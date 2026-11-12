@@ -576,6 +576,16 @@ describe("VistaPrincipal", () => {
       expect(aplicacion.grupo().reglas().garantia()).toBe(1500);
       expect(aplicacion.grupo().reglas().rigeDesde()).toEqual(ahora());
     });
+
+    it("la garantía se explica junto a su valor vigente y en el campo para cambiarla", async () => {
+      montar(almacenamientosConAnaInactiva());
+
+      await navegarA("Reglas");
+
+      const explicacion = "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
+      expect(textoDe(elementoConTexto("dt", "Garantía").nextElementSibling!)).toContain(explicacion);
+      expect(textoDe(etiqueta("¿Cuánto se paga de garantía?")!)).toContain(explicacion);
+    });
   });
 
   describe("pantalla del historial", () => {

@@ -2,7 +2,7 @@ import { fechaYHora, monto } from "../app/Formato.ts";
 import type { Reglas } from "../models/Reglas.ts";
 import { alerta, botonDeEnvio, crear, desplegable, fila, formulario, tabla } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
-import { camposDeReglas, reglasDesde } from "./FormularioDeReglas.ts";
+import { camposDeReglas, explicacionDeLaGarantia, reglasDesde } from "./FormularioDeReglas.ts";
 
 const valoresDe = (reglas: Reglas): string[] => [String(reglas.toleranciaDeFaltas()), monto(reglas.garantia())];
 
@@ -27,12 +27,14 @@ export class PantallaReglas {
   }
 
   private _reglasVigentes(): HTMLElement {
-    const titulos = ["Tolerancia de faltas", "Garantía"];
-    const valores = valoresDe(this._entorno.grupo().reglas());
+    const [tolerancia, garantia] = valoresDe(this._entorno.grupo().reglas());
     return crear(
       "dl",
       {},
-      ...titulos.flatMap((titulo, posicion) => [crear("dt", {}, titulo), crear("dd", {}, valores[posicion])]),
+      crear("dt", {}, "Tolerancia de faltas"),
+      crear("dd", {}, tolerancia),
+      crear("dt", {}, "Garantía"),
+      crear("dd", {}, garantia, crear("small", {}, explicacionDeLaGarantia)),
     );
   }
 
