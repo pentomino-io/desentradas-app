@@ -9,18 +9,18 @@ describe("Reglas", () => {
     }).toThrow("La tolerancia de faltas debe ser al menos 1");
   });
 
-  it("el monto por falta debe ser positivo", () => {
+  it("la garantía debe ser positiva", () => {
     expect(() => {
       new Reglas(dia(1), 2, 0);
-    }).toThrow("El monto por falta debe ser positivo");
+    }).toThrow("La garantía debe ser positiva");
   });
 
-  it("conocen desde cuándo rigen, la tolerancia de faltas y el monto por falta", () => {
+  it("conocen desde cuándo rigen, la tolerancia de faltas y la garantía", () => {
     const reglas = new Reglas(dia(1), 2, 1000);
 
     expect(reglas.rigeDesde()).toEqual(dia(1));
     expect(reglas.toleranciaDeFaltas()).toBe(2);
-    expect(reglas.montoPorFalta()).toBe(1000);
+    expect(reglas.garantia()).toBe(1000);
   });
 
   it("se supera la tolerancia con más faltas que las toleradas", () => {
@@ -30,8 +30,8 @@ describe("Reglas", () => {
     expect(lasReglas.superaLaTolerancia(3)).toBe(true);
   });
 
-  it("la deuda por faltar a un encuentro es por el monto por falta", () => {
-    const lasReglas = reglas({ montoPorFalta: 1000 });
+  it("la deuda por faltar a un encuentro es por la garantía", () => {
+    const lasReglas = reglas({ garantia: 1000 });
     const encuentro = nuevoEncuentro();
 
     const deuda = lasReglas.deudaPorFaltarA(encuentro);

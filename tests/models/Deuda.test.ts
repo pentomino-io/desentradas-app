@@ -2,16 +2,16 @@ import { describe, expect, it } from "vitest";
 import { Deuda } from "../../src/models/Deuda.ts";
 import { dia, nuevoEncuentro } from "./factories.ts";
 
-const montoPorFalta = 1000;
+const garantia = 1000;
 
-const nuevaDeuda = (encuentro = nuevoEncuentro()) => new Deuda(montoPorFalta, encuentro);
+const nuevaDeuda = (encuentro = nuevoEncuentro()) => new Deuda(garantia, encuentro);
 
 describe("Deuda", () => {
   it("se origina por faltar a un encuentro, por un monto", () => {
     const encuentro = nuevoEncuentro();
     const deuda = nuevaDeuda(encuentro);
 
-    expect(deuda.monto()).toBe(montoPorFalta);
+    expect(deuda.monto()).toBe(garantia);
     expect(deuda.encuentroFaltado()).toBe(encuentro);
   });
 
@@ -28,7 +28,7 @@ describe("Deuda", () => {
     it("pagar el total la salda", () => {
       const deuda = nuevaDeuda();
 
-      deuda.pagar(dia(3), montoPorFalta);
+      deuda.pagar(dia(3), garantia);
 
       expect(deuda.estaSaldada()).toBe(true);
       expect(deuda.monto()).toBe(0);
@@ -38,9 +38,9 @@ describe("Deuda", () => {
       const deuda = nuevaDeuda();
 
       expect(() => {
-        deuda.pagar(dia(3), montoPorFalta + 1);
+        deuda.pagar(dia(3), garantia + 1);
       }).toThrow("El pago no puede superar la deuda");
-      expect(deuda.monto()).toBe(montoPorFalta);
+      expect(deuda.monto()).toBe(garantia);
     });
 
     it("el monto de un pago debe ser positivo", () => {
@@ -52,7 +52,7 @@ describe("Deuda", () => {
       expect(() => {
         deuda.pagar(dia(3), -100);
       }).toThrow("El monto del pago debe ser positivo");
-      expect(deuda.monto()).toBe(montoPorFalta);
+      expect(deuda.monto()).toBe(garantia);
     });
 
     it("no se puede pagar en una fecha anterior al encuentro faltado", () => {

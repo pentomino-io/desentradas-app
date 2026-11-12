@@ -4,15 +4,15 @@ import type { Encuentro } from "./Encuentro.ts";
 export class Reglas {
   private _rigeDesde: Date;
   private _toleranciaDeFaltas: number;
-  private _montoPorFalta: number;
+  private _garantia: number;
 
-  constructor(rigeDesde: Date, toleranciaDeFaltas: number, montoPorFalta: number) {
+  constructor(rigeDesde: Date, toleranciaDeFaltas: number, garantia: number) {
     if (toleranciaDeFaltas < 1) throw new Error("La tolerancia de faltas debe ser al menos 1");
-    if (montoPorFalta <= 0) throw new Error("El monto por falta debe ser positivo");
+    if (garantia <= 0) throw new Error("La garantía debe ser positiva");
 
     this._rigeDesde = rigeDesde;
     this._toleranciaDeFaltas = toleranciaDeFaltas;
-    this._montoPorFalta = montoPorFalta;
+    this._garantia = garantia;
   }
 
   rigeDesde(): Date {
@@ -23,8 +23,8 @@ export class Reglas {
     return this._toleranciaDeFaltas;
   }
 
-  montoPorFalta(): number {
-    return this._montoPorFalta;
+  garantia(): number {
+    return this._garantia;
   }
 
   superaLaTolerancia(faltas: number): boolean {
@@ -32,6 +32,6 @@ export class Reglas {
   }
 
   deudaPorFaltarA(encuentro: Encuentro): Deuda {
-    return new Deuda(this._montoPorFalta, encuentro);
+    return new Deuda(this._garantia, encuentro);
   }
 }

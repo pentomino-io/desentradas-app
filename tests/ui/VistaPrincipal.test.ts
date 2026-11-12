@@ -208,12 +208,12 @@ describe("VistaPrincipal", () => {
 
       completar("Nombre del grupo", "Fútbol de los jueves");
       completar("¿Cuántas faltas seguidas se toleran", "2");
-      completar("¿Cuánto se paga por falta?", "1000");
+      completar("¿Cuánto se paga de garantía?", "1000");
       hacerClic("Crear");
 
       expect(aplicacion.grupo().nombre()).toBe("Fútbol de los jueves");
       expect(aplicacion.grupo().reglas().toleranciaDeFaltas()).toBe(2);
-      expect(aplicacion.grupo().reglas().montoPorFalta()).toBe(1000);
+      expect(aplicacion.grupo().reglas().garantia()).toBe(1000);
       expect(aplicacion.grupo().reglas().rigeDesde()).toEqual(ahora());
       expect(textoDe(document.querySelector("h1")!)).toBe("Fútbol de los jueves");
       expect([...document.querySelectorAll("nav a")].map(textoDe)).toEqual([
@@ -230,7 +230,7 @@ describe("VistaPrincipal", () => {
       const almacenamientos = nuevosAlmacenamientos();
       nuevaAplicacion(almacenamientos).crearGrupo(
         "Fútbol de los jueves",
-        reglas({ toleranciaDeFaltas: 3, montoPorFalta: 1500 }),
+        reglas({ toleranciaDeFaltas: 3, garantia: 1500 }),
       );
       const { aplicacion } = montar(almacenamientos);
       await navegarA("Historial");
@@ -241,7 +241,7 @@ describe("VistaPrincipal", () => {
       expect(pantallaActual()).toBe("Crear el grupo");
       expect(campo("Nombre del grupo").value).toBe("Fútbol de los jueves");
       expect(campo("¿Cuántas faltas seguidas se toleran").value).toBe("3");
-      expect(campo("¿Cuánto se paga por falta?").value).toBe("1500");
+      expect(campo("¿Cuánto se paga de garantía?").value).toBe("1500");
     });
   });
 
@@ -553,10 +553,10 @@ describe("VistaPrincipal", () => {
       await navegarA("Reglas");
       expect(hayEtiqueta("Rige desde")).toBe(false);
 
-      completar("¿Cuánto se paga por falta?", "1500");
+      completar("¿Cuánto se paga de garantía?", "1500");
       hacerClic("Cambiar reglas");
 
-      expect(aplicacion.grupo().reglas().montoPorFalta()).toBe(1500);
+      expect(aplicacion.grupo().reglas().garantia()).toBe(1500);
       expect(aplicacion.grupo().reglas().rigeDesde()).toEqual(ahora());
     });
   });

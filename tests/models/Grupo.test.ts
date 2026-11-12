@@ -163,12 +163,12 @@ describe("Grupo", () => {
       expect(grupo.reglasAnteriores()).toEqual([reglasIniciales]);
     });
 
-    it("el monto por falta es el de las reglas vigentes la última vez que fue", () => {
-      const grupo = nuevoGrupo(reglas({ montoPorFalta: 1000 }));
+    it("la garantía es la de las reglas vigentes la última vez que fue", () => {
+      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
       const ana = grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["ana", "beto"] }));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(5), montoPorFalta: 2000 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(5), garantia: 2000 }));
 
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"], ausentes: ["ana"] }));
 
@@ -176,11 +176,11 @@ describe("Grupo", () => {
     });
 
     it("ir a un encuentro después de un cambio de reglas hace que la próxima falta se rija por las nuevas", () => {
-      const grupo = nuevoGrupo(reglas({ montoPorFalta: 1000 }));
+      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
       const ana = grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["ana", "beto"] }));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(5), montoPorFalta: 2000 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(5), garantia: 2000 }));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["ana", "beto"] }));
 
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 16, asistentes: ["beto"], ausentes: ["ana"] }));
@@ -189,11 +189,11 @@ describe("Grupo", () => {
     });
 
     it("quien va a un encuentro antes de que rijan las nuevas reglas se sigue rigiendo por las anteriores", () => {
-      const grupo = nuevoGrupo(reglas({ montoPorFalta: 1000 }));
+      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
       const ana = grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["ana", "beto"] }));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(20), montoPorFalta: 2000 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(20), garantia: 2000 }));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["ana", "beto"] }));
 
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 23, asistentes: ["beto"], ausentes: ["ana"] }));
@@ -231,11 +231,11 @@ describe("Grupo", () => {
     });
 
     it("un cambio de reglas no altera las deudas existentes", () => {
-      const grupo = nuevoGrupo(reglas({ montoPorFalta: 1000 }));
+      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
       const ana = grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana"] }));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(5), montoPorFalta: 2000 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(5), garantia: 2000 }));
 
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"], ausentes: ["ana"] }));
 

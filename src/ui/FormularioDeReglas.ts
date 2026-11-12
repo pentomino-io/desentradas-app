@@ -9,8 +9,8 @@ export const camposDeReglas = (reglas?: Reglas): HTMLElement[] => [
     reglas?.toleranciaDeFaltas() ?? 1,
     1,
   ),
-  campoNumerico("¿Cuánto se paga por falta?", "montoPorFalta", reglas?.montoPorFalta() ?? 1, 1),
+  campoNumerico("¿Cuánto se paga de garantía?", "garantia", reglas?.garantia() ?? 1, 1),
 ];
 
 export const reglasDesde = (formulario: HTMLFormElement, rigeDesde: Date): Reglas =>
-  new Reglas(rigeDesde, numeroDe(formulario, "toleranciaDeFaltas"), numeroDe(formulario, "montoPorFalta"));
+  new Reglas(rigeDesde, numeroDe(formulario, "toleranciaDeFaltas"), numeroDe(formulario, "garantia"));

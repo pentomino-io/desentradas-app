@@ -97,7 +97,7 @@ describe("Participante", () => {
     });
 
     it("faltar lo deja en deuda por el monto por falta de sus reglas", () => {
-      const ana = nuevoParticipante(reglas({ montoPorFalta: 1500 }));
+      const ana = nuevoParticipante(reglas({ garantia: 1500 }));
 
       ana.falto(nuevoEncuentro());
 

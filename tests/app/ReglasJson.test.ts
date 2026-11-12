@@ -4,7 +4,7 @@ import { dia, reglas } from "../models/factories.ts";
 
 describe("Reglas en JSON", () => {
   it("las reglas se convierten a JSON con la fecha en formato ISO y vuelven iguales", () => {
-    const originales = reglas({ rigeDesde: dia(1), toleranciaDeFaltas: 2, montoPorFalta: 1000 });
+    const originales = reglas({ rigeDesde: dia(1), toleranciaDeFaltas: 2, garantia: 1000 });
 
     const json = reglasAJson(originales);
     const leidas = reglasDesdeJson(json);
@@ -12,11 +12,11 @@ describe("Reglas en JSON", () => {
     expect(json).toEqual({
       rigeDesde: dia(1).toISOString(),
       toleranciaDeFaltas: 2,
-      montoPorFalta: 1000,
+      garantia: 1000,
     });
     expect(leidas.rigeDesde()).toEqual(dia(1));
     expect(leidas.toleranciaDeFaltas()).toBe(2);
-    expect(leidas.montoPorFalta()).toBe(1000);
+    expect(leidas.garantia()).toBe(1000);
   });
 
   it("no se pueden leer reglas con una fecha que no está en formato ISO", () => {
