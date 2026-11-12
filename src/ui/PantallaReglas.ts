@@ -19,7 +19,9 @@ const efecto = (nombres: readonly string[], cambio: CambioDeGarantia): string =>
   }
 
   const deuda = `${enumeracion(nombres)} ${varios ? "deben" : "debe"} completar ${monto(-cambio.monto())}`;
-  return cambio.loCubrenSusCreditos() ? `${deuda}, que ${varios ? "pueden" : "puede"} cubrir con sus créditos` : deuda;
+  return cambio.loCubrenSusCreditos()
+    ? `${deuda}, ${varios ? "que pueden cubrir con sus créditos" : "que puede cubrir con su crédito"}`
+    : deuda;
 };
 
 const descripcionDe = (efectos: readonly CambioDeGarantia[]): string => {

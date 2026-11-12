@@ -11,13 +11,13 @@ export const avisoDeGarantia = (grupo: Grupo): HTMLParagraphElement =>
 export const cobroDeLaGarantiaA = (grupo: Grupo, participante: Participante): string => {
   const porCobrar = grupo.garantiaPorCobrarA(participante);
   if (grupo.susCreditosCubrenLaGarantiaDe(participante))
-    return `la garantía de ${monto(porCobrar)} la cubren sus créditos: no hay que cobrarle nada.`;
+    return `la garantía de ${monto(porCobrar)} la cubre su crédito: no hay que cobrarle nada.`;
 
   const deCreditos = grupo.creditosParaLaGarantiaDe(participante);
   if (deCreditos === 0) return `hay que cobrarle ${monto(porCobrar)} de garantía.`;
 
   const enEfectivo = monto(porCobrar - deCreditos);
-  return `hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} de la garantía de ${monto(porCobrar)} salen de sus créditos.`;
+  return `hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} de la garantía de ${monto(porCobrar)} salen de su crédito.`;
 };
 
 const conMayuscula = (texto: string): string => texto[0].toUpperCase() + texto.slice(1);
@@ -30,10 +30,10 @@ const avisoDeCompletarLaGarantia = (grupo: Grupo, participante: Participante): s
 
   const faltante = `Le faltan ${monto(porCobrar)} para ${completar}.`;
   if (grupo.susCreditosCubrenLaGarantiaDe(participante))
-    return `${faltante} Sus créditos lo cubren: no hay que cobrarle nada.`;
+    return `${faltante} Su crédito lo cubre: no hay que cobrarle nada.`;
 
   const enEfectivo = monto(porCobrar - deCreditos);
-  return `${faltante} Hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} salen de sus créditos.`;
+  return `${faltante} Hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} salen de su crédito.`;
 };
 
 const avisoDeCobro = (grupo: Grupo, participante: Participante): string =>

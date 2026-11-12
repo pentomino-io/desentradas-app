@@ -20,22 +20,19 @@ export class PantallaCaja {
       "section",
       {},
       crear("h2", {}, "Caja"),
-      saldos.length > 0 && this._totales(),
+      ...this._totales(),
       ...this._tablaDeSaldos(saldos),
       desplegable("Movimientos", this._tablaDeMovimientos()),
     );
   }
 
-  private _totales(): HTMLParagraphElement {
-    const porCobrar = this._entorno.grupo().totalPorCobrar();
-    const porRepartir = this._entorno.grupo().caja().totalPendiente();
-    return crear(
-      "p",
-      {},
-      porCobrar > 0 && crear("span", { class: "debe" }, `Por cobrar ${monto(porCobrar)}`),
-      porCobrar > 0 && porRepartir > 0 && " ",
-      porRepartir > 0 && crear("span", { class: "a-favor" }, `Por repartir ${monto(porRepartir)}`),
-    );
+  private _totales(): Hijo[] {
+    const porCompletar = this._entorno.grupo().totalPorCobrar();
+    const porEntregar = this._entorno.grupo().caja().totalPendiente();
+    return [
+      porCompletar > 0 && crear("p", {}, this._falta(`Garantías por completar ${monto(porCompletar)}`)),
+      porEntregar > 0 && crear("p", {}, this._credito(`Créditos por entregar ${monto(porEntregar)}`)),
+    ];
   }
 
   private _tablaDeSaldos(saldos: readonly Saldo[]): Hijo[] {
@@ -52,7 +49,7 @@ export class PantallaCaja {
     return fila(
       saldo.nombre(),
       this._estadoDe(saldo),
-      ambos ? this._montosRotulados(saldo) : this._montoDe(saldo),
+      this._montosDe(saldo),
       crear(
         "span",
         {},
@@ -63,27 +60,28 @@ export class PantallaCaja {
     );
   }
 
-  private _montoDe(saldo: Saldo): HTMLSpanElement {
-    return saldo.debe()
-      ? crear("span", { class: "debe" }, monto(-saldo.porCobrar()))
-      : crear("span", { class: "a-favor" }, monto(saldo.aFavor()));
-  }
-
-  // Sin rótulos, los dos montos sólo se distinguirían por el color.
-  private _montosRotulados(saldo: Saldo): HTMLSpanElement {
+  private _montosDe(saldo: Saldo): HTMLSpanElement {
     return crear(
       "span",
       {},
-      crear("span", { class: "debe" }, `falta ${monto(saldo.porCobrar())}`),
-      ", ",
-      crear("span", { class: "a-favor" }, `a favor ${monto(saldo.aFavor())}`),
+      saldo.debe() && this._falta(`falta ${monto(saldo.porCobrar())}`),
+      saldo.debe() && saldo.tieneAFavor() && ", ",
+      saldo.tieneAFavor() && this._credito(`crédito ${monto(saldo.aFavor())}`),
     );
+  }
+
+  private _falta(texto: string): HTMLSpanElement {
+    return crear("span", { class: "debe" }, texto);
+  }
+
+  private _credito(texto: string): HTMLSpanElement {
+    return crear("span", { class: "a-favor" }, texto);
   }
 
   private _estadoDe(saldo: Saldo): string {
     const participante = this._entorno.grupo().participante(saldo.nombre())!;
     const situacion = this._entorno.grupo().situacionDe(participante);
-    return saldo.loCubrenSusCreditos() ? `${situacion} (la cubren sus créditos)` : situacion;
+    return saldo.loCubrenSusCreditos() ? `${situacion} (la cubre su crédito)` : situacion;
   }
 
   private _tablaDeMovimientos(): HTMLElement | undefined {

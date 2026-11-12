@@ -296,10 +296,6 @@ dialog p:has(button) {
   text-align: center;
 }
 
-main p > span + span {
-  margin-left: 0.75rem;
-}
-
 .debe {
   color: var(--negativo);
 }
