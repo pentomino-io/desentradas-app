@@ -57,12 +57,13 @@ export class DialogoDeCobroDeGarantia extends Dialogo {
     entorno: Entorno,
     participante: Participante,
     titulo: string,
+    consecuencia: string,
     cobrar = () => entorno.aplicacion().cobrarGarantia(participante.nombre(), entorno.ahora()),
   ) {
     super(
       entorno,
       titulo,
-      [crear("p", {}, avisoDeCobro(entorno.grupo(), participante))],
+      [crear("p", {}, `${avisoDeCobro(entorno.grupo(), participante)} ${consecuencia}`)],
       textoDeConfirmacion(entorno.grupo(), participante),
       cobrar,
     );

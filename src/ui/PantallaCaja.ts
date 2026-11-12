@@ -90,7 +90,12 @@ export class PantallaCaja {
 
   private _abrirCobro(nombre: string): void {
     const participante = this._entorno.grupo().participante(nombre)!;
-    new DialogoDeCobroDeGarantia(this._entorno, participante, tituloDelCobroDeLaGarantiaA(nombre)).abrir();
+    new DialogoDeCobroDeGarantia(
+      this._entorno,
+      participante,
+      tituloDelCobroDeLaGarantiaA(nombre),
+      "Puede volver a asistir.",
+    ).abrir();
   }
 
   private _abrirEntrega(saldo: Saldo): void {

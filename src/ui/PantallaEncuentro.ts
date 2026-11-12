@@ -124,8 +124,12 @@ export class PantallaEncuentro {
 
   private _abrirCobro(participante: Participante): void {
     const nombre = participante.nombre();
-    new DialogoDeCobroDeGarantia(this._entorno, participante, tituloDelCobroDeLaGarantiaA(nombre), () =>
-      this._cobrarGarantia(nombre),
+    new DialogoDeCobroDeGarantia(
+      this._entorno,
+      participante,
+      tituloDelCobroDeLaGarantiaA(nombre),
+      "Queda presente en este encuentro.",
+      () => this._cobrarGarantia(nombre),
     ).abrir();
   }
 

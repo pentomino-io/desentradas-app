@@ -293,7 +293,9 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Reingresar", fila("ana"));
       expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Reingresar a ana");
-      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 1.000 de garantía.");
+      expect(textoDe(dialogoAbierto())).toContain(
+        "Hay que cobrarle $ 1.000 de garantía. Vuelve a la lista de asistencia.",
+      );
       hacerClic("Cobrar $ 1.000", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
@@ -486,7 +488,9 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Cobrar garantía", fila("beto"));
       expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Cobrar la garantía a beto");
-      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 500 para completar la garantía de $ 1.500.");
+      expect(textoDe(dialogoAbierto())).toContain(
+        "Hay que cobrarle $ 500 para completar la garantía de $ 1.500. Puede volver a asistir.",
+      );
       hacerClic("Cobrar $ 500", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("beto")?.garantia()).toBe(1500);
@@ -769,7 +773,9 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Cobrar garantía y habilitar", fila("beto"));
       expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Cobrar la garantía a beto");
-      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 500 para completar la garantía de $ 1.500.");
+      expect(textoDe(dialogoAbierto())).toContain(
+        "Hay que cobrarle $ 500 para completar la garantía de $ 1.500. Queda presente en este encuentro.",
+      );
       hacerClic("Cobrar $ 500", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("beto")?.garantia()).toBe(1500);
