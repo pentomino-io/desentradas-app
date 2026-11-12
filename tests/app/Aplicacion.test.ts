@@ -346,6 +346,17 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asiste("ana")).toBe(true);
     });
 
+    it("no se puede ingresar como asistente a alguien que ya está en el grupo", () => {
+      const aplicacion = aplicacionConAnaFueraDeLaTolerancia();
+      aplicacion.empezarPlanillaDeAsistencia();
+
+      expect(() => {
+        aplicacion.ingresarAsistente("ana", dia(5));
+      }).toThrow("ana ya está en el grupo");
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
+      expect(aplicacion.planillaDeAsistencia().asiste("ana")).toBe(false);
+    });
+
     it("ingresar como asistente toma el nombre sin espacios al principio ni al final", () => {
       const aplicacion = aplicacionConGrupo();
       aplicacion.empezarPlanillaDeAsistencia();

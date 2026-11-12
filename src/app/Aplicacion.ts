@@ -91,11 +91,7 @@ export class Aplicacion {
   ingresarAsistente(nombre: string, fecha: Date): void {
     const planilla = this.planillaDeAsistencia();
     const nombreLimpio = nombre.trim();
-    if (this.grupo().participante(nombreLimpio) !== undefined) {
-      this.cobrarGarantia(nombreLimpio, fecha);
-    } else {
-      this.ingresar(nombreLimpio, fecha);
-    }
+    this.ingresar(nombreLimpio, fecha);
     planilla.marcarComoPresente(nombreLimpio);
   }
 
