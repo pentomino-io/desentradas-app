@@ -1,7 +1,7 @@
 import { fechaYHora, monto } from "../app/Formato.ts";
 import type { PlanillaDeAsistencia } from "../app/PlanillaDeAsistencia.ts";
 import type { Participante } from "../models/Participante.ts";
-import { Dialogo } from "./Dialogo.ts";
+import { Dialogo, mostrarEnDialogo } from "./Dialogo.ts";
 import { DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGarantia.ts";
 import { DialogoDeRegistro } from "./DialogoDeRegistro.ts";
 import { alerta, boton, botonDeEnvio, crear, fila, formulario, type Hijo, tablaOAviso } from "./dom.ts";
@@ -34,7 +34,7 @@ export class PantallaEncuentro {
 
   private _formulario(): HTMLFormElement {
     return formulario(
-      () => this._pedirConfirmacion(),
+      () => this._registrar(),
       ...this._tablaDeAsistencia(),
       this._errores,
       crear(
@@ -53,7 +53,7 @@ export class PantallaEncuentro {
   }
 
   private _descartar(): void {
-    if (this._planillaDeAsistencia().asistentes().length === 0) {
+    if (!this._hayAsistentes()) {
       this._entorno.aplicacion().descartarPlanillaDeAsistencia();
       this._entorno.refrescar();
     } else {
@@ -104,6 +104,10 @@ export class PantallaEncuentro {
     return pendiente > 0 && boton(`Repartir ${monto(pendiente)}`, () => this._repartir(nombre));
   }
 
+  private _hayAsistentes(): boolean {
+    return this._planillaDeAsistencia().asistentes().length > 0;
+  }
+
   private _planillaDeAsistencia(): PlanillaDeAsistencia {
     return this._entorno.aplicacion().planillaDeAsistencia();
   }
@@ -140,6 +144,19 @@ export class PantallaEncuentro {
       (nombre) => this._entorno.aplicacion().ingresarAsistente(nombre, this._entorno.ahora()),
       (nombre) => this._cobrarGarantia(nombre),
     ).abrir();
+  }
+
+  private _registrar(): void {
+    if (!this._hayAsistentes()) {
+      mostrarEnDialogo(
+        this._entorno,
+        "Registrar encuentro",
+        "Volver",
+        crear("p", {}, "No se puede registrar el encuentro sin asistentes"),
+      );
+    } else {
+      this._pedirConfirmacion();
+    }
   }
 
   private _pedirConfirmacion(): void {

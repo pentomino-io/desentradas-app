@@ -71,14 +71,19 @@ export class Dialogo {
   }
 }
 
-export const mostrarEnDialogo = (entorno: Entorno, titulo: string, ...contenido: Hijo[]): void => {
+export const mostrarEnDialogo = (
+  entorno: Entorno,
+  titulo: string,
+  textoDeCierre: string,
+  ...contenido: Hijo[]
+): void => {
   const dialogo = entorno.mostrarDialogo(
     crear("h3", {}, titulo),
     ...contenido,
     crear(
       "p",
       {},
-      boton("Cerrar", () => dialogo.close()),
+      boton(textoDeCierre, () => dialogo.close()),
     ),
   );
 };

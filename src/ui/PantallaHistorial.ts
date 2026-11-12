@@ -92,6 +92,7 @@ export class PantallaHistorial {
     mostrarEnDialogo(
       this._entorno,
       `Encuentro del ${fechaYHora(fecha)}`,
+      "Cerrar",
       tabla(undefined, ["Nombre", "Asistencia"], filas),
     );
   }

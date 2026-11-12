@@ -625,10 +625,26 @@ describe("VistaPrincipal", () => {
     it("la confirmación del registro dice que el encuentro lleva la fecha del momento de registrarlo", () => {
       montar(almacenamientosConAnaInactiva());
       hacerClic("Empezar encuentro");
+      casillaDeAsistencia("beto").click();
 
       hacerClic("Registrar encuentro");
 
       expect(textoDe(dialogoAbierto())).toContain(`Se va a registrar el encuentro con fecha ${fechaYHora(ahora())}.`);
+    });
+
+    it("no se puede registrar el encuentro sin asistentes: en vez de pedir confirmación, lo avisa", () => {
+      const { aplicacion } = montar(almacenamientosConAnaInactiva());
+      hacerClic("Empezar encuentro");
+
+      hacerClic("Registrar encuentro");
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Registrar encuentro");
+      expect(textoDe(dialogoAbierto().querySelector("p")!)).toBe("No se puede registrar el encuentro sin asistentes");
+      expect([...dialogoAbierto().querySelectorAll("button")].map(textoDe)).toEqual(["Volver"]);
+      hacerClic("Volver", dialogoAbierto());
+
+      expect(hayDialogoAbierto()).toBe(false);
+      expect(aplicacion.tienePlanillaDeAsistencia()).toBe(true);
+      expect(aplicacion.grupo().encuentros()).toHaveLength(1);
     });
 
     it("la confirmación del registro nombra a los posibles asistentes sin marcar, incluso a un inactivo que no superó la tolerancia", () => {
