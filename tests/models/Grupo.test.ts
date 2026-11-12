@@ -151,7 +151,7 @@ describe("Grupo", () => {
   });
 
   describe("efectos de cambiar las reglas", () => {
-    const comoLista = (efecto: CambioDeGarantia) => [efecto.nombre(), efecto.monto(), efecto.deCreditos()];
+    const comoLista = (efecto: CambioDeGarantia) => [efecto.nombre(), efecto.monto(), efecto.loCubrenSusCreditos()];
 
     const grupoConGarantiasDistintas = () => {
       const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
@@ -172,26 +172,26 @@ describe("Grupo", () => {
       const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(4), garantia: 1100 }));
 
       expect(efectos.map(comoLista)).toEqual([
-        ["beto", -100, 0],
-        ["carla", -100, 0],
-        ["dani", 100, 0],
+        ["beto", -100, false],
+        ["carla", -100, false],
+        ["dani", 100, false],
       ]);
     });
 
-    it("quien tiene créditos pendientes que cubren lo que le falta lo completa con ellos", () => {
+    it("se sabe si los créditos pendientes de alguien cubren lo que le falta, aunque no se apliquen solos", () => {
       const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
 
       const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
 
-      expect(efectos.map(comoLista)).toEqual([["beto", -500, 500]]);
+      expect(efectos.map(comoLista)).toEqual([["beto", -500, true]]);
     });
 
-    it("quien tiene créditos pendientes que no cubren lo que le falta los usa todos", () => {
+    it("los créditos pendientes que no alcanzan para lo que falta no lo cubren", () => {
       const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
 
       const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(3), garantia: 2500 }));
 
-      expect(efectos.map(comoLista)).toEqual([["beto", -1500, 1000]]);
+      expect(efectos.map(comoLista)).toEqual([["beto", -1500, false]]);
     });
 
     it("no hay efectos si nadie pasa a deber otra cosa ni tiene un excedente", () => {

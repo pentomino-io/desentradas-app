@@ -781,7 +781,7 @@ describe("VistaPrincipal", () => {
       expect(aplicacion.grupo().reglas().garantia()).toBe(1500);
     });
 
-    it("cambiar las reglas avisa qué parte de lo que falta de la garantía cubre cada uno con sus créditos", async () => {
+    it("cambiar las reglas avisa a quiénes les alcanzan los créditos para cubrir lo que les falta", async () => {
       montar(almacenamientosConAnaInactiva()); // beto recibe 334, carla y dani 333
       await navegarA("Reglas");
       completar("¿Cuánto se paga de garantía?", "1334");
@@ -789,7 +789,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Cambiar reglas");
 
       expect(textoDe(dialogoAbierto())).toContain(
-        "carla y dani cubren $ 333 con sus créditos y deben completar $ 1; beto cubre $ 334 con sus créditos.",
+        "carla y dani deben completar $ 334; beto debe completar $ 334, que puede cubrir con sus créditos.",
       );
     });
 

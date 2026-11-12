@@ -18,20 +18,19 @@ const efecto = (nombres: readonly string[], cambio: CambioDeGarantia): string =>
     return `${enumeracion(nombres)} ${varios ? "reciben" : "recibe"} un crédito de ${monto(cambio.monto())}`;
   }
 
-  const partes = [
-    cambio.deCreditos() > 0 && `${varios ? "cubren" : "cubre"} ${monto(cambio.deCreditos())} con sus créditos`,
-    cambio.porCobrar() > 0 && `${varios ? "deben" : "debe"} completar ${monto(cambio.porCobrar())}`,
-  ];
-  return `${enumeracion(nombres)} ${partes.filter((parte) => parte !== false).join(" y ")}`;
+  const deuda = `${enumeracion(nombres)} ${varios ? "deben" : "debe"} completar ${monto(-cambio.monto())}`;
+  return cambio.loCubrenSusCreditos() ? `${deuda}, que ${varios ? "pueden" : "puede"} cubrir con sus créditos` : deuda;
 };
 
 const descripcionDe = (efectos: readonly CambioDeGarantia[]): string => {
   if (efectos.length === 0) return "No cambia la plata de nadie.";
 
   const grupos = new Map<string, { cambio: CambioDeGarantia; nombres: string[] }>();
-  const ordenados = efectos.toSorted((uno, otro) => uno.monto() - otro.monto() || uno.deCreditos() - otro.deCreditos());
+  const ordenados = efectos.toSorted(
+    (uno, otro) => uno.monto() - otro.monto() || Number(uno.loCubrenSusCreditos()) - Number(otro.loCubrenSusCreditos()),
+  );
   for (const cambio of ordenados) {
-    const clave = `${cambio.monto()} ${cambio.deCreditos()}`;
+    const clave = `${cambio.monto()} ${cambio.loCubrenSusCreditos()}`;
     const nombres = grupos.get(clave)?.nombres ?? [];
     grupos.set(clave, { cambio, nombres: [...nombres, cambio.nombre()] });
   }

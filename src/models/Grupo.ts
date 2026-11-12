@@ -150,8 +150,8 @@ export class Grupo {
     return this._participantes.flatMap((participante) => {
       const nuevoSaldo = participante.saldoDeGarantia(reglas.garantia());
       const cambia = nuevoSaldo !== 0 && nuevoSaldo !== participante.saldoDeGarantia(this._garantiaVigente());
-      const deCreditos = Math.min(Math.max(0, -nuevoSaldo), this._caja.montoPendienteDe(participante.nombre()));
-      return cambia ? [new CambioDeGarantia(participante.nombre(), nuevoSaldo, deCreditos)] : [];
+      const creditos = this._caja.montoPendienteDe(participante.nombre());
+      return cambia ? [new CambioDeGarantia(participante.nombre(), nuevoSaldo, creditos)] : [];
     });
   }
 
