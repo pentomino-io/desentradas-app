@@ -91,13 +91,13 @@ export class PantallaEncuentro {
       disabled: !this._entorno.grupo().puedeAsistir(participante),
       onchange: () => this._marcar(nombre, casilla.checked),
     });
-    return fila(casilla, nombre, participante.estado(), this._accionDe(participante));
+    return fila(casilla, nombre, this._entorno.grupo().situacionDe(participante), this._accionDe(participante));
   }
 
   private _accionDe(participante: Participante): HTMLElement | false {
     const nombre = participante.nombre();
     if (!this._entorno.grupo().puedeAsistir(participante))
-      return boton("Cobrar garantía y habilitar", () => this._abrirCobro(nombre));
+      return boton("Cobrar garantía y habilitar", () => this._abrirCobro(participante));
     if (!this._planillaDeAsistencia().asiste(nombre)) return false;
 
     const pendiente = this._entorno.grupo().caja().montoPendienteDe(nombre);
@@ -117,8 +117,9 @@ export class PantallaEncuentro {
     this._entorno.refrescar();
   }
 
-  private _abrirCobro(nombre: string): void {
-    new DialogoDeCobroDeGarantia(this._entorno, nombre, () => this._cobrarGarantia(nombre)).abrir();
+  private _abrirCobro(participante: Participante): void {
+    const nombre = participante.nombre();
+    new DialogoDeCobroDeGarantia(this._entorno, participante, () => this._cobrarGarantia(nombre)).abrir();
   }
 
   private _cobrarGarantia(nombre: string): void {

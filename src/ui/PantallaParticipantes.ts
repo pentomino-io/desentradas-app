@@ -70,14 +70,14 @@ export class PantallaParticipantes {
         .grupo()
         .quienesYaNoParticipan()
         .toSorted(porNombre)
-        .map((participante) => this._filaDeQuienYaNoParticipa(participante.nombre())),
+        .map((participante) => this._filaDeQuienYaNoParticipa(participante)),
     );
   }
 
-  private _filaDeQuienYaNoParticipa(nombre: string): HTMLTableRowElement {
+  private _filaDeQuienYaNoParticipa(participante: Participante): HTMLTableRowElement {
     return fila(
-      nombre,
-      boton("Reingresar", () => this._abrirReingreso(nombre)),
+      participante.nombre(),
+      boton("Reingresar", () => this._abrirReingreso(participante)),
     );
   }
 
@@ -90,9 +90,9 @@ export class PantallaParticipantes {
     ).abrir();
   }
 
-  private _abrirReingreso(nombre: string): void {
-    new DialogoDeCobroDeGarantia(this._entorno, nombre, () =>
-      this._entorno.aplicacion().cobrarGarantia(nombre, this._entorno.ahora()),
+  private _abrirReingreso(participante: Participante): void {
+    new DialogoDeCobroDeGarantia(this._entorno, participante, () =>
+      this._entorno.aplicacion().cobrarGarantia(participante.nombre(), this._entorno.ahora()),
     ).abrir();
   }
 }

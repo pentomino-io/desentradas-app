@@ -591,6 +591,24 @@ describe("VistaPrincipal", () => {
       expect(casillaDeAsistencia("ana").checked).toBe(true);
     });
 
+    it("a quien tiene la garantía incompleta se le cobra la diferencia para habilitarlo, y queda marcado como presente", () => {
+      const { aplicacion } = montar(almacenamientosConGarantiasIncompletas());
+      hacerClic("Empezar encuentro");
+
+      hacerClic("Cobrar garantía y habilitar", fila("beto"));
+      expect(textoDe(dialogoAbierto())).toContain("Se le va a cobrar $ 500 para completar la garantía de $ 1.500.");
+      hacerClic("Cobrar", dialogoAbierto());
+
+      expect(aplicacion.grupo().participante("beto")?.garantia()).toBe(1500);
+      expect(casillaDeAsistencia("beto").checked).toBe(true);
+      expect(textosDeLasCeldas(fila("carla"))).toEqual([
+        "",
+        "carla",
+        "garantía incompleta",
+        "Cobrar garantía y habilitar",
+      ]);
+    });
+
     it("sin posibles asistentes dice que todavía no hay nadie", async () => {
       montar(almacenamientosConGrupoSinParticipantes());
       await navegarA("Encuentro");
