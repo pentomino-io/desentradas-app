@@ -598,6 +598,18 @@ describe("Grupo", () => {
 
       expect(saldos.map((saldo) => [saldo.nombre(), saldo.monto()])).toEqual([["carla", 2000]]);
     });
+
+    it("quien tiene la garantía incompleta tiene un saldo negativo por lo que le falta, aparte del positivo por sus créditos, y un inactivo no debe nada", () => {
+      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito por la falta de ana
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+
+      const saldos = grupo.saldos();
+
+      expect(saldos.map((saldo) => [saldo.nombre(), saldo.monto()])).toEqual([
+        ["beto", -500],
+        ["beto", 1000],
+      ]);
+    });
   });
 
   describe("repartos", () => {

@@ -124,9 +124,13 @@ export class Grupo {
   }
 
   saldos(): readonly Saldo[] {
-    return this._caja
+    const deudas = this._participantes
+      .filter((participante) => this.situacionDe(participante) === "garantía incompleta")
+      .map((participante) => new Saldo(participante.nombre(), -this.garantiaPorCobrarA(participante)));
+    const creditos = this._caja
       .nombresConCreditosPendientes()
       .map((nombre) => new Saldo(nombre, this._caja.montoPendienteDe(nombre)));
+    return [...deudas, ...creditos];
   }
 
   participante(nombre: string): Participante | undefined {
