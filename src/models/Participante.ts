@@ -2,24 +2,15 @@ import type { Encuentro } from "./Encuentro.ts";
 import { Desentrada } from "./Desentrada.ts";
 import type { Estado, NombreDeEstado, Situacion } from "./estados/Estado.ts";
 import { Inactivo } from "./estados/Inactivo.ts";
-import { Participando } from "./estados/Participando.ts";
 import { Transicion, type Disparador } from "./Transicion.ts";
 
 export class Participante {
   private _nombre: string;
   private _historial: Transicion[];
 
-  static pagando(nombre: string, fechaDeIngreso: Date, garantia: number): Participante {
-    return new Participante(nombre, fechaDeIngreso, new Participando(garantia));
-  }
-
-  static sinPagar(nombre: string, fechaDeIngreso: Date): Participante {
-    return new Participante(nombre, fechaDeIngreso, new Inactivo(0));
-  }
-
-  private constructor(nombre: string, fechaDeIngreso: Date, estadoInicial: Estado) {
+  constructor(nombre: string, fechaDeIngreso: Date) {
     this._nombre = nombre;
-    this._historial = [new Transicion(fechaDeIngreso, "ingreso", estadoInicial)];
+    this._historial = [new Transicion(fechaDeIngreso, "ingreso", new Inactivo(0))];
   }
 
   voy(encuentro: Encuentro): void {
@@ -60,6 +51,10 @@ export class Participante {
     return this._historial;
   }
 
+  fechaDeIngreso(): Date {
+    return this._historial[0].fecha();
+  }
+
   fechaDelUltimoCambio(): Date {
     return this._ultimaTransicion().fecha();
   }
@@ -80,7 +75,7 @@ export class Participante {
     return this._estado().garantia();
   }
 
-  recienIngresoSinPagar(): boolean {
+  recienIngresado(): boolean {
     return this._historial.length === 1 && this.estado() === "inactivo";
   }
 

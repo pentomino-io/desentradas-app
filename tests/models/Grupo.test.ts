@@ -3,12 +3,12 @@ import { TransicionInvalida } from "../../src/models/estados/TransicionInvalida.
 import type { CambioDeGarantia } from "../../src/models/CambioDeGarantia.ts";
 import { Grupo } from "../../src/models/Grupo.ts";
 import type { Saldo } from "../../src/models/Saldo.ts";
-import { desempate, dia, nuevoEncuentro, nuevoGrupo, reglas } from "./factories.ts";
+import { desempate, dia, ingresarCobrandoLaGarantia, nuevoEncuentro, nuevoGrupo, reglas } from "./factories.ts";
 
 const grupoConAnaInactiva = () => {
   const grupo = nuevoGrupo();
-  const ana = grupo.ingresar("ana", dia(1));
-  const beto = grupo.ingresar("beto", dia(1));
+  const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+  const beto = ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
   grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana"] }));
   return { grupo, ana, beto };
 };
@@ -16,15 +16,15 @@ const grupoConAnaInactiva = () => {
 const grupoConGarantiaInactivaIncompletaYCompleta = () => {
   const { grupo, ana, beto } = grupoConAnaInactiva();
   grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
-  const carla = grupo.ingresar("carla", dia(3));
+  const carla = ingresarCobrandoLaGarantia(grupo, "carla", dia(3));
   return { grupo, ana, beto, carla };
 };
 
 const grupoConAnaInactivaConSaldoAFavor = () => {
   const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
-  const ana = grupo.ingresar("ana", dia(1));
-  const beto = grupo.ingresar("beto", dia(1));
-  const carla = grupo.ingresar("carla", dia(1));
+  const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+  const beto = ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
+  const carla = ingresarCobrandoLaGarantia(grupo, "carla", dia(1));
   grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["ana", "beto"], ausentes: ["carla"] })); // ana recibe 500
   grupo.registrarEncuentro(nuevoEncuentro({ numero: 3, asistentes: ["beto"], ausentes: ["ana"] }));
   return { grupo, ana, beto, carla };
@@ -96,7 +96,7 @@ describe("Grupo", () => {
     it("no se pueden cambiar las reglas en una fecha anterior al último encuentro", () => {
       const reglasIniciales = reglas();
       const grupo = nuevoGrupo(reglasIniciales);
-      grupo.ingresar("beto", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"] }));
 
       expect(() => {
@@ -155,14 +155,14 @@ describe("Grupo", () => {
 
     const grupoConGarantiasDistintas = () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
-      grupo.ingresar("ana", dia(1));
-      grupo.ingresar("beto", dia(1));
-      grupo.ingresar("carla", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "carla", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto", "carla"], ausentes: ["ana"] }));
       grupo.pagar("beto", dia(3));
       grupo.pagar("carla", dia(3));
       grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1200 })); // beto y carla deben $ 200
-      grupo.ingresar("dani", dia(3));
+      ingresarCobrandoLaGarantia(grupo, "dani", dia(3));
       return grupo;
     };
 
@@ -206,56 +206,31 @@ describe("Grupo", () => {
   });
 
   describe("ingreso", () => {
-    it("al ingresar, la persona queda como participante del grupo", () => {
+    it("al ingresar, la persona queda en el grupo inactiva sin faltas, sin cobrarle nada, como posible asistente que no puede asistir", () => {
       const grupo = nuevoGrupo();
 
       const ana = grupo.ingresar("ana", dia(1));
 
-      expect(ana.estado()).toBe("participando");
-      expect(grupo.participante("ana")).toBe(ana);
-      expect(grupo.participantes()).toEqual([ana]);
-    });
-
-    it("al ingresar se cobra en efectivo la desentrada vigente como garantía", () => {
-      const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
-
-      const ana = grupo.ingresar("ana", dia(3));
-
-      expect(ana.garantia()).toBe(1500);
-      expect(movimientosDe(grupo)).toEqual([[dia(3), "ana", 1500]]);
-    });
-
-    it("ingresar sin pagar deja a la persona inactiva sin faltas, sin cobrarle nada, como posible asistente que no puede asistir", () => {
-      const grupo = nuevoGrupo();
-
-      const ana = grupo.ingresarSinPagar("ana", dia(1));
-
       expect(ana.estado()).toBe("inactivo");
       expect(ana.faltas()).toBe(0);
       expect(grupo.participante("ana")).toBe(ana);
+      expect(grupo.participantes()).toEqual([ana]);
       expect(movimientosDe(grupo)).toEqual([]);
       expect(grupo.posiblesAsistentes()).toEqual([ana]);
       expect(grupo.puedeAsistir(ana)).toBe(false);
     });
 
-    it("quien ingresó sin pagar puede pagar la garantía para participar", () => {
+    it("a quien ingresó se le cobra en efectivo la desentrada vigente como garantía para que participe", () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
-      const ana = grupo.ingresarSinPagar("ana", dia(1));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
+      const ana = grupo.ingresar("ana", dia(3));
 
-      grupo.cobrarGarantia("ana", dia(2));
+      grupo.cobrarGarantia("ana", dia(4));
 
       expect(ana.estado()).toBe("participando");
+      expect(ana.garantia()).toBe(1500);
       expect(grupo.puedeAsistir(ana)).toBe(true);
-      expect(movimientosDe(grupo)).toEqual([[dia(2), "ana", 1000]]);
-    });
-
-    it("una persona que ya está en el grupo no puede volver a ingresar sin pagar", () => {
-      const { grupo } = grupoConAnaInactiva();
-
-      expect(() => {
-        grupo.ingresarSinPagar("ana", dia(3));
-      }).toThrow("ana ya está en el grupo");
+      expect(movimientosDe(grupo)).toEqual([[dia(4), "ana", 1500]]);
     });
 
     it("no hay participante para quien no ingresó", () => {
@@ -355,7 +330,7 @@ describe("Grupo", () => {
 
     it("cobrarle la garantía a quien la tiene incompleta cobra en efectivo la diferencia y lo habilita para asistir", () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
-      const ana = grupo.ingresar("ana", dia(1));
+      const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
       grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
 
       grupo.cobrarGarantia("ana", dia(3));
@@ -449,6 +424,16 @@ describe("Grupo", () => {
       expect(grupo.caja().movimientos()).toHaveLength(2);
     });
 
+    it("no se le puede cobrar la garantía a alguien en una fecha anterior a su ingreso", () => {
+      const grupo = nuevoGrupo();
+      const ana = grupo.ingresar("ana", dia(5));
+
+      expect(() => {
+        grupo.cobrarGarantia("ana", dia(4));
+      }).toThrow("El cobro de la garantía no puede ser anterior al ingreso de ana");
+      expect(ana.estado()).toBe("inactivo");
+    });
+
     it("no se puede cobrar la garantía en una fecha anterior al último pago", () => {
       const { grupo, ana } = grupoConAnaInactiva();
       grupo.pagar("beto", dia(5));
@@ -463,8 +448,8 @@ describe("Grupo", () => {
   describe("encuentros", () => {
     it("registrar un encuentro hace ir a los asistentes y faltar a los ausentes", () => {
       const grupo = nuevoGrupo();
-      const ana = grupo.ingresar("ana", dia(1));
-      const beto = grupo.ingresar("beto", dia(1));
+      const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+      const beto = ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
       const encuentro = nuevoEncuentro({ asistentes: ["ana"], ausentes: ["beto"] });
 
       grupo.registrarEncuentro(encuentro);
@@ -476,20 +461,20 @@ describe("Grupo", () => {
 
     it("un encuentro no afecta a los participantes que no figuran ni como asistentes ni como ausentes", () => {
       const grupo = nuevoGrupo();
-      grupo.ingresar("ana", dia(1));
-      grupo.ingresar("beto", dia(1));
-      const carla = grupo.ingresar("carla", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
+      const carla = ingresarCobrandoLaGarantia(grupo, "carla", dia(1));
 
       grupo.registrarEncuentro(nuevoEncuentro({ asistentes: ["ana"], ausentes: ["beto"] }));
 
-      expect(carla.historial()).toHaveLength(1);
+      expect(carla.historial()).toHaveLength(2);
     });
 
     it("la desentrada de quien falta se reparte entre los asistentes", () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
-      grupo.ingresar("ana", dia(1));
-      grupo.ingresar("beto", dia(1));
-      grupo.ingresar("carla", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "carla", dia(1));
 
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto", "carla"], ausentes: ["ana"] }));
 
@@ -499,9 +484,9 @@ describe("Grupo", () => {
 
     it("quien falta con la garantía incompleta pierde la que tiene y queda inactivo", () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
-      const ana = grupo.ingresar("ana", dia(1));
+      const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
       grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 2000 }));
-      grupo.ingresar("beto", dia(2));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(2));
 
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 3, asistentes: ["beto"], ausentes: ["ana"] }));
 
@@ -520,8 +505,8 @@ describe("Grupo", () => {
 
     it("no se puede marcar ausente a quien superó la tolerancia de faltas", () => {
       const grupo = nuevoGrupo(reglas({ toleranciaDeFaltas: 1 }));
-      const ana = grupo.ingresar("ana", dia(1));
-      grupo.ingresar("beto", dia(1));
+      const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana"] }));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"], ausentes: ["ana"] })); // ana supera la tolerancia
 
@@ -534,7 +519,7 @@ describe("Grupo", () => {
 
     it("quien tiene la garantía incompleta no puede figurar como asistente de un encuentro", () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
-      grupo.ingresar("ana", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
       grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
 
       expect(() => {
@@ -545,7 +530,7 @@ describe("Grupo", () => {
 
     it("no se puede registrar un encuentro anterior al último registrado", () => {
       const grupo = nuevoGrupo();
-      grupo.ingresar("beto", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"] }));
 
       expect(() => {
@@ -555,7 +540,7 @@ describe("Grupo", () => {
 
     it("no se puede registrar un encuentro en la misma fecha que el último registrado", () => {
       const grupo = nuevoGrupo();
-      grupo.ingresar("beto", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"] }));
 
       expect(() => {
@@ -565,13 +550,13 @@ describe("Grupo", () => {
 
     it("no se puede registrar un encuentro anterior a un ingreso", () => {
       const grupo = nuevoGrupo();
-      const beto = grupo.ingresar("beto", dia(1));
+      const beto = ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
       grupo.ingresar("ana", dia(5));
 
       expect(() => {
         grupo.registrarEncuentro(nuevoEncuentro({ numero: 4, asistentes: ["beto"] }));
       }).toThrow("El encuentro no puede ser anterior al ingreso de ana");
-      expect(beto.historial()).toHaveLength(1);
+      expect(beto.historial()).toHaveLength(2);
       expect(grupo.encuentros()).toEqual([]);
     });
 
@@ -620,26 +605,26 @@ describe("Grupo", () => {
 
     it("los asistentes a un encuentro deben ser participantes del grupo", () => {
       const grupo = nuevoGrupo();
-      const ana = grupo.ingresar("ana", dia(1));
+      const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
       const encuentro = nuevoEncuentro({ asistentes: ["ana", "alguien de afuera"] });
 
       expect(() => {
         grupo.registrarEncuentro(encuentro);
       }).toThrow("alguien de afuera no es participante del grupo");
-      expect(ana.historial()).toHaveLength(1);
+      expect(ana.historial()).toHaveLength(2);
       expect(grupo.encuentros()).toEqual([]);
     });
 
     it("los ausentes de un encuentro deben ser participantes del grupo", () => {
       const grupo = nuevoGrupo();
-      const ana = grupo.ingresar("ana", dia(1));
-      const beto = grupo.ingresar("beto", dia(1));
+      const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+      const beto = ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
       const encuentro = nuevoEncuentro({ asistentes: ["ana"], ausentes: ["beto", "alguien de afuera"] });
 
       expect(() => {
         grupo.registrarEncuentro(encuentro);
       }).toThrow("alguien de afuera no es participante del grupo");
-      expect(ana.historial()).toHaveLength(1);
+      expect(ana.historial()).toHaveLength(2);
       expect(beto.estado()).toBe("participando");
       expect(grupo.encuentros()).toEqual([]);
     });
@@ -652,14 +637,14 @@ describe("Grupo", () => {
         grupo.registrarEncuentro(encuentro);
       }).toThrow("ana no puede asistir");
       expect(ana.estado()).toBe("inactivo");
-      expect(beto.historial()).toHaveLength(2);
+      expect(beto.historial()).toHaveLength(3);
       expect(grupo.encuentros()).toHaveLength(1);
     });
 
     it("quien ingresó el mismo día del encuentro puede faltar a él", () => {
       const grupo = nuevoGrupo();
-      grupo.ingresar("beto", dia(1));
-      const ana = grupo.ingresar("ana", dia(2));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
+      const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(2));
 
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana"] }));
 
@@ -670,9 +655,9 @@ describe("Grupo", () => {
   describe("posibles asistentes", () => {
     it("son quienes participan y los inactivos que no superan la tolerancia de faltas", () => {
       const grupo = nuevoGrupo(reglas({ toleranciaDeFaltas: 1 }));
-      grupo.ingresar("ana", dia(1));
-      const beto = grupo.ingresar("beto", dia(1));
-      const carla = grupo.ingresar("carla", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+      const beto = ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
+      const carla = ingresarCobrandoLaGarantia(grupo, "carla", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana", "carla"] }));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"], ausentes: ["ana"] })); // ana supera la tolerancia
 
@@ -699,9 +684,9 @@ describe("Grupo", () => {
 
     it("quienes ya no participan son los que superaron la tolerancia de faltas", () => {
       const grupo = nuevoGrupo(reglas({ toleranciaDeFaltas: 1 }));
-      const ana = grupo.ingresar("ana", dia(1));
-      grupo.ingresar("beto", dia(1));
-      grupo.ingresar("carla", dia(1));
+      const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "carla", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana", "carla"] }));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"], ausentes: ["ana"] })); // ana supera la tolerancia
 
@@ -712,8 +697,8 @@ describe("Grupo", () => {
 
     it("la tolerancia de faltas es la de las reglas actuales", () => {
       const grupo = nuevoGrupo(reglas({ toleranciaDeFaltas: 1 }));
-      const ana = grupo.ingresar("ana", dia(1));
-      const beto = grupo.ingresar("beto", dia(1));
+      const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+      const beto = ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana"] }));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 9, asistentes: ["beto"], ausentes: ["ana"] })); // ana supera la tolerancia
       grupo.cambiarReglas(reglas({ rigeDesde: dia(10), toleranciaDeFaltas: 2 }));
@@ -729,9 +714,9 @@ describe("Grupo", () => {
 
     it("quien tiene saldo a favor figura en los saldos con ese monto, y quien no tiene nada a favor no figura", () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
-      grupo.ingresar("ana", dia(1));
-      grupo.ingresar("beto", dia(1));
-      grupo.ingresar("carla", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "carla", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["carla"], ausentes: ["ana", "beto"] }));
 
       const saldos = grupo.saldos();
@@ -790,9 +775,9 @@ describe("Grupo", () => {
 
     it("no se puede pagar en una fecha anterior al último pago", () => {
       const grupo = nuevoGrupo();
-      grupo.ingresar("ana", dia(1));
-      grupo.ingresar("beto", dia(1));
-      grupo.ingresar("carla", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
+      ingresarCobrandoLaGarantia(grupo, "carla", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto", "carla"], ausentes: ["ana"] }));
       const pagoABeto = grupo.pagar("beto", dia(5));
 

@@ -16,3 +16,8 @@ export const aplicacionConGrupo = (almacenamientos: Almacenamientos = {}) => {
   aplicacion.crearGrupo("Fútbol de los jueves", reglas());
   return aplicacion;
 };
+
+export const ingresarCobrandoLaGarantia = (aplicacion: Aplicacion, nombre: string, fecha: Date) => {
+  aplicacion.ingresar(nombre, fecha);
+  aplicacion.cobrarGarantia(nombre, fecha);
+};

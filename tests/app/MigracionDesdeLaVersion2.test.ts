@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { Bitacora } from "../../src/app/Bitacora.ts";
 import { migrarDesdeLaVersion2 } from "../../src/app/json/MigracionDesdeLaVersion2.ts";
-import { dia } from "../models/factories.ts";
+import { desempate, dia } from "../models/factories.ts";
 
 const reglas = { rigeDesde: dia(1).toISOString(), toleranciaDeFaltas: 2 };
 
@@ -37,11 +38,50 @@ describe("Migración desde la versión 2", () => {
     expect(comandos).toEqual([{ tipo: "pagar", nombre: "beto", fecha: dia(3).toISOString() }]);
   });
 
+  it("ingresar pasa a ser ingresar y cobrar la garantía en la misma fecha", () => {
+    const comandos = migrarComando({ tipo: "ingresar", nombre: "ana", fecha: dia(1).toISOString() });
+
+    expect(comandos).toEqual([
+      { tipo: "ingresar", nombre: "ana", fecha: dia(1).toISOString() },
+      { tipo: "cobrar garantía", nombre: "ana", fecha: dia(1).toISOString() },
+    ]);
+  });
+
+  it("quien ingresó en la versión 2 queda participando con la garantía de la desentrada vigente, cobrada en efectivo al ingresar", () => {
+    const bitacora = Bitacora.desdeJson(
+      {
+        version: 2,
+        comandos: [
+          { tipo: "crear grupo", nombreDelGrupo: "Fútbol", reglas: { ...reglas, garantia: 1000 } },
+          { tipo: "cambiar reglas", reglas: { ...reglas, rigeDesde: dia(2).toISOString(), garantia: 1500 } },
+          { tipo: "ingresar", nombre: "ana", fecha: dia(3).toISOString() },
+        ],
+      },
+      desempate,
+    );
+
+    const grupo = bitacora.grupo();
+    expect(grupo.participante("ana")?.estado()).toBe("participando");
+    expect(grupo.participante("ana")?.garantia()).toBe(1500);
+    expect(
+      grupo
+        .caja()
+        .movimientos()
+        .map((movimiento) => [movimiento.fecha(), movimiento.monto()]),
+    ).toEqual([[dia(3), 1500]]);
+  });
+
+  it("ingresar sin pagar pasa a llamarse ingresar", () => {
+    const comandos = migrarComando({ tipo: "ingresar sin pagar", nombre: "ana", fecha: dia(1).toISOString() });
+
+    expect(comandos).toEqual([{ tipo: "ingresar", nombre: "ana", fecha: dia(1).toISOString() }]);
+  });
+
   it("los demás comandos quedan igual", () => {
-    const ingresar = { tipo: "ingresar", nombre: "ana", fecha: dia(1).toISOString() };
+    const cobrar = { tipo: "cobrar garantía", nombre: "ana", fecha: dia(1).toISOString() };
 
-    const comandos = migrarComando(ingresar);
+    const comandos = migrarComando(cobrar);
 
-    expect(comandos).toEqual([ingresar]);
+    expect(comandos).toEqual([cobrar]);
   });
 });

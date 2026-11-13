@@ -55,7 +55,7 @@ export class PantallaParticipantes {
     return fila(
       participante.nombre(),
       estadoDe(this._entorno.grupo(), participante),
-      participante.recienIngresoSinPagar() && boton("Cobrar garantía", () => this._abrirCobro(participante)),
+      participante.recienIngresado() && boton("Cobrar garantía", () => this._abrirCobro(participante)),
     );
   }
 
@@ -82,10 +82,13 @@ export class PantallaParticipantes {
     new DialogoDeRegistro(
       this._entorno,
       "Registrar participante",
-      (nombre) => this._entorno.aplicacion().ingresar(nombre, this._entorno.ahora()),
+      (nombre) => {
+        this._entorno.aplicacion().ingresar(nombre, this._entorno.ahora());
+        this._entorno.aplicacion().cobrarGarantia(nombre, this._entorno.ahora());
+      },
       (nombre) => this._entorno.aplicacion().cobrarGarantia(nombre, this._entorno.ahora()),
     )
-      .conIngresoSinPagar((nombre) => this._entorno.aplicacion().ingresarSinPagar(nombre, this._entorno.ahora()))
+      .conIngresoSinPagar((nombre) => this._entorno.aplicacion().ingresar(nombre, this._entorno.ahora()))
       .abrir();
   }
 

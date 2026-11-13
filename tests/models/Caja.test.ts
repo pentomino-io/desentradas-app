@@ -97,10 +97,10 @@ describe("Caja", () => {
   describe("movimientos", () => {
     it("los movimientos son los cobros y los pagos, en orden cronológico, sin las desentradas", () => {
       const caja = nuevaCaja();
-      caja.cobrar(Cobro.alIngresar("ana", 1000, dia(1)));
+      caja.cobrar(Cobro.deGarantia("ana", 1000, dia(1), 0));
       caja.repartir(desentrada({ persona: "ana", monto: 1000, numero: 3, asistentes: ["beto"] }));
       caja.pagar("beto", dia(5));
-      caja.cobrar(Cobro.alIngresar("dario", 300, dia(6)));
+      caja.cobrar(Cobro.deGarantia("dario", 300, dia(6), 0));
 
       const movimientos = caja.movimientos();
 
@@ -115,7 +115,7 @@ describe("Caja", () => {
 
     it("el total en caja es lo cobrado en efectivo menos lo pagado", () => {
       const caja = nuevaCaja();
-      caja.cobrar(Cobro.alIngresar("ana", 1000, dia(1)));
+      caja.cobrar(Cobro.deGarantia("ana", 1000, dia(1), 0));
       caja.repartir(desentrada({ persona: "ana", monto: 1000, numero: 2, asistentes: ["beto", "carla"] }));
       caja.cobrar(Cobro.deGarantia("beto", 800, dia(3), 500));
       caja.pagar("carla", dia(4));
@@ -128,7 +128,7 @@ describe("Caja", () => {
     it("un cobro no deja saldo a favor", () => {
       const caja = nuevaCaja();
 
-      caja.cobrar(Cobro.alIngresar("ana", 1000, dia(1)));
+      caja.cobrar(Cobro.deGarantia("ana", 1000, dia(1), 0));
 
       expect(caja.totalDeSaldosAFavor()).toBe(0);
     });

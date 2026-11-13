@@ -54,14 +54,7 @@ export class Grupo {
   }
 
   ingresar(nombre: string, fecha: Date): Participante {
-    const garantia = this._desentradaVigente();
-    const participante = this._incorporar(Participante.pagando(nombre.trim(), fecha, garantia), fecha);
-    this._caja.cobrar(Cobro.alIngresar(participante.nombre(), garantia, fecha));
-    return participante;
-  }
-
-  ingresarSinPagar(nombre: string, fecha: Date): Participante {
-    return this._incorporar(Participante.sinPagar(nombre.trim(), fecha), fecha);
+    return this._incorporar(new Participante(nombre.trim(), fecha), fecha);
   }
 
   cobrarGarantia(nombre: string, fecha: Date): void {
@@ -232,6 +225,10 @@ export class Grupo {
     const posterior = this._caja.movimientoPosteriorA(fecha);
     if (posterior !== undefined) {
       throw new Error(`${movimiento} no puede ser anterior ${precedidoDeA(posterior.describir())}`);
+    }
+    const ingresoPosterior = this._participantes.findLast((participante) => participante.fechaDeIngreso() > fecha);
+    if (ingresoPosterior !== undefined) {
+      throw new Error(`${movimiento} no puede ser anterior al ingreso de ${ingresoPosterior.nombre()}`);
     }
     if (fecha < this.reglas().rigeDesde()) {
       throw new Error(`${movimiento} no puede ser anterior ${this._origenDeLasReglas()}`);

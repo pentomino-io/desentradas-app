@@ -4,7 +4,6 @@ import { PlanillaDeAsistencia } from "./PlanillaDeAsistencia.ts";
 import type { Comando } from "./Comando.ts";
 import { CrearGrupo } from "./comandos/CrearGrupo.ts";
 import { Ingresar } from "./comandos/Ingresar.ts";
-import { IngresarSinPagar } from "./comandos/IngresarSinPagar.ts";
 import { CobrarGarantia } from "./comandos/CobrarGarantia.ts";
 import { RegistrarEncuentro } from "./comandos/RegistrarEncuentro.ts";
 import { Pagar } from "./comandos/Pagar.ts";
@@ -82,23 +81,12 @@ export class Aplicacion {
     this._ejecutar(new Ingresar(nombre, fecha));
   }
 
-  ingresarSinPagar(nombre: string, fecha: Date): void {
-    this._ejecutar(new IngresarSinPagar(nombre, fecha));
-  }
-
   cobrarGarantia(nombre: string, fecha: Date): void {
     this._ejecutar(new CobrarGarantia(nombre, fecha));
   }
 
   registrarEncuentro(fecha: Date, asistentes: Iterable<string>, ausentes: Iterable<string>): void {
     this._ejecutar(new RegistrarEncuentro(fecha, asistentes, ausentes));
-  }
-
-  ingresarAsistente(nombre: string, fecha: Date): void {
-    const planilla = this.planillaDeAsistencia();
-    const nombreLimpio = nombre.trim();
-    this.ingresar(nombreLimpio, fecha);
-    planilla.marcarComoPresente(nombreLimpio);
   }
 
   cobrarGarantiaAAsistente(nombre: string, fecha: Date): void {

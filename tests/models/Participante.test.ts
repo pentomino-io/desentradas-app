@@ -10,17 +10,50 @@ const inactivo = () => {
 };
 
 describe("Participante", () => {
-  describe("participando", () => {
-    it("al ingresar está participando con la garantía que pagó, sin faltas", () => {
-      const ana = nuevoParticipante(1500);
+  describe("ingreso", () => {
+    it("al ingresar está inactivo sin faltas ni garantía, y no puede asistir", () => {
+      const ana = new Participante("ana", dia(1));
 
       expect(ana.nombre()).toBe("ana");
+      expect(ana.estado()).toBe("inactivo");
+      expect(ana.faltas()).toBe(0);
+      expect(ana.garantia()).toBe(0);
+      expect(ana.puedeAsistir(1500)).toBe(false);
+    });
+
+    it("cobrarle la garantía después de ingresar lo deja participando con esa garantía, sin faltas", () => {
+      const ana = new Participante("ana", dia(1));
+
+      ana.cobrarGarantia(dia(2), 1500);
+
       expect(ana.estado()).toBe("participando");
       expect(ana.garantia()).toBe(1500);
       expect(ana.faltas()).toBe(0);
       expect(ana.puedeAsistir(1500)).toBe(true);
     });
 
+    it("quien acaba de ingresar está recién ingresado", () => {
+      const ana = new Participante("ana", dia(1));
+
+      const recien = ana.recienIngresado();
+
+      expect(recien).toBe(true);
+    });
+
+    it.each([
+      { caso: "faltó", despues: (ana: Participante) => ana.falto(nuevoEncuentro({ numero: 2 })) },
+      { caso: "se le cobró la garantía", despues: (ana: Participante) => ana.cobrarGarantia(dia(2), 1000) },
+    ])("quien ingresó y después $caso ya no está recién ingresado", ({ despues }) => {
+      const ana = new Participante("ana", dia(1));
+      despues(ana);
+
+      const recien = ana.recienIngresado();
+
+      expect(recien).toBe(false);
+    });
+  });
+
+  describe("participando", () => {
     it("con la garantía incompleta no puede asistir", () => {
       const ana = nuevoParticipante(1000);
 
@@ -78,7 +111,7 @@ describe("Participante", () => {
 
       expect(excedente).toBe(0);
       expect(ana.garantia()).toBe(1000);
-      expect(ana.historial()).toHaveLength(1);
+      expect(ana.historial()).toHaveLength(2);
     });
 
     it("con la garantía incompleta, le falta cobrar la diferencia con la desentrada", () => {
@@ -113,7 +146,7 @@ describe("Participante", () => {
       expect(() => {
         ana.cobrarGarantia(dia(2), 1000);
       }).toThrow(TransicionInvalida);
-      expect(ana.historial()).toHaveLength(1);
+      expect(ana.historial()).toHaveLength(2);
     });
   });
 
@@ -156,7 +189,7 @@ describe("Participante", () => {
       const excedente = ana.bajarGarantia(dia(3), 500);
 
       expect(excedente).toBe(0);
-      expect(ana.historial()).toHaveLength(2);
+      expect(ana.historial()).toHaveLength(3);
     });
 
     it("cobrarle la garantía lo devuelve a participando con esa garantía y sin faltas", () => {
@@ -167,42 +200,6 @@ describe("Participante", () => {
       expect(ana.estado()).toBe("participando");
       expect(ana.garantia()).toBe(2000);
       expect(ana.faltas()).toBe(0);
-    });
-  });
-
-  describe("ingreso sin pagar", () => {
-    it("quien ingresó sin pagar está recién ingresado sin pagar", () => {
-      const ana = Participante.sinPagar("ana", dia(1));
-
-      const recien = ana.recienIngresoSinPagar();
-
-      expect(recien).toBe(true);
-    });
-
-    it.each([
-      { caso: "ingresó pagando", ana: () => nuevoParticipante() },
-      {
-        caso: "ingresó sin pagar y faltó",
-        ana: () => {
-          const ana = Participante.sinPagar("ana", dia(1));
-          ana.falto(nuevoEncuentro({ numero: 2 }));
-          return ana;
-        },
-      },
-      {
-        caso: "ingresó sin pagar y después pagó",
-        ana: () => {
-          const ana = Participante.sinPagar("ana", dia(1));
-          ana.cobrarGarantia(dia(2), 1000);
-          return ana;
-        },
-      },
-    ])("quien $caso no está recién ingresado sin pagar", ({ ana }) => {
-      const participante = ana();
-
-      const recien = participante.recienIngresoSinPagar();
-
-      expect(recien).toBe(false);
     });
   });
 
@@ -217,7 +214,8 @@ describe("Participante", () => {
 
       expect(historial.map((transicion) => [transicion.fecha(), transicion.disparador(), transicion.estado()])).toEqual(
         [
-          [dia(1), "ingreso", "participando"],
+          [dia(1), "ingreso", "inactivo"],
+          [dia(1), "cobro de garantía", "participando"],
           [dia(2), "voy", "participando"],
           [dia(9), "falto", "inactivo"],
           [dia(10), "cobro de garantía", "participando"],

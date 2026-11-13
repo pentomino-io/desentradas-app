@@ -25,11 +25,21 @@ export const reglas = ({
   desentrada?: number;
 } = {}) => new Reglas(rigeDesde, toleranciaDeFaltas, desentrada);
 
-export const nuevoParticipante = (garantia = 1000) => Participante.pagando("ana", dia(1), garantia);
+export const nuevoParticipante = (garantia = 1000) => {
+  const participante = new Participante("ana", dia(1));
+  participante.cobrarGarantia(dia(1), garantia);
+  return participante;
+};
 
 export const desempate = new DesempateAlfabetico();
 
 export const nuevoGrupo = (reglasIniciales = reglas()) => new Grupo("Fútbol de los jueves", reglasIniciales, desempate);
+
+export const ingresarCobrandoLaGarantia = (grupo: Grupo, nombre: string, fecha: Date) => {
+  const participante = grupo.ingresar(nombre, fecha);
+  grupo.cobrarGarantia(nombre, fecha);
+  return participante;
+};
 
 export const desentrada = ({
   persona = "ana",

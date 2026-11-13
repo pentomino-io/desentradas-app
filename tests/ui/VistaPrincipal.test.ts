@@ -4,7 +4,7 @@ import { AlmacenamientoEnMemoria } from "../../src/app/AlmacenamientoEnMemoria.t
 import type { Aplicacion } from "../../src/app/Aplicacion.ts";
 import { fechaYHora } from "../../src/app/Formato.ts";
 import { VistaPrincipal } from "../../src/ui/VistaPrincipal.ts";
-import { ahora, aplicacionConGrupo, nuevaAplicacion } from "../app/factories.ts";
+import { ahora, aplicacionConGrupo, ingresarCobrandoLaGarantia, nuevaAplicacion } from "../app/factories.ts";
 import { dia, reglas } from "../models/factories.ts";
 
 const explicacionDeLaDesentrada = "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
@@ -24,7 +24,7 @@ const almacenamientosConGrupoSinParticipantes = () => {
 const almacenamientosConAnaInactiva = () => {
   const almacenamientos = almacenamientosConGrupoSinParticipantes();
   const aplicacion = nuevaAplicacion(almacenamientos);
-  ["ana", "beto", "carla", "dani"].forEach((nombre) => aplicacion.ingresar(nombre, dia(1)));
+  ["ana", "beto", "carla", "dani"].forEach((nombre) => ingresarCobrandoLaGarantia(aplicacion, nombre, dia(1)));
   aplicacion.registrarEncuentro(dia(2), ["beto", "carla", "dani"], ["ana"]);
   return almacenamientos;
 };
@@ -47,7 +47,7 @@ const almacenamientosConGarantiasIncompletas = () => {
 const almacenamientosConAnaInactivaConSaldoAFavor = () => {
   const almacenamientos = almacenamientosConGrupoSinParticipantes();
   const aplicacion = nuevaAplicacion(almacenamientos);
-  ["ana", "beto", "carla"].forEach((nombre) => aplicacion.ingresar(nombre, dia(1)));
+  ["ana", "beto", "carla"].forEach((nombre) => ingresarCobrandoLaGarantia(aplicacion, nombre, dia(1)));
   aplicacion.registrarEncuentro(dia(2), ["ana", "beto"], ["carla"]); // ana recibe 500
   aplicacion.registrarEncuentro(dia(3), ["beto"], ["ana"]);
   return almacenamientos;
@@ -196,8 +196,8 @@ describe("VistaPrincipal", () => {
     expect(hayDesplegable("Versiones anteriores")).toBe(false);
 
     const preparacion = nuevaAplicacion(almacenamientos);
-    preparacion.ingresar("ana", dia(1));
-    preparacion.ingresar("beto", dia(1));
+    ingresarCobrandoLaGarantia(preparacion, "ana", dia(1));
+    ingresarCobrandoLaGarantia(preparacion, "beto", dia(1));
     [2, 3, 4].forEach((numero) => preparacion.registrarEncuentro(dia(numero), ["beto"], ["ana"])); // ana supera la tolerancia
     recargar(almacenamientos);
     await navegarA("Participantes");
@@ -373,7 +373,7 @@ describe("VistaPrincipal", () => {
 
     it("a quien se registró sin pagar se le puede cobrar la garantía desde su fila, y pasa a participar", async () => {
       const almacenamientos = almacenamientosConGrupoSinParticipantes();
-      nuevaAplicacion(almacenamientos).ingresarSinPagar("ana", dia(1));
+      nuevaAplicacion(almacenamientos).ingresar("ana", dia(1));
       const { aplicacion } = montar(almacenamientos);
       await navegarA("Participantes");
 
@@ -769,7 +769,7 @@ describe("VistaPrincipal", () => {
     it("la confirmación del registro nombra a los posibles asistentes sin marcar, incluso a un inactivo que no superó la tolerancia", () => {
       const almacenamientos = almacenamientosConAnaInactiva();
       const preparacion = nuevaAplicacion(almacenamientos);
-      preparacion.ingresar("eva", dia(2));
+      ingresarCobrandoLaGarantia(preparacion, "eva", dia(2));
       preparacion.registrarEncuentro(dia(3), ["beto", "carla", "dani"], ["ana", "eva"]);
       preparacion.registrarEncuentro(dia(4), ["beto", "carla", "dani"], ["ana", "eva"]); // ana supera la tolerancia y eva no
       montar(almacenamientos);
@@ -982,7 +982,7 @@ describe("VistaPrincipal", () => {
 
     it("cambiar las reglas pide confirmar antes el cambio, quiénes deben completar la garantía para poder asistir y quiénes quedan con saldo a favor", async () => {
       const almacenamientos = almacenamientosConGarantiasIncompletas();
-      nuevaAplicacion(almacenamientos).ingresar("eli", dia(3));
+      ingresarCobrandoLaGarantia(nuevaAplicacion(almacenamientos), "eli", dia(3));
       const { aplicacion } = montar(almacenamientos);
       await navegarA("Reglas");
       completar("¿De cuánto es la desentrada?", "1200");
@@ -1130,7 +1130,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Deshacer");
 
       expect(hayDialogoAbierto()).toBe(false);
-      expect(textoDe(document.querySelector("main")!)).not.toContain("Se cobró");
+      expect(textoDe(document.querySelector("main")!)).not.toContain(fechaYHora(dia(3)));
       expect(pantallaActual()).toBe("Historial");
     });
 

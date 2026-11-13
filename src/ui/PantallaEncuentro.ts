@@ -146,7 +146,10 @@ export class PantallaEncuentro {
     new DialogoDeRegistro(
       this._entorno,
       "Vino alguien nuevo",
-      (nombre) => this._entorno.aplicacion().ingresarAsistente(nombre, this._entorno.ahora()),
+      (nombre) => {
+        this._entorno.aplicacion().ingresar(nombre, this._entorno.ahora());
+        this._cobrarGarantia(nombre);
+      },
       (nombre) => this._cobrarGarantia(nombre),
     )
       .conPedidoPorNombreUsado((participante) => this._pedidoDeIrALaListaPor(participante))

@@ -13,6 +13,8 @@ const aplicacionConAnaYBeto = (almacenamientos: Almacenamientos = {}) => {
   const aplicacion = aplicacionConGrupo(almacenamientos);
   aplicacion.ingresar("ana", dia(1));
   aplicacion.ingresar("beto", dia(1));
+  aplicacion.cobrarGarantia("ana", dia(1));
+  aplicacion.cobrarGarantia("beto", dia(1));
   return aplicacion;
 };
 
@@ -183,7 +185,7 @@ describe("Aplicacion", () => {
       aplicacion.deshacer();
 
       expect(aplicacion.grupo().encuentros()).toEqual([]);
-      expect(aplicacion.comandos().at(-1)).toBeInstanceOf(Ingresar);
+      expect(aplicacion.comandos().at(-1)).toBeInstanceOf(CobrarGarantia);
     });
 
     it("deshacer devuelve el comando deshecho", () => {
@@ -329,6 +331,7 @@ describe("Aplicacion", () => {
     it("registrar el encuentro según la planilla recuerda a los posibles asistentes sin marcar como ausentes", () => {
       const aplicacion = aplicacionConGrupo();
       ["ana", "beto", "carla"].forEach((nombre) => aplicacion.ingresar(nombre, dia(1)));
+      aplicacion.cobrarGarantia("beto", dia(1));
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
 
       aplicacion.registrarEncuentroSegunPlanillaDeAsistencia(dia(3));
@@ -347,16 +350,6 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual(["beto"]);
     });
 
-    it("ingresar como asistente a alguien nuevo lo deja participando desde la fecha del ingreso y marcado como presente", () => {
-      const aplicacion = aplicacionConGrupo();
-      aplicacion.empezarPlanillaDeAsistencia();
-
-      aplicacion.ingresarAsistente("carla", dia(3));
-
-      expect(aplicacion.grupo().participante("carla")?.historial().at(0)?.fecha()).toEqual(dia(3));
-      expect(aplicacion.planillaDeAsistencia().asiste("carla")).toBe(true);
-    });
-
     it("cobrarle la garantía a un inactivo como asistente lo deja participando y marcado como presente", () => {
       const aplicacion = aplicacionConAnaFueraDeLaTolerancia();
       aplicacion.empezarPlanillaDeAsistencia();
@@ -366,27 +359,6 @@ describe("Aplicacion", () => {
       expect(aplicacion.comandos().at(-1)).toEqual(new CobrarGarantia("ana", dia(5)));
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
       expect(aplicacion.planillaDeAsistencia().asiste("ana")).toBe(true);
-    });
-
-    it("no se puede ingresar como asistente a alguien que ya está en el grupo", () => {
-      const aplicacion = aplicacionConAnaFueraDeLaTolerancia();
-      aplicacion.empezarPlanillaDeAsistencia();
-
-      expect(() => {
-        aplicacion.ingresarAsistente("ana", dia(5));
-      }).toThrow("ana ya está en el grupo");
-      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
-      expect(aplicacion.planillaDeAsistencia().asiste("ana")).toBe(false);
-    });
-
-    it("ingresar como asistente toma el nombre sin espacios al principio ni al final", () => {
-      const aplicacion = aplicacionConGrupo();
-      aplicacion.empezarPlanillaDeAsistencia();
-
-      aplicacion.ingresarAsistente(" carla ", dia(3));
-
-      expect(aplicacion.grupo().participante("carla")).toBeDefined();
-      expect(aplicacion.planillaDeAsistencia().asiste("carla")).toBe(true);
     });
 
     it("quedan ausentes los posibles asistentes sin marcar, incluso un inactivo que no superó la tolerancia", () => {
@@ -417,15 +389,6 @@ describe("Aplicacion", () => {
       expect(aplicacion.grupo().encuentros()).toEqual([]);
     });
 
-    it("no se puede ingresar un asistente sin una planilla de asistencia empezada", () => {
-      const aplicacion = aplicacionConGrupo();
-
-      expect(() => {
-        aplicacion.ingresarAsistente("carla", dia(3));
-      }).toThrow("No hay una planilla de asistencia empezada");
-      expect(aplicacion.grupo().participante("carla")).toBeUndefined();
-    });
-
     it("deshacer el registro de un encuentro restaura su planilla", () => {
       const aplicacion = aplicacionConAnaInactiva();
 
@@ -444,20 +407,11 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asiste("ana")).toBe(false);
     });
 
-    it("deshacer el ingreso de un asistente desmarca a la persona, que ya no es participante", () => {
-      const aplicacion = aplicacionConGrupo();
-      aplicacion.empezarPlanillaDeAsistencia();
-      aplicacion.ingresarAsistente("carla", dia(3));
-
-      aplicacion.deshacer();
-
-      expect(aplicacion.planillaDeAsistencia().asiste("carla")).toBe(false);
-    });
-
     it("deshacer no toca las marcas de quienes siguen pudiendo asistir", () => {
       const aplicacion = aplicacionConAnaInactiva();
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
-      aplicacion.ingresarAsistente("carla", dia(3));
+      aplicacion.ingresar("carla", dia(3));
+      aplicacion.cobrarGarantiaAAsistente("carla", dia(3));
 
       aplicacion.deshacer();
 
@@ -467,7 +421,8 @@ describe("Aplicacion", () => {
     it("subir la desentrada desmarca a quienes quedan con la garantía incompleta, porque ya no pueden asistir", () => {
       const aplicacion = aplicacionConAnaYBeto();
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("ana");
-      aplicacion.ingresarAsistente("carla", dia(3));
+      aplicacion.ingresar("carla", dia(3));
+      aplicacion.cobrarGarantiaAAsistente("carla", dia(3));
 
       aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
 

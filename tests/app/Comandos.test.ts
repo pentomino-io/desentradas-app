@@ -1,19 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { CrearGrupo } from "../../src/app/comandos/CrearGrupo.ts";
 import { Ingresar } from "../../src/app/comandos/Ingresar.ts";
-import { IngresarSinPagar } from "../../src/app/comandos/IngresarSinPagar.ts";
 import { CobrarGarantia } from "../../src/app/comandos/CobrarGarantia.ts";
 import { RegistrarEncuentro } from "../../src/app/comandos/RegistrarEncuentro.ts";
 import { Pagar } from "../../src/app/comandos/Pagar.ts";
 import { CambiarReglas } from "../../src/app/comandos/CambiarReglas.ts";
 import { comandoDesdeJson } from "../../src/app/json/ComandoJson.ts";
 import { reglasAJson } from "../../src/app/json/ReglasJson.ts";
-import { desempate, dia, nuevoEncuentro, nuevoGrupo, reglas } from "../models/factories.ts";
+import { desempate, dia, ingresarCobrandoLaGarantia, nuevoEncuentro, nuevoGrupo, reglas } from "../models/factories.ts";
 
 const grupoConAnaInactiva = () => {
   const grupo = nuevoGrupo();
-  grupo.ingresar("ana", dia(1));
-  grupo.ingresar("beto", dia(1));
+  ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+  ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
   grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto"], ausentes: ["ana"] }));
   return grupo;
 };
@@ -120,14 +119,16 @@ describe("ComandoSobreElGrupo", () => {
 });
 
 describe("Ingresar", () => {
-  it("deja a la persona como participante del grupo desde la fecha indicada", () => {
+  it("deja a la persona en el grupo desde la fecha indicada, sin cobrarle la garantía", () => {
     const grupo = nuevoGrupo();
     const comando = new Ingresar("ana", dia(1));
 
     comando.ejecutar(grupo, desempate);
 
     const ana = grupo.participante("ana");
-    expect(ana?.historial().at(0)?.fecha()).toEqual(dia(1));
+    expect(ana?.fechaDeIngreso()).toEqual(dia(1));
+    expect(ana?.estado()).toBe("inactivo");
+    expect(grupo.caja().movimientos()).toEqual([]);
   });
 
   it("se convierte a JSON con el nombre y la fecha en formato ISO, y vuelve igual", () => {
@@ -147,27 +148,6 @@ describe("Ingresar", () => {
 
     expect(descripcion).toBe("Ingresó ana");
     expect(json).toEqual({ tipo: "ingresar", nombre: "ana", fecha: dia(1).toISOString() });
-  });
-});
-
-describe("IngresarSinPagar", () => {
-  it("deja a la persona en el grupo sin cobrarle la garantía", () => {
-    const grupo = nuevoGrupo();
-    const comando = new IngresarSinPagar("ana", dia(1));
-
-    comando.ejecutar(grupo, desempate);
-
-    expect(grupo.participante("ana")?.estado()).toBe("inactivo");
-    expect(grupo.caja().movimientos()).toEqual([]);
-  });
-
-  it("se convierte a JSON con el nombre y la fecha en formato ISO, y vuelve igual", () => {
-    const comando = new IngresarSinPagar(" ana ", dia(1));
-
-    const json = comando.aJson();
-
-    expect(json).toEqual({ tipo: "ingresar sin pagar", nombre: "ana", fecha: dia(1).toISOString() });
-    expect(comandoDesdeJson(json).aJson()).toEqual(json);
   });
 });
 
@@ -205,8 +185,8 @@ describe("CobrarGarantia", () => {
 describe("RegistrarEncuentro", () => {
   it("registra el encuentro en el grupo con su fecha, sus asistentes y sus ausentes", () => {
     const grupo = nuevoGrupo();
-    grupo.ingresar("ana", dia(1));
-    grupo.ingresar("beto", dia(1));
+    ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
+    ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
     const comando = new RegistrarEncuentro(dia(2), ["beto"], ["ana"]);
 
     comando.ejecutar(grupo, desempate);
@@ -312,13 +292,6 @@ describe("Descripción de los comandos", () => {
 
     expect(comando.fecha()).toEqual(dia(1));
     expect(comando.describir()).toBe("Ingresó ana");
-  });
-
-  it("ingresar sin pagar lleva la fecha de ingreso y se describe como que ingresó la persona sin pagar", () => {
-    const comando = new IngresarSinPagar("ana", dia(1));
-
-    expect(comando.fecha()).toEqual(dia(1));
-    expect(comando.describir()).toBe("Ingresó ana, sin pagar la garantía");
   });
 
   it("cobrar garantía lleva la fecha del cobro y se describe como que se le cobró la garantía a la persona", () => {
