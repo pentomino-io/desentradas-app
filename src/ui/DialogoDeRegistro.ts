@@ -25,7 +25,7 @@ export class DialogoDeRegistro {
     entorno: Entorno,
     titulo: string,
     consecuenciaDelCobro: string,
-    cobrarGarantia: (nombre: string) => void,
+    cobrarGarantia = (nombre: string) => entorno.aplicacion().cobrarGarantia(nombre, entorno.ahora()),
   ) {
     this._entorno = entorno;
     this._titulo = titulo;

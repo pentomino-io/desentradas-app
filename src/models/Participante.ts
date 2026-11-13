@@ -76,7 +76,7 @@ export class Participante {
   }
 
   recienIngresado(): boolean {
-    return this._historial.length === 1 && this.estado() === "inactivo";
+    return this._historial.length === 1;
   }
 
   faltas(): number {

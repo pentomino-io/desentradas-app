@@ -7,14 +7,12 @@ import { Ingresar } from "../../src/app/comandos/Ingresar.ts";
 import { RegistrarEncuentro } from "../../src/app/comandos/RegistrarEncuentro.ts";
 import { reglasAJson } from "../../src/app/json/ReglasJson.ts";
 import { dia, reglas } from "../models/factories.ts";
-import { type Almacenamientos, aplicacionConGrupo, nuevaAplicacion } from "./factories.ts";
+import { type Almacenamientos, aplicacionConGrupo, ingresarCobrandoLaGarantia, nuevaAplicacion } from "./factories.ts";
 
 const aplicacionConAnaYBeto = (almacenamientos: Almacenamientos = {}) => {
   const aplicacion = aplicacionConGrupo(almacenamientos);
-  aplicacion.ingresar("ana", dia(1));
-  aplicacion.ingresar("beto", dia(1));
-  aplicacion.cobrarGarantia("ana", dia(1));
-  aplicacion.cobrarGarantia("beto", dia(1));
+  ingresarCobrandoLaGarantia(aplicacion, "ana", dia(1));
+  ingresarCobrandoLaGarantia(aplicacion, "beto", dia(1));
   return aplicacion;
 };
 

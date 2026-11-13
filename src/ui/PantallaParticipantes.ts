@@ -7,6 +7,8 @@ import type { Entorno } from "./Entorno.ts";
 import { porNombre } from "./Orden.ts";
 import { estadoDe } from "./TextoDeEstado.ts";
 
+const consecuenciaDelCobro = "Puede empezar a asistir.";
+
 const ultimoCambioDe = (participante: Participante) => participante.fechaDelUltimoCambio().getTime();
 
 const porAtencionYNombre =
@@ -79,9 +81,7 @@ export class PantallaParticipantes {
   }
 
   private _abrirIngreso(): void {
-    new DialogoDeRegistro(this._entorno, "Registrar participante", "Puede empezar a asistir.", (nombre) =>
-      this._entorno.aplicacion().cobrarGarantia(nombre, this._entorno.ahora()),
-    ).abrir();
+    new DialogoDeRegistro(this._entorno, "Registrar participante", consecuenciaDelCobro).abrir();
   }
 
   private _abrirCobro(participante: Participante): void {
@@ -89,7 +89,7 @@ export class PantallaParticipantes {
       this._entorno,
       participante,
       tituloDelCobroDeLaGarantiaA(participante.nombre()),
-      "Puede empezar a asistir.",
+      consecuenciaDelCobro,
     ).abrir();
   }
 

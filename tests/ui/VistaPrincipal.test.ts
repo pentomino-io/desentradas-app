@@ -326,7 +326,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Reingresar", fila("ana"));
       hacerClic("Registrar cobro de $ 1.000", dialogoAbierto());
 
-      expect(aplicacion.grupo().participante("gus")?.historial().at(0)?.fecha()).toEqual(ahora());
+      expect(aplicacion.grupo().participante("gus")?.fechaDeIngreso()).toEqual(ahora());
       expect(aplicacion.grupo().participante("ana")?.fechaDelUltimoCambio()).toEqual(ahora());
     });
 

@@ -10,6 +10,8 @@ import type { Entorno } from "./Entorno.ts";
 import { alfabetico, porNombre } from "./Orden.ts";
 import { estadoDe } from "./TextoDeEstado.ts";
 
+const consecuenciaDelCobro = "Queda presente en este encuentro.";
+
 export class PantallaEncuentro {
   private _entorno: Entorno;
   private _errores: HTMLOutputElement;
@@ -129,7 +131,7 @@ export class PantallaEncuentro {
       this._entorno,
       participante,
       tituloDelCobroDeLaGarantiaA(nombre),
-      "Queda presente en este encuentro.",
+      consecuenciaDelCobro,
       () => this._cobrarGarantia(nombre),
     ).abrir();
   }
@@ -143,7 +145,7 @@ export class PantallaEncuentro {
   }
 
   private _abrirIngreso(): void {
-    new DialogoDeRegistro(this._entorno, "Vino alguien nuevo", "Queda presente en este encuentro.", (nombre) =>
+    new DialogoDeRegistro(this._entorno, "Vino alguien nuevo", consecuenciaDelCobro, (nombre) =>
       this._cobrarGarantia(nombre),
     )
       .conPedidoPorNombreUsado((participante) => this._pedidoDeIrALaListaPor(participante))

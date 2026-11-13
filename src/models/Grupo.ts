@@ -54,7 +54,14 @@ export class Grupo {
   }
 
   ingresar(nombre: string, fecha: Date): Participante {
-    return this._incorporar(new Participante(nombre.trim(), fecha), fecha);
+    const nombreLimpio = nombre.trim();
+    if (nombreLimpio === "") throw new Error("El nombre no puede estar vacío");
+    if (this.participante(nombreLimpio) !== undefined) throw new Error(`${nombreLimpio} ya está en el grupo`);
+    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El ingreso", fecha);
+
+    const participante = new Participante(nombreLimpio, fecha);
+    this._participantes.push(participante);
+    return participante;
   }
 
   cobrarGarantia(nombre: string, fecha: Date): void {
@@ -170,16 +177,6 @@ export class Grupo {
       const excedente = participante.bajarGarantia(reglas.rigeDesde(), reglas.desentrada());
       if (excedente > 0) this._caja.acreditar(new Credito(participante.nombre(), excedente));
     }
-  }
-
-  private _incorporar(participante: Participante, fecha: Date): Participante {
-    const nombre = participante.nombre();
-    if (nombre === "") throw new Error("El nombre no puede estar vacío");
-    if (this.participante(nombre) !== undefined) throw new Error(`${nombre} ya está en el grupo`);
-    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El ingreso", fecha);
-
-    this._participantes.push(participante);
-    return participante;
   }
 
   private _participantesLlamados(nombres: Iterable<string>): readonly Participante[] {
