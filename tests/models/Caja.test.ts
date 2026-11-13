@@ -9,7 +9,7 @@ const saldosAFavorDe = (caja: Caja, nombres: string[]) => nombres.map((nombre) =
 
 describe("Caja", () => {
   describe("reparto de desentradas", () => {
-    it("una desentrada se reparte en créditos iguales entre los asistentes al encuentro faltado", () => {
+    it("una desentrada se reparte en partes iguales entre los asistentes al encuentro faltado", () => {
       const caja = nuevaCaja();
 
       caja.repartir(desentrada({ monto: 1000, asistentes: ["beto", "carla"] }));
@@ -32,7 +32,7 @@ describe("Caja", () => {
       ]);
     });
 
-    it("una desentrada menor a la cantidad de asistentes deja sin crédito a los últimos según el desempate", () => {
+    it("una desentrada menor a la cantidad de asistentes deja sin parte a los últimos según el desempate", () => {
       const caja = nuevaCaja();
 
       caja.repartir(desentrada({ monto: 2, asistentes: ["carla", "beto", "ana"] }));
@@ -45,8 +45,8 @@ describe("Caja", () => {
     });
   });
 
-  describe("créditos pendientes", () => {
-    it("un crédito acreditado queda pendiente para su acreedor", () => {
+  describe("saldos a favor", () => {
+    it("un crédito acreditado suma al saldo a favor de su acreedor", () => {
       const caja = nuevaCaja();
 
       caja.acreditar(nuevoCredito({ acreedor: "beto", monto: 200 }));
@@ -84,7 +84,7 @@ describe("Caja", () => {
       expect(caja.pagos()).toEqual([pago]);
     });
 
-    it("no se puede pagar a quien no tiene créditos pendientes", () => {
+    it("no se puede pagar a quien no tiene saldo a favor", () => {
       const caja = nuevaCaja();
 
       expect(() => {
@@ -125,7 +125,7 @@ describe("Caja", () => {
       expect(total).toBe(800);
     });
 
-    it("un cobro no genera créditos", () => {
+    it("un cobro no deja saldo a favor", () => {
       const caja = nuevaCaja();
 
       caja.cobrar(Cobro.alIngresar("ana", 1000, dia(1)));

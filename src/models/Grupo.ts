@@ -69,9 +69,9 @@ export class Grupo {
     this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cobro de la garantía", fecha);
 
     const monto = this.garantiaPorCobrarA(participante);
-    const deCreditos = this.saldoAFavorParaLaGarantiaDe(participante);
+    const deSaldoAFavor = this.saldoAFavorParaLaGarantiaDe(participante);
     participante.cobrarGarantia(fecha, this._desentradaVigente());
-    this._caja.cobrar(Cobro.deGarantia(participante.nombre(), monto, fecha, deCreditos));
+    this._caja.cobrar(Cobro.deGarantia(participante.nombre(), monto, fecha, deSaldoAFavor));
   }
 
   pagar(nombre: string, fecha: Date): Pago {

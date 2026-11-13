@@ -19,7 +19,7 @@ export class Caja {
   }
 
   cobrar(cobro: Cobro): void {
-    this._consumirCreditosDe(cobro.persona(), cobro.montoDeCreditos());
+    this._consumirCreditosDe(cobro.persona(), cobro.montoDeSaldoAFavor());
     this._cobros.push(cobro);
   }
 
@@ -49,7 +49,7 @@ export class Caja {
     return this._cobrosYPagos().filter((movimiento) => movimiento.monto() > 0);
   }
 
-  // Incluye los cobros cubiertos con créditos, que no mueven plata pero también tienen fecha.
+  // Incluye los cobros cubiertos con saldo a favor, que no mueven plata pero también tienen fecha.
   movimientoPosteriorA(fecha: Date): Movimiento | undefined {
     return this._cobrosYPagos().findLast((movimiento) => movimiento.fecha() > fecha);
   }

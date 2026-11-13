@@ -44,7 +44,7 @@ const almacenamientosConGarantiasIncompletas = () => {
   return almacenamientos;
 };
 
-const almacenamientosConAnaInactivaConCreditos = () => {
+const almacenamientosConAnaInactivaConSaldoAFavor = () => {
   const almacenamientos = almacenamientosConGrupoSinParticipantes();
   const aplicacion = nuevaAplicacion(almacenamientos);
   ["ana", "beto", "carla"].forEach((nombre) => aplicacion.ingresar(nombre, dia(1)));
@@ -418,8 +418,8 @@ describe("VistaPrincipal", () => {
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
     });
 
-    it("registrar el nombre de un inactivo con un crédito pendiente avisa qué parte de la garantía cubre", async () => {
-      montar(almacenamientosConAnaInactivaConCreditos());
+    it("registrar el nombre de un inactivo con saldo a favor avisa qué parte de la garantía cubre", async () => {
+      montar(almacenamientosConAnaInactivaConSaldoAFavor());
       await navegarA("Participantes");
       hacerClic("Registrar participante");
       completar("Nombre", "ana", dialogoAbierto());
@@ -432,8 +432,8 @@ describe("VistaPrincipal", () => {
       );
     });
 
-    it("registrar el nombre de un inactivo con un crédito que cubre toda la garantía avisa que no hay que cobrarle nada", async () => {
-      const almacenamientos = almacenamientosConAnaInactivaConCreditos();
+    it("registrar el nombre de un inactivo con saldo a favor que cubre toda la garantía avisa que no hay que cobrarle nada", async () => {
+      const almacenamientos = almacenamientosConAnaInactivaConSaldoAFavor();
       nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 400 }));
       montar(almacenamientos);
       await navegarA("Participantes");
@@ -586,7 +586,7 @@ describe("VistaPrincipal", () => {
         ["dani", "garantía incompleta", "−$ 334, +$ 333", "Cobrar garantía Pagar saldo a favor"],
       ]);
       expect(textoDe(fila("beto").querySelector(".falta")!)).toBe("−$ 334");
-      expect(textoDe(fila("beto").querySelector(".credito")!)).toBe("+$ 334");
+      expect(textoDe(fila("beto").querySelector(".a-favor")!)).toBe("+$ 334");
     });
 
     it("cobrar la garantía desde la caja cobra lo que falta para completarla", async () => {
@@ -606,7 +606,7 @@ describe("VistaPrincipal", () => {
       expect(textoDe(fila("carla").querySelector(".falta")!)).toBe("−$ 500");
     });
 
-    it("a quien tiene un crédito que cubre lo que le falta de la garantía se la completa con él, sin cobrarle nada", async () => {
+    it("a quien tiene saldo a favor que cubre lo que le falta de la garantía se la completa con él, sin cobrarle nada", async () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334
       nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1300 }));
       const { aplicacion } = montar(almacenamientos);
@@ -893,8 +893,8 @@ describe("VistaPrincipal", () => {
       ]);
     });
 
-    it("a quien tiene créditos pendientes se le cobra la garantía en parte con ellos, y el resto en efectivo", () => {
-      const { aplicacion } = montar(almacenamientosConAnaInactivaConCreditos());
+    it("a quien tiene saldo a favor se le cobra la garantía en parte con él, y el resto en efectivo", () => {
+      const { aplicacion } = montar(almacenamientosConAnaInactivaConSaldoAFavor());
       hacerClic("Empezar encuentro");
 
       hacerClic("Cobrar garantía y habilitar", fila("ana"));
@@ -907,8 +907,8 @@ describe("VistaPrincipal", () => {
       expect(casillaDeAsistencia("ana").checked).toBe(true);
     });
 
-    it("a quien tiene créditos pendientes que cubren toda la garantía no se le cobra nada en efectivo", () => {
-      const almacenamientos = almacenamientosConAnaInactivaConCreditos();
+    it("a quien tiene saldo a favor que cubre toda la garantía no se le cobra nada en efectivo", () => {
+      const almacenamientos = almacenamientosConAnaInactivaConSaldoAFavor();
       nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 400 }));
       const { aplicacion } = montar(almacenamientos);
       hacerClic("Empezar encuentro");
@@ -923,7 +923,7 @@ describe("VistaPrincipal", () => {
       expect(casillaDeAsistencia("ana").checked).toBe(true);
     });
 
-    it("a quien tiene la garantía incompleta y créditos pendientes se le cobra la diferencia en parte con ellos", () => {
+    it("a quien tiene la garantía incompleta y saldo a favor se le cobra la diferencia en parte con él", () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334
       nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
       const { aplicacion } = montar(almacenamientos);
@@ -980,7 +980,7 @@ describe("VistaPrincipal", () => {
       expect([...versiones.querySelectorAll("th")].map(textoDe)).toEqual(["Desde", "Tolerancia", "Desentrada"]);
     });
 
-    it("cambiar las reglas pide confirmar antes el cambio, quiénes deben completar la garantía para poder asistir y quiénes reciben un crédito", async () => {
+    it("cambiar las reglas pide confirmar antes el cambio, quiénes deben completar la garantía para poder asistir y quiénes quedan con saldo a favor", async () => {
       const almacenamientos = almacenamientosConGarantiasIncompletas();
       nuevaAplicacion(almacenamientos).ingresar("eli", dia(3));
       const { aplicacion } = montar(almacenamientos);
@@ -1007,7 +1007,7 @@ describe("VistaPrincipal", () => {
       );
     });
 
-    it("cambiar las reglas sin que nadie tenga que completar la garantía ni reciba un crédito avisa que no cambia la plata de nadie", async () => {
+    it("cambiar las reglas sin que nadie tenga que completar la garantía ni quede con saldo a favor avisa que no cambia la plata de nadie", async () => {
       montar(almacenamientosConGarantiasIncompletas());
       await navegarA("Reglas");
       completar("¿Hasta cuántas faltas seguidas sigue apareciendo alguien en la lista de asistencia?", "3");

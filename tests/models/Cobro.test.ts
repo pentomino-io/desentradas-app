@@ -11,7 +11,7 @@ describe("Cobro", () => {
     expect(cobro.fecha()).toEqual(dia(3));
   });
 
-  it("un cobro hace entrar a la caja sólo lo cobrado en efectivo, sin lo cubierto con créditos", () => {
+  it("un cobro hace entrar a la caja sólo lo cobrado en efectivo, sin lo cubierto con saldo a favor", () => {
     const cobro = Cobro.deGarantia("ana", 1000, dia(3), 400);
 
     const efecto = cobro.efectoEnCaja();

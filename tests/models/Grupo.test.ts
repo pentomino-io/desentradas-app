@@ -20,7 +20,7 @@ const grupoConGarantiaInactivaIncompletaYCompleta = () => {
   return { grupo, ana, beto, carla };
 };
 
-const grupoConAnaInactivaConCreditos = () => {
+const grupoConAnaInactivaConSaldoAFavor = () => {
   const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
   const ana = grupo.ingresar("ana", dia(1));
   const beto = grupo.ingresar("beto", dia(1));
@@ -128,8 +128,8 @@ describe("Grupo", () => {
   });
 
   describe("cambio de desentrada", () => {
-    it("bajar la desentrada les devuelve el excedente de garantía como crédito pendiente a quienes participan, y nada a los inactivos", () => {
-      const { grupo, ana, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
+    it("bajar la desentrada les deja a favor el excedente de garantía a quienes participan, y nada a los inactivos", () => {
+      const { grupo, ana, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 a favor
 
       grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 600 }));
 
@@ -139,8 +139,8 @@ describe("Grupo", () => {
       expect(grupo.caja().saldoAFavorDe("ana")).toBe(0);
     });
 
-    it("subir la desentrada deja con la garantía incompleta a quien tiene menos, aunque tenga créditos pendientes, que siguen pendientes", () => {
-      const { grupo, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
+    it("subir la desentrada deja con la garantía incompleta a quien tiene menos, aunque tenga saldo a favor, que no se toca", () => {
+      const { grupo, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 a favor
 
       grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
 
@@ -166,7 +166,7 @@ describe("Grupo", () => {
       return grupo;
     };
 
-    it("son lo que pasa a deber quien queda con la garantía incompleta y el crédito que recibe quien tiene un excedente, sin nada para los inactivos", () => {
+    it("son lo que pasa a deber quien queda con la garantía incompleta y lo que queda a favor de quien tiene un excedente, sin nada para los inactivos", () => {
       const grupo = grupoConGarantiasDistintas();
 
       const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(4), desentrada: 1100 }));
@@ -179,7 +179,7 @@ describe("Grupo", () => {
     });
 
     it("se sabe si el saldo a favor de alguien cubre lo que le falta, aunque no se aplique solo", () => {
-      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
+      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 a favor
 
       const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
 
@@ -187,7 +187,7 @@ describe("Grupo", () => {
     });
 
     it("el saldo a favor que no alcanza para lo que falta no lo cubre", () => {
-      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
+      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 a favor
 
       const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(3), desentrada: 2500 }));
 
@@ -365,8 +365,8 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo).at(-1)).toEqual([dia(3), "ana", 500]);
     });
 
-    it("cobrarle la garantía a quien tiene créditos pendientes los usa para cubrir parte, y cobra en efectivo sólo el resto", () => {
-      const { grupo, ana } = grupoConAnaInactivaConCreditos();
+    it("cobrarle la garantía a quien tiene saldo a favor lo usa para cubrir parte, y cobra en efectivo sólo el resto", () => {
+      const { grupo, ana } = grupoConAnaInactivaConSaldoAFavor();
 
       grupo.cobrarGarantia("ana", dia(4));
 
@@ -375,8 +375,8 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "ana", 500]);
     });
 
-    it("cobrarle la garantía a quien la tiene incompleta usa primero sus créditos pendientes para la diferencia", () => {
-      const { grupo, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
+    it("cobrarle la garantía a quien la tiene incompleta usa primero su saldo a favor para la diferencia", () => {
+      const { grupo, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 a favor
       grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 2500 }));
 
       grupo.cobrarGarantia("beto", dia(4));
@@ -386,8 +386,8 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "beto", 500]);
     });
 
-    it("cobrarle la garantía a quien tiene créditos pendientes que la cubren toda no cobra nada en efectivo y le deja el resto del crédito", () => {
-      const { grupo, ana } = grupoConAnaInactivaConCreditos();
+    it("cobrarle la garantía a quien tiene saldo a favor que la cubre toda no cobra nada en efectivo y le deja el resto a favor", () => {
+      const { grupo, ana } = grupoConAnaInactivaConSaldoAFavor();
       grupo.cambiarReglas(reglas({ rigeDesde: dia(4), desentrada: 400 }));
 
       grupo.cobrarGarantia("ana", dia(5));
@@ -398,7 +398,7 @@ describe("Grupo", () => {
     });
 
     it("el saldo a favor cubre la garantía por cobrar si alcanza para toda, y no hay nada que cubrir a quien no le falta nada", () => {
-      const { grupo, ana, beto, carla } = grupoConAnaInactivaConCreditos(); // ana tiene $ 500 de crédito, beto $ 1.500, carla nada
+      const { grupo, ana, beto, carla } = grupoConAnaInactivaConSaldoAFavor(); // ana tiene $ 500 a favor, beto $ 1.500, carla nada
       grupo.cambiarReglas(reglas({ rigeDesde: dia(4), desentrada: 400 }));
 
       const cubiertas = [ana, beto, carla].map((participante) => grupo.suSaldoAFavorCubreLaGarantiaDe(participante));
@@ -485,7 +485,7 @@ describe("Grupo", () => {
       expect(carla.historial()).toHaveLength(1);
     });
 
-    it("la desentrada de quien falta se reparte en créditos entre los asistentes", () => {
+    it("la desentrada de quien falta se reparte entre los asistentes", () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
@@ -585,8 +585,8 @@ describe("Grupo", () => {
       expect(grupo.encuentros()).toHaveLength(1);
     });
 
-    it("no se puede registrar un encuentro anterior al cobro de una garantía cubierta con créditos", () => {
-      const { grupo } = grupoConAnaInactivaConCreditos();
+    it("no se puede registrar un encuentro anterior al cobro de una garantía cubierta con saldo a favor", () => {
+      const { grupo } = grupoConAnaInactivaConSaldoAFavor();
       grupo.cambiarReglas(reglas({ rigeDesde: dia(4), desentrada: 400 }));
       grupo.cobrarGarantia("ana", dia(6));
 
@@ -727,7 +727,7 @@ describe("Grupo", () => {
   describe("saldos", () => {
     const comoLista = (saldo: Saldo) => [saldo.nombre(), saldo.porCobrar(), saldo.aFavor()];
 
-    it("quien tiene créditos pendientes tiene un saldo positivo por ellos, y quien no los tiene no tiene saldo", () => {
+    it("quien tiene saldo a favor figura en los saldos con ese monto, y quien no tiene nada a favor no figura", () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
@@ -740,7 +740,7 @@ describe("Grupo", () => {
     });
 
     it("el saldo de quien tiene la garantía incompleta tiene por cobrar lo que le falta, aparte de su saldo a favor, y un inactivo no debe nada", () => {
-      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
+      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 a favor
       grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 2500 }));
 
       const saldos = grupo.saldos();
@@ -749,7 +749,7 @@ describe("Grupo", () => {
     });
 
     it("el total por cobrar no descuenta el saldo a favor de quien tiene la garantía incompleta", () => {
-      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
+      const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 a favor
       grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
 
       const total = grupo.totalPorCobrar();

@@ -301,7 +301,7 @@ dialog p:has(button) {
   color: var(--negativo);
 }
 
-.credito,
+.a-favor,
 .entrada {
   color: var(--positivo);
 }

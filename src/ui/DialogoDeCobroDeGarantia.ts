@@ -18,27 +18,27 @@ export const cobroDeLaGarantiaA = (grupo: Grupo, participante: Participante): st
   if (grupo.suSaldoAFavorCubreLaGarantiaDe(participante))
     return `la garantía de ${monto(porCobrar)} la cubre su saldo a favor: no hay que cobrarle nada.`;
 
-  const deCreditos = grupo.saldoAFavorParaLaGarantiaDe(participante);
-  if (deCreditos === 0) return `hay que cobrarle ${monto(porCobrar)} de garantía.`;
+  const deSaldoAFavor = grupo.saldoAFavorParaLaGarantiaDe(participante);
+  if (deSaldoAFavor === 0) return `hay que cobrarle ${monto(porCobrar)} de garantía.`;
 
-  const enEfectivo = monto(porCobrar - deCreditos);
-  return `hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} de la garantía de ${monto(porCobrar)} salen de su saldo a favor.`;
+  const enEfectivo = monto(porCobrar - deSaldoAFavor);
+  return `hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deSaldoAFavor)} de la garantía de ${monto(porCobrar)} salen de su saldo a favor.`;
 };
 
 const conMayuscula = (texto: string): string => texto[0].toUpperCase() + texto.slice(1);
 
 const avisoDeCompletarLaGarantia = (grupo: Grupo, participante: Participante): string => {
   const porCobrar = grupo.garantiaPorCobrarA(participante);
-  const deCreditos = grupo.saldoAFavorParaLaGarantiaDe(participante);
+  const deSaldoAFavor = grupo.saldoAFavorParaLaGarantiaDe(participante);
   const completar = `completar la garantía de ${monto(grupo.reglas().desentrada())}`;
-  if (deCreditos === 0) return `Hay que cobrarle ${monto(porCobrar)} para ${completar}.`;
+  if (deSaldoAFavor === 0) return `Hay que cobrarle ${monto(porCobrar)} para ${completar}.`;
 
   const faltante = `Le faltan ${monto(porCobrar)} para ${completar}.`;
   if (grupo.suSaldoAFavorCubreLaGarantiaDe(participante))
     return `${faltante} Lo cubre su saldo a favor: no hay que cobrarle nada.`;
 
-  const enEfectivo = monto(porCobrar - deCreditos);
-  return `${faltante} Hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deCreditos)} salen de su saldo a favor.`;
+  const enEfectivo = monto(porCobrar - deSaldoAFavor);
+  return `${faltante} Hay que cobrarle ${enEfectivo} en efectivo; los otros ${monto(deSaldoAFavor)} salen de su saldo a favor.`;
 };
 
 const avisoDeCobro = (grupo: Grupo, participante: Participante): string =>

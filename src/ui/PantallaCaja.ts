@@ -32,7 +32,7 @@ export class PantallaCaja {
     return [
       crear("p", {}, `En caja ${monto(this._entorno.grupo().caja().totalEnCaja())}`),
       porCompletar > 0 && crear("p", { class: "falta" }, `Garantías por completar ${monto(porCompletar)}`),
-      porPagar > 0 && crear("p", { class: "credito" }, `Saldos a favor por pagar ${monto(porPagar)}`),
+      porPagar > 0 && crear("p", { class: "a-favor" }, `Saldos a favor por pagar ${monto(porPagar)}`),
     ];
   }
 
@@ -66,7 +66,7 @@ export class PantallaCaja {
       {},
       saldo.debe() && crear("span", { class: "falta" }, montoConSigno(-saldo.porCobrar())),
       saldo.debe() && saldo.tieneAFavor() && ", ",
-      saldo.tieneAFavor() && crear("span", { class: "credito" }, montoConSigno(saldo.aFavor())),
+      saldo.tieneAFavor() && crear("span", { class: "a-favor" }, montoConSigno(saldo.aFavor())),
     );
   }
 

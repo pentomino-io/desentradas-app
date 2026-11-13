@@ -474,8 +474,8 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual([]);
     });
 
-    it("subir la desentrada desmarca también a quien tiene créditos que cubren lo que le falta, porque tiene que aceptar el cobro", () => {
-      const aplicacion = aplicacionConAnaInactiva(); // beto tiene $ 1.000 de crédito
+    it("subir la desentrada desmarca también a quien tiene saldo a favor que cubre lo que le falta, porque tiene que aceptar el cobro", () => {
+      const aplicacion = aplicacionConAnaInactiva(); // beto tiene $ 1.000 a favor
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
 
       aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
