@@ -136,13 +136,13 @@ describe("Aplicacion", () => {
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
     });
 
-    it("repartir entrega los créditos pendientes de la persona", () => {
+    it("pagar salda los créditos pendientes de la persona", () => {
       const aplicacion = aplicacionConAnaInactiva();
 
-      aplicacion.repartir("beto", dia(4));
+      aplicacion.pagar("beto", dia(4));
 
       expect(aplicacion.grupo().caja().montoPendienteDe("beto")).toBe(0);
-      expect(aplicacion.grupo().caja().repartos()).toHaveLength(1);
+      expect(aplicacion.grupo().caja().pagos()).toHaveLength(1);
     });
 
     it("cobrar la garantía vuelve a hacer participar a un inactivo", () => {

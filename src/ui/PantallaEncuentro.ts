@@ -103,7 +103,7 @@ export class PantallaEncuentro {
     if (!this._planillaDeAsistencia().asiste(nombre)) return false;
 
     const pendiente = this._entorno.grupo().caja().montoPendienteDe(nombre);
-    return pendiente > 0 && boton(`Pagar ${monto(pendiente)}`, () => this._entregar(nombre));
+    return pendiente > 0 && boton(`Pagar ${monto(pendiente)}`, () => this._pagar(nombre));
   }
 
   private _hayAsistentes(): boolean {
@@ -138,7 +138,7 @@ export class PantallaEncuentro {
     this._entorno.aplicacion().cobrarGarantiaAAsistente(nombre, this._entorno.ahora());
   }
 
-  private _entregar(nombre: string): void {
+  private _pagar(nombre: string): void {
     new DialogoDePagoDeSaldoAFavor(this._entorno, nombre).abrir();
   }
 

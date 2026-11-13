@@ -1,12 +1,12 @@
 import { Credito } from "./Credito.ts";
 import type { Movimiento } from "./Movimiento.ts";
 
-export class Reparto implements Movimiento {
+export class Pago implements Movimiento {
   private _fecha: Date;
   private _creditos: readonly Credito[];
 
   constructor(fecha: Date, creditos: readonly Credito[]) {
-    if (creditos.length === 0) throw new Error("Un reparto necesita al menos un crédito");
+    if (creditos.length === 0) throw new Error("Un pago necesita al menos un crédito");
 
     this._fecha = fecha;
     this._creditos = creditos;

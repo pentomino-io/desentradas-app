@@ -7,7 +7,7 @@ import { Ingresar } from "./comandos/Ingresar.ts";
 import { IngresarSinPagar } from "./comandos/IngresarSinPagar.ts";
 import { CobrarGarantia } from "./comandos/CobrarGarantia.ts";
 import { RegistrarEncuentro } from "./comandos/RegistrarEncuentro.ts";
-import { Repartir } from "./comandos/Repartir.ts";
+import { Pagar } from "./comandos/Pagar.ts";
 import { CambiarReglas } from "./comandos/CambiarReglas.ts";
 import type { Desempate } from "../models/Desempate.ts";
 import type { Grupo } from "../models/Grupo.ts";
@@ -121,8 +121,8 @@ export class Aplicacion {
     this.descartarPlanillaDeAsistencia();
   }
 
-  repartir(nombre: string, fecha: Date): void {
-    this._ejecutar(new Repartir(nombre, fecha));
+  pagar(nombre: string, fecha: Date): void {
+    this._ejecutar(new Pagar(nombre, fecha));
   }
 
   cambiarReglas(reglas: Reglas): void {

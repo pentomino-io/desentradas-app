@@ -39,7 +39,7 @@ const almacenamientosConAnaInactivaYUnaPlanillaCon = (presentes: string[]) => {
 const almacenamientosConGarantiasIncompletas = () => {
   const almacenamientos = almacenamientosConAnaInactiva();
   const aplicacion = nuevaAplicacion(almacenamientos);
-  ["beto", "carla", "dani"].forEach((nombre) => aplicacion.repartir(nombre, dia(3)));
+  ["beto", "carla", "dani"].forEach((nombre) => aplicacion.pagar(nombre, dia(3)));
   aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
   return almacenamientos;
 };
@@ -533,7 +533,7 @@ describe("VistaPrincipal", () => {
   describe("pantalla de caja", () => {
     it.each([
       {
-        caso: "lo cobrado menos lo entregado",
+        caso: "lo cobrado menos lo pagado",
         almacenamientos: almacenamientosConAnaInactiva,
         primerosTotales: ["En caja $ 4.000", "Saldos a favor por pagar $ 1.000"],
       },
@@ -550,7 +550,7 @@ describe("VistaPrincipal", () => {
       },
     );
 
-    it("los saldos muestran por nombre el crédito de cada uno, y el total de créditos por entregar sin un total de garantías por completar en cero", async () => {
+    it("los saldos muestran por nombre el crédito de cada uno, y el total de créditos por pagar sin un total de garantías por completar en cero", async () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
       nuevaAplicacion(almacenamientos).registrarEncuentro(dia(3), ["dani", "carla"], ["ana", "beto"]); // carla y dani reciben 500
       montar(almacenamientos);
@@ -622,7 +622,7 @@ describe("VistaPrincipal", () => {
       expect(textosDeLasCeldas(fila("beto"))).toEqual(["beto", "participando", "+$ 34", "Pagar saldo a favor"]);
     });
 
-    it("entregar el crédito entrega los créditos pendientes y queda entre los movimientos como plata que sale de la caja, y los cobros como plata que entra", async () => {
+    it("pagar el saldo a favor salda los créditos pendientes y queda entre los movimientos como plata que sale de la caja, y los cobros como plata que entra", async () => {
       const { aplicacion } = montar(almacenamientosConAnaInactiva()); // beto recibe 334
       await navegarA("Caja");
 
@@ -641,7 +641,7 @@ describe("VistaPrincipal", () => {
       expect([...movimientos.querySelectorAll(".entrada")].map(textoDe)).toEqual(Array(4).fill("+$ 1.000"));
     });
 
-    it("sin saldos dice que no hay nada para cobrar ni entregar", async () => {
+    it("sin saldos dice que no hay nada para cobrar ni pagar", async () => {
       montar(almacenamientosConGrupoSinParticipantes());
 
       await navegarA("Caja");

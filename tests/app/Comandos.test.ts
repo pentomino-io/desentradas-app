@@ -4,7 +4,7 @@ import { Ingresar } from "../../src/app/comandos/Ingresar.ts";
 import { IngresarSinPagar } from "../../src/app/comandos/IngresarSinPagar.ts";
 import { CobrarGarantia } from "../../src/app/comandos/CobrarGarantia.ts";
 import { RegistrarEncuentro } from "../../src/app/comandos/RegistrarEncuentro.ts";
-import { Repartir } from "../../src/app/comandos/Repartir.ts";
+import { Pagar } from "../../src/app/comandos/Pagar.ts";
 import { CambiarReglas } from "../../src/app/comandos/CambiarReglas.ts";
 import { comandoDesdeJson } from "../../src/app/json/ComandoJson.ts";
 import { reglasAJson } from "../../src/app/json/ReglasJson.ts";
@@ -241,20 +241,20 @@ describe("RegistrarEncuentro", () => {
   });
 });
 
-describe("Repartir", () => {
-  it("entrega los créditos pendientes de la persona en la fecha indicada", () => {
+describe("Pagar", () => {
+  it("paga los créditos pendientes de la persona en la fecha indicada", () => {
     const grupo = grupoConAnaInactiva();
-    const comando = new Repartir("beto", dia(4));
+    const comando = new Pagar("beto", dia(4));
 
     comando.ejecutar(grupo, desempate);
 
     expect(grupo.caja().montoPendienteDe("beto")).toBe(0);
-    const [reparto] = grupo.caja().repartos();
-    expect(reparto.fecha()).toEqual(dia(4));
+    const [pago] = grupo.caja().pagos();
+    expect(pago.fecha()).toEqual(dia(4));
   });
 
   it("se convierte a JSON con el nombre y la fecha en formato ISO, y vuelve igual", () => {
-    const comando = new Repartir("beto", dia(4));
+    const comando = new Pagar("beto", dia(4));
 
     const json = comando.aJson();
 
@@ -335,8 +335,8 @@ describe("Descripción de los comandos", () => {
     expect(comando.describir()).toBe("Encuentro con 3/4 presentes");
   });
 
-  it("repartir lleva la fecha de la entrega y se describe como que se le entregó su crédito a la persona", () => {
-    const comando = new Repartir("beto", dia(4));
+  it("pagar lleva la fecha del pago y se describe como que se le pagó su saldo a favor a la persona", () => {
+    const comando = new Pagar("beto", dia(4));
 
     expect(comando.fecha()).toEqual(dia(4));
     expect(comando.describir()).toBe("Se le pagó su saldo a favor a beto");

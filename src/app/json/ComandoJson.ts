@@ -4,7 +4,7 @@ import { Ingresar } from "../comandos/Ingresar.ts";
 import { IngresarSinPagar } from "../comandos/IngresarSinPagar.ts";
 import { CobrarGarantia } from "../comandos/CobrarGarantia.ts";
 import { RegistrarEncuentro } from "../comandos/RegistrarEncuentro.ts";
-import { Repartir } from "../comandos/Repartir.ts";
+import { Pagar } from "../comandos/Pagar.ts";
 import { CambiarReglas } from "../comandos/CambiarReglas.ts";
 import { type Objeto, objeto, segunTipo } from "./Campos.ts";
 import type { ReglasJson } from "./ReglasJson.ts";
@@ -24,7 +24,7 @@ const lectores: Record<ComandoJson["tipo"], (campos: Objeto) => Comando> = {
   "ingresar sin pagar": IngresarSinPagar.desdeJson,
   "cobrar garantía": CobrarGarantia.desdeJson,
   "registrar encuentro": RegistrarEncuentro.desdeJson,
-  repartir: Repartir.desdeJson,
+  repartir: Pagar.desdeJson,
   "cambiar reglas": CambiarReglas.desdeJson,
 };
 

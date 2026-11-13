@@ -3,19 +3,19 @@ import { Credito } from "./Credito.ts";
 import type { Desempate } from "./Desempate.ts";
 import type { GarantiaPerdida } from "./GarantiaPerdida.ts";
 import type { Movimiento } from "./Movimiento.ts";
-import { Reparto } from "./Reparto.ts";
+import { Pago } from "./Pago.ts";
 
 export class Caja {
   private _desempate: Desempate;
   private _cobros: Cobro[];
   private _creditosPendientes: Credito[];
-  private _repartos: Reparto[];
+  private _pagos: Pago[];
 
   constructor(desempate: Desempate) {
     this._desempate = desempate;
     this._cobros = [];
     this._creditosPendientes = [];
-    this._repartos = [];
+    this._pagos = [];
   }
 
   cobrar(cobro: Cobro): void {
@@ -27,31 +27,31 @@ export class Caja {
     this._creditosPendientes.push(credito);
   }
 
-  distribuir(garantiaPerdida: GarantiaPerdida): void {
-    this._creditosPendientes.push(...this._creditosPorDistribuir(garantiaPerdida));
+  repartir(garantiaPerdida: GarantiaPerdida): void {
+    this._creditosPendientes.push(...this._partesDe(garantiaPerdida));
   }
 
-  repartir(nombre: string, fecha: Date): Reparto {
+  pagar(nombre: string, fecha: Date): Pago {
     const creditos = this.creditosPendientesDe(nombre);
     if (creditos.length === 0) throw new Error(`${nombre} no tiene saldo a favor`);
 
     this._creditosPendientes = this._creditosPendientes.filter((credito) => credito.acreedor() !== nombre);
-    const reparto = new Reparto(fecha, creditos);
-    this._repartos.push(reparto);
-    return reparto;
+    const pago = new Pago(fecha, creditos);
+    this._pagos.push(pago);
+    return pago;
   }
 
-  repartos(): readonly Reparto[] {
-    return this._repartos;
+  pagos(): readonly Pago[] {
+    return this._pagos;
   }
 
   movimientos(): readonly Movimiento[] {
-    return this._cobrosYRepartos().filter((movimiento) => movimiento.monto() > 0);
+    return this._cobrosYPagos().filter((movimiento) => movimiento.monto() > 0);
   }
 
   // Incluye los cobros cubiertos con créditos, que no mueven plata pero también tienen fecha.
   movimientoPosteriorA(fecha: Date): Movimiento | undefined {
-    return this._cobrosYRepartos().findLast((movimiento) => movimiento.fecha() > fecha);
+    return this._cobrosYPagos().findLast((movimiento) => movimiento.fecha() > fecha);
   }
 
   totalEnCaja(): number {
@@ -70,8 +70,8 @@ export class Caja {
     return Credito.montoTotalDe(this._creditosPendientes);
   }
 
-  private _cobrosYRepartos(): readonly Movimiento[] {
-    return [...this._cobros, ...this._repartos].sort((uno, otro) => uno.fecha().getTime() - otro.fecha().getTime());
+  private _cobrosYPagos(): readonly Movimiento[] {
+    return [...this._cobros, ...this._pagos].sort((uno, otro) => uno.fecha().getTime() - otro.fecha().getTime());
   }
 
   private _consumirCreditosDe(nombre: string, monto: number): void {
@@ -85,7 +85,7 @@ export class Caja {
     });
   }
 
-  private _creditosPorDistribuir(garantiaPerdida: GarantiaPerdida): Credito[] {
+  private _partesDe(garantiaPerdida: GarantiaPerdida): Credito[] {
     const asistentes = this._desempate.ordenar(garantiaPerdida.encuentroFaltado().asistentes(), garantiaPerdida);
     const parte = Math.floor(garantiaPerdida.monto() / asistentes.length);
     const sobrante = garantiaPerdida.monto() % asistentes.length;

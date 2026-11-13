@@ -28,11 +28,11 @@ export class PantallaCaja {
 
   private _totales(): Hijo[] {
     const porCompletar = this._entorno.grupo().totalPorCobrar();
-    const porEntregar = this._entorno.grupo().caja().totalPendiente();
+    const porPagar = this._entorno.grupo().caja().totalPendiente();
     return [
       crear("p", {}, `En caja ${monto(this._entorno.grupo().caja().totalEnCaja())}`),
       porCompletar > 0 && crear("p", { class: "falta" }, `Garantías por completar ${monto(porCompletar)}`),
-      porEntregar > 0 && crear("p", { class: "credito" }, `Saldos a favor por pagar ${monto(porEntregar)}`),
+      porPagar > 0 && crear("p", { class: "credito" }, `Saldos a favor por pagar ${monto(porPagar)}`),
     ];
   }
 
@@ -55,7 +55,7 @@ export class PantallaCaja {
         {},
         saldo.debe() && boton("Cobrar garantía", () => this._abrirCobro(saldo.nombre())),
         saldo.debe() && saldo.tieneAFavor() && " ",
-        saldo.tieneAFavor() && boton("Pagar saldo a favor", () => this._abrirEntrega(saldo)),
+        saldo.tieneAFavor() && boton("Pagar saldo a favor", () => this._abrirPago(saldo)),
       ),
     );
   }
@@ -105,7 +105,7 @@ export class PantallaCaja {
     ).abrir();
   }
 
-  private _abrirEntrega(saldo: Saldo): void {
+  private _abrirPago(saldo: Saldo): void {
     new DialogoDePagoDeSaldoAFavor(this._entorno, saldo.nombre()).abrir();
   }
 }

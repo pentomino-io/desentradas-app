@@ -3,13 +3,13 @@ import type { Grupo } from "../../models/Grupo.ts";
 import { fecha, type Objeto, texto } from "../json/Campos.ts";
 import { ComandoSobreUnaPersona } from "./ComandoSobreUnaPersona.ts";
 
-export class Repartir extends ComandoSobreUnaPersona {
-  static desdeJson(campos: Objeto): Repartir {
-    return new Repartir(texto(campos, "nombre"), fecha(campos, "fecha"));
+export class Pagar extends ComandoSobreUnaPersona {
+  static desdeJson(campos: Objeto): Pagar {
+    return new Pagar(texto(campos, "nombre"), fecha(campos, "fecha"));
   }
 
   protected ejecutarEn(grupo: Grupo): void {
-    grupo.repartir(this._nombre, this._fecha);
+    grupo.pagar(this._nombre, this._fecha);
   }
 
   describir(): string {

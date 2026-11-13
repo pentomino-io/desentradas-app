@@ -5,7 +5,7 @@ import { Credito } from "./Credito.ts";
 import type { Desempate } from "./Desempate.ts";
 import type { Encuentro } from "./Encuentro.ts";
 import type { Reglas } from "./Reglas.ts";
-import type { Reparto } from "./Reparto.ts";
+import type { Pago } from "./Pago.ts";
 import { Participante } from "./Participante.ts";
 import { Saldo } from "./Saldo.ts";
 import type { Situacion } from "./estados/Estado.ts";
@@ -74,10 +74,10 @@ export class Grupo {
     this._caja.cobrar(Cobro.deGarantia(participante.nombre(), monto, fecha, deCreditos));
   }
 
-  repartir(nombre: string, fecha: Date): Reparto {
+  pagar(nombre: string, fecha: Date): Pago {
     this._asertarQueNoEsAnteriorAlUltimoMovimiento("El pago", fecha);
 
-    return this._caja.repartir(nombre, fecha);
+    return this._caja.pagar(nombre, fecha);
   }
 
   registrarEncuentro(encuentro: Encuentro): void {
@@ -88,7 +88,7 @@ export class Grupo {
 
     this._participantesLlamados(encuentro.asistentes()).forEach((participante) => participante.voy(encuentro));
     this._participantesLlamados(encuentro.ausentes()).forEach((participante) =>
-      this._caja.distribuir(participante.falto(encuentro)),
+      this._caja.repartir(participante.falto(encuentro)),
     );
     this._encuentros.push(encuentro);
   }

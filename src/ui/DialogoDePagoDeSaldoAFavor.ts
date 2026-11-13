@@ -11,7 +11,7 @@ export class DialogoDePagoDeSaldoAFavor extends Dialogo {
       `Pagarle a ${nombre} su saldo a favor`,
       [crear("p", {}, `Hay que pagarle ${aPagar}.`)],
       `Registrar pago de ${aPagar}`,
-      () => entorno.aplicacion().repartir(nombre, entorno.ahora()),
+      () => entorno.aplicacion().pagar(nombre, entorno.ahora()),
     );
   }
 }
