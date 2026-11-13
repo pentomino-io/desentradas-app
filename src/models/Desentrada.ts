@@ -1,6 +1,6 @@
 import type { Encuentro } from "./Encuentro.ts";
 
-export class GarantiaPerdida {
+export class Desentrada {
   private _persona: string;
   private _monto: number;
   private _encuentroFaltado: Encuentro;

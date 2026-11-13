@@ -1,7 +1,7 @@
 import { Credito } from "../../src/models/Credito.ts";
 import { DesempateAlfabetico } from "../../src/models/Desempate.ts";
 import { Encuentro } from "../../src/models/Encuentro.ts";
-import { GarantiaPerdida } from "../../src/models/GarantiaPerdida.ts";
+import { Desentrada } from "../../src/models/Desentrada.ts";
 import { Grupo } from "../../src/models/Grupo.ts";
 import { Participante } from "../../src/models/Participante.ts";
 import { Reglas } from "../../src/models/Reglas.ts";
@@ -31,13 +31,13 @@ export const desempate = new DesempateAlfabetico();
 
 export const nuevoGrupo = (reglasIniciales = reglas()) => new Grupo("Fútbol de los jueves", reglasIniciales, desempate);
 
-export const garantiaPerdida = ({
+export const desentrada = ({
   persona = "ana",
   monto = 1000,
   numero = 2,
   asistentes = ["beto", "carla"],
 }: { persona?: string; monto?: number; numero?: number; asistentes?: string[] } = {}) =>
-  new GarantiaPerdida(persona, monto, nuevoEncuentro({ numero, asistentes }));
+  new Desentrada(persona, monto, nuevoEncuentro({ numero, asistentes }));
 
 export const nuevoCredito = ({ acreedor = "beto", monto = 500 }: { acreedor?: string; monto?: number } = {}) =>
   new Credito(acreedor, monto);

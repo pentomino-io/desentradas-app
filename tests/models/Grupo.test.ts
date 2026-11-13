@@ -485,7 +485,7 @@ describe("Grupo", () => {
       expect(carla.historial()).toHaveLength(1);
     });
 
-    it("la garantía de quien falta se reparte en créditos entre los asistentes", () => {
+    it("la desentrada de quien falta se reparte en créditos entre los asistentes", () => {
       const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
       grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));

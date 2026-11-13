@@ -50,11 +50,11 @@ describe("Participante", () => {
       const ana = nuevoParticipante(1500);
       const encuentro = nuevoEncuentro({ numero: 2 });
 
-      const perdida = ana.falto(encuentro);
+      const desentrada = ana.falto(encuentro);
 
-      expect(perdida.persona()).toBe("ana");
-      expect(perdida.monto()).toBe(1500);
-      expect(perdida.encuentroFaltado()).toBe(encuentro);
+      expect(desentrada.persona()).toBe("ana");
+      expect(desentrada.monto()).toBe(1500);
+      expect(desentrada.encuentroFaltado()).toBe(encuentro);
       expect(ana.estado()).toBe("inactivo");
       expect(ana.garantia()).toBe(0);
       expect(ana.faltas()).toBe(1);
@@ -135,9 +135,9 @@ describe("Participante", () => {
     it("faltar suma una falta más sin perder nada", () => {
       const ana = inactivo();
 
-      const perdida = ana.falto(nuevoEncuentro({ numero: 9 }));
+      const desentrada = ana.falto(nuevoEncuentro({ numero: 9 }));
 
-      expect(perdida.monto()).toBe(0);
+      expect(desentrada.monto()).toBe(0);
       expect(ana.estado()).toBe("inactivo");
       expect(ana.faltas()).toBe(2);
     });

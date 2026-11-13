@@ -1,7 +1,7 @@
 import type { Cobro } from "./Cobro.ts";
 import { Credito } from "./Credito.ts";
 import type { Desempate } from "./Desempate.ts";
-import type { GarantiaPerdida } from "./GarantiaPerdida.ts";
+import type { Desentrada } from "./Desentrada.ts";
 import type { Movimiento } from "./Movimiento.ts";
 import { Pago } from "./Pago.ts";
 
@@ -27,8 +27,8 @@ export class Caja {
     this._creditosPendientes.push(credito);
   }
 
-  repartir(garantiaPerdida: GarantiaPerdida): void {
-    this._creditosPendientes.push(...this._partesDe(garantiaPerdida));
+  repartir(desentrada: Desentrada): void {
+    this._creditosPendientes.push(...this._partesDe(desentrada));
   }
 
   pagar(nombre: string, fecha: Date): Pago {
@@ -85,10 +85,10 @@ export class Caja {
     });
   }
 
-  private _partesDe(garantiaPerdida: GarantiaPerdida): Credito[] {
-    const asistentes = this._desempate.ordenar(garantiaPerdida.encuentroFaltado().asistentes(), garantiaPerdida);
-    const parte = Math.floor(garantiaPerdida.monto() / asistentes.length);
-    const sobrante = garantiaPerdida.monto() % asistentes.length;
+  private _partesDe(desentrada: Desentrada): Credito[] {
+    const asistentes = this._desempate.ordenar(desentrada.encuentroFaltado().asistentes(), desentrada);
+    const parte = Math.floor(desentrada.monto() / asistentes.length);
+    const sobrante = desentrada.monto() % asistentes.length;
     return asistentes
       .map((nombre, posicion) => new Credito(nombre, parte + (posicion < sobrante ? 1 : 0)))
       .filter((credito) => credito.monto() > 0);

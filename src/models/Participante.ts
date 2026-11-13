@@ -1,5 +1,5 @@
 import type { Encuentro } from "./Encuentro.ts";
-import { GarantiaPerdida } from "./GarantiaPerdida.ts";
+import { Desentrada } from "./Desentrada.ts";
 import type { Estado, NombreDeEstado, Situacion } from "./estados/Estado.ts";
 import { Inactivo } from "./estados/Inactivo.ts";
 import { Participando } from "./estados/Participando.ts";
@@ -26,10 +26,10 @@ export class Participante {
     this._transicionar("voy", encuentro.fecha(), this._estado().voy());
   }
 
-  falto(encuentro: Encuentro): GarantiaPerdida {
-    const perdida = new GarantiaPerdida(this._nombre, this.garantia(), encuentro);
+  falto(encuentro: Encuentro): Desentrada {
+    const desentrada = new Desentrada(this._nombre, this.garantia(), encuentro);
     this._transicionar("falto", encuentro.fecha(), this._estado().falto());
-    return perdida;
+    return desentrada;
   }
 
   cobrarGarantia(fecha: Date, garantia: number): void {

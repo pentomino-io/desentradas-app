@@ -1,26 +1,26 @@
-import type { GarantiaPerdida } from "./GarantiaPerdida.ts";
+import type { Desentrada } from "./Desentrada.ts";
 
-// Los primeros reciben un peso más del sobrante de la garantía perdida.
+// Los primeros reciben un peso más del sobrante de la desentrada.
 export interface Desempate {
-  ordenar(nombres: Iterable<string>, garantiaPerdida: GarantiaPerdida): string[];
+  ordenar(nombres: Iterable<string>, desentrada: Desentrada): string[];
 }
 
 export class DesempateAlfabetico implements Desempate {
-  ordenar(nombres: Iterable<string>, _garantiaPerdida: GarantiaPerdida): string[] {
+  ordenar(nombres: Iterable<string>, _desentrada: Desentrada): string[] {
     return [...nombres].sort();
   }
 }
 
 export class DesempateAleatorioReproducible implements Desempate {
-  ordenar(nombres: Iterable<string>, garantiaPerdida: GarantiaPerdida): string[] {
-    const datos = this._datosDe(garantiaPerdida);
+  ordenar(nombres: Iterable<string>, desentrada: Desentrada): string[] {
+    const datos = this._datosDe(desentrada);
     const puntajeDe = (nombre: string) => cyrb53(`${datos}|${nombre}`);
     return [...nombres].sort((uno, otro) => puntajeDe(uno) - puntajeDe(otro));
   }
 
-  private _datosDe(garantiaPerdida: GarantiaPerdida): string {
-    const encuentroFaltado = garantiaPerdida.encuentroFaltado();
-    return [garantiaPerdida.persona(), encuentroFaltado.fecha().getTime(), garantiaPerdida.monto()].join("|");
+  private _datosDe(desentrada: Desentrada): string {
+    const encuentroFaltado = desentrada.encuentroFaltado();
+    return [desentrada.persona(), encuentroFaltado.fecha().getTime(), desentrada.monto()].join("|");
   }
 }
 
