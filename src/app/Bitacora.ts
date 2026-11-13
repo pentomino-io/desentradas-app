@@ -1,10 +1,11 @@
 import type { Comando } from "./Comando.ts";
 import { comandoDesdeJson, type ComandoJson } from "./json/ComandoJson.ts";
 import { lista, numero, objeto } from "./json/Campos.ts";
+import { migrarDesdeLaVersion2 } from "./json/MigracionDesdeLaVersion2.ts";
 import type { Desempate } from "../models/Desempate.ts";
 import type { Grupo } from "../models/Grupo.ts";
 
-const VERSION = 2;
+const VERSION = 3;
 
 abstract class VersionDistinta extends Error {
   constructor(version: number) {
@@ -27,6 +28,7 @@ export class Bitacora {
   static desdeJson(json: unknown, desempate: Desempate): Bitacora {
     const campos = objeto(json, "La bitácora");
     const version = numero(campos, "version");
+    if (version === 2) return Bitacora.desdeJson(migrarDesdeLaVersion2(campos), desempate);
     if (version < VERSION) throw new VersionAnterior(version);
     if (version > VERSION) throw new VersionPosterior(version);
 

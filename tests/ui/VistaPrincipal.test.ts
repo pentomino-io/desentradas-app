@@ -1214,7 +1214,7 @@ describe("VistaPrincipal", () => {
       },
       {
         caso: "más nueva",
-        version: 3,
+        version: 4,
         explicacion:
           "Esta copia de seguridad es de una versión más nueva de la app. Recargá la página para actualizarla e intentá de nuevo. No se cambió nada.",
       },

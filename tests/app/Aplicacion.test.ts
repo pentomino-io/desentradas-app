@@ -94,7 +94,7 @@ describe("Aplicacion", () => {
       const almacenamiento = new AlmacenamientoEnMemoria();
       almacenamiento.guardar(
         JSON.stringify({
-          version: 2,
+          version: 3,
           comandos: [{ tipo: "ingresar", nombre: "ana", fecha: dia(1).toISOString() }],
         }),
       );
@@ -511,7 +511,7 @@ describe("Aplicacion", () => {
       const texto = aplicacion.exportar();
 
       expect(JSON.parse(texto)).toEqual({
-        version: 2,
+        version: 3,
         comandos: [
           { tipo: "crear grupo", nombreDelGrupo: "Fútbol de los jueves", reglas: reglasAJson(reglas()) },
           { tipo: "ingresar", nombre: "ana", fecha: dia(1).toISOString() },

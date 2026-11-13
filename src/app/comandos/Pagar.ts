@@ -17,6 +17,6 @@ export class Pagar extends ComandoSobreUnaPersona {
   }
 
   aJson(): ComandoJson {
-    return { tipo: "repartir", nombre: this._nombre, fecha: this._fecha.toISOString() };
+    return { tipo: "pagar", nombre: this._nombre, fecha: this._fecha.toISOString() };
   }
 }

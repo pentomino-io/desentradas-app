@@ -12,7 +12,7 @@ describe("Reglas en JSON", () => {
     expect(json).toEqual({
       rigeDesde: dia(1).toISOString(),
       toleranciaDeFaltas: 2,
-      garantia: 1000,
+      desentrada: 1000,
     });
     expect(leidas.rigeDesde()).toEqual(dia(1));
     expect(leidas.toleranciaDeFaltas()).toBe(2);

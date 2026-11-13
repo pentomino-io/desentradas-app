@@ -258,7 +258,7 @@ describe("Pagar", () => {
 
     const json = comando.aJson();
 
-    expect(json).toEqual({ tipo: "repartir", nombre: "beto", fecha: dia(4).toISOString() });
+    expect(json).toEqual({ tipo: "pagar", nombre: "beto", fecha: dia(4).toISOString() });
     expect(comandoDesdeJson(json).aJson()).toEqual(json);
   });
 });

@@ -130,7 +130,7 @@ describe("Bitacora", () => {
       const leida = Bitacora.desdeJson(json, desempate);
 
       expect(json).toEqual({
-        version: 2,
+        version: 3,
         comandos: [new CrearGrupo("Fútbol de los jueves", reglas()).aJson(), ingresar.aJson()],
       });
       expect(leida.grupo().nombre()).toBe("Fútbol de los jueves");
@@ -144,8 +144,53 @@ describe("Bitacora", () => {
       const json = bitacora.aJson();
       const leida = Bitacora.desdeJson(json, desempate);
 
-      expect(json).toEqual({ version: 2, comandos: [] });
+      expect(json).toEqual({ version: 3, comandos: [] });
       expect(leida.tieneGrupo()).toBe(false);
+    });
+
+    it("una bitácora de la versión 2 se lee como su equivalente de la versión 3", () => {
+      const reglasDeLaVersion2 = (desde: number, garantia: number) => ({
+        rigeDesde: dia(desde).toISOString(),
+        toleranciaDeFaltas: 2,
+        garantia,
+      });
+      const reglasDeLaVersion3 = (desde: number, desentrada: number) => ({
+        rigeDesde: dia(desde).toISOString(),
+        toleranciaDeFaltas: 2,
+        desentrada,
+      });
+      const encuentro = {
+        tipo: "registrar encuentro",
+        fecha: dia(2).toISOString(),
+        asistentes: ["beto"],
+        ausentes: ["ana"],
+      };
+      const ingresos = ["ana", "beto"].map((nombre) => ({ tipo: "ingresar", nombre, fecha: dia(1).toISOString() }));
+
+      const leida = Bitacora.desdeJson(
+        {
+          version: 2,
+          comandos: [
+            { tipo: "crear grupo", nombreDelGrupo: "Fútbol de los jueves", reglas: reglasDeLaVersion2(1, 1000) },
+            ...ingresos,
+            encuentro,
+            { tipo: "repartir", nombre: "beto", fecha: dia(3).toISOString() },
+            { tipo: "cambiar reglas", reglas: reglasDeLaVersion2(4, 1500) },
+          ],
+        },
+        desempate,
+      );
+
+      expect(leida.aJson()).toEqual({
+        version: 3,
+        comandos: [
+          { tipo: "crear grupo", nombreDelGrupo: "Fútbol de los jueves", reglas: reglasDeLaVersion3(1, 1000) },
+          ...ingresos,
+          encuentro,
+          { tipo: "pagar", nombre: "beto", fecha: dia(3).toISOString() },
+          { tipo: "cambiar reglas", reglas: reglasDeLaVersion3(4, 1500) },
+        ],
+      });
     });
 
     it("no se puede leer una bitácora de una versión anterior", () => {
@@ -156,7 +201,7 @@ describe("Bitacora", () => {
 
     it("no se puede leer una bitácora de una versión posterior", () => {
       expect(() => {
-        Bitacora.desdeJson({ version: 3, comandos: [] }, desempate);
+        Bitacora.desdeJson({ version: 4, comandos: [] }, desempate);
       }).toThrow(VersionPosterior);
     });
 

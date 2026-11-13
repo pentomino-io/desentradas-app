@@ -15,7 +15,7 @@ export type ComandoJson =
   | { tipo: "ingresar sin pagar"; nombre: string; fecha: string }
   | { tipo: "cobrar garantía"; nombre: string; fecha: string }
   | { tipo: "registrar encuentro"; fecha: string; asistentes: readonly string[]; ausentes: readonly string[] }
-  | { tipo: "repartir"; nombre: string; fecha: string }
+  | { tipo: "pagar"; nombre: string; fecha: string }
   | { tipo: "cambiar reglas"; reglas: ReglasJson };
 
 const lectores: Record<ComandoJson["tipo"], (campos: Objeto) => Comando> = {
@@ -24,7 +24,7 @@ const lectores: Record<ComandoJson["tipo"], (campos: Objeto) => Comando> = {
   "ingresar sin pagar": IngresarSinPagar.desdeJson,
   "cobrar garantía": CobrarGarantia.desdeJson,
   "registrar encuentro": RegistrarEncuentro.desdeJson,
-  repartir: Pagar.desdeJson,
+  pagar: Pagar.desdeJson,
   "cambiar reglas": CambiarReglas.desdeJson,
 };
 
