@@ -1,5 +1,5 @@
 import { Credito } from "./Credito.ts";
-import type { Movimiento, TipoDeMovimiento } from "./Movimiento.ts";
+import type { Movimiento } from "./Movimiento.ts";
 
 export class Reparto implements Movimiento {
   private _fecha: Date;
@@ -20,10 +20,6 @@ export class Reparto implements Movimiento {
     return this._creditos[0].acreedor();
   }
 
-  tipo(): TipoDeMovimiento {
-    return "entrega";
-  }
-
   persona(): string {
     return this.acreedor();
   }
@@ -38,5 +34,9 @@ export class Reparto implements Movimiento {
 
   monto(): number {
     return Credito.montoTotalDe(this._creditos);
+  }
+
+  efectoEnCaja(): number {
+    return -this.monto();
   }
 }

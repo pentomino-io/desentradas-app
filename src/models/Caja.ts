@@ -55,10 +55,7 @@ export class Caja {
   }
 
   totalEnCaja(): number {
-    return this.movimientos().reduce(
-      (total, movimiento) => (movimiento.tipo() === "cobro" ? total + movimiento.monto() : total - movimiento.monto()),
-      0,
-    );
+    return this.movimientos().reduce((total, movimiento) => total + movimiento.efectoEnCaja(), 0);
   }
 
   creditosPendientesDe(nombre: string): readonly Credito[] {

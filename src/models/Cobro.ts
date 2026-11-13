@@ -1,4 +1,4 @@
-import type { Movimiento, TipoDeMovimiento } from "./Movimiento.ts";
+import type { Movimiento } from "./Movimiento.ts";
 
 type Motivo = "ingreso" | "garantía";
 
@@ -27,16 +27,16 @@ export class Cobro implements Movimiento {
     this._deCreditos = deCreditos;
   }
 
-  tipo(): TipoDeMovimiento {
-    return "cobro";
-  }
-
   persona(): string {
     return this._persona;
   }
 
   monto(): number {
     return this._monto - this._deCreditos;
+  }
+
+  efectoEnCaja(): number {
+    return this.monto();
   }
 
   montoDeCreditos(): number {

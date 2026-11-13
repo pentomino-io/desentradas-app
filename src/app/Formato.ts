@@ -9,6 +9,15 @@ const formatoDeFecha = new Intl.DateTimeFormat("es-AR", {
   hour12: false,
 });
 
+const formatoDeMontoConSigno = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+  maximumFractionDigits: 0,
+  signDisplay: "exceptZero",
+});
+
 export const monto = (valor: number): string => formatoDeMonto.format(valor);
+
+export const montoConSigno = (valor: number): string => formatoDeMontoConSigno.format(valor).replace("-", "−");
 
 export const fechaYHora = (fecha: Date): string => formatoDeFecha.format(fecha);

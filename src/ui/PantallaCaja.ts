@@ -1,4 +1,4 @@
-import { fechaYHora, monto } from "../app/Formato.ts";
+import { fechaYHora, monto, montoConSigno } from "../app/Formato.ts";
 import type { Movimiento } from "../models/Movimiento.ts";
 import type { Saldo } from "../models/Saldo.ts";
 import { Dialogo } from "./Dialogo.ts";
@@ -80,13 +80,19 @@ export class PantallaCaja {
     const movimientos = this._entorno.grupo().caja().movimientos().toReversed();
     return tabla(
       undefined,
-      ["Fecha", "Nombre", "Tipo", "Monto"],
+      ["Fecha", "Nombre", "Monto"],
       movimientos.map((movimiento) => this._filaDeMovimiento(movimiento)),
     );
   }
 
   private _filaDeMovimiento(movimiento: Movimiento): HTMLTableRowElement {
-    return fila(fechaYHora(movimiento.fecha()), movimiento.persona(), movimiento.tipo(), monto(movimiento.monto()));
+    const efecto = movimiento.efectoEnCaja();
+    const clase = efecto > 0 ? "entrada" : "salida";
+    return fila(
+      fechaYHora(movimiento.fecha()),
+      movimiento.persona(),
+      crear("span", { class: clase }, montoConSigno(efecto)),
+    );
   }
 
   private _abrirCobro(nombre: string): void {

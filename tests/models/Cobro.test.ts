@@ -6,10 +6,17 @@ describe("Cobro", () => {
   it("un cobro es un movimiento de caja que registra a quién se le cobró, cuánto y cuándo", () => {
     const cobro = Cobro.alIngresar("ana", 1000, dia(3));
 
-    expect(cobro.tipo()).toBe("cobro");
     expect(cobro.persona()).toBe("ana");
     expect(cobro.monto()).toBe(1000);
     expect(cobro.fecha()).toEqual(dia(3));
+  });
+
+  it("un cobro hace entrar a la caja sólo lo cobrado en efectivo, sin lo cubierto con créditos", () => {
+    const cobro = Cobro.deGarantia("ana", 1000, dia(3), 400);
+
+    const efecto = cobro.efectoEnCaja();
+
+    expect(efecto).toBe(600);
   });
 
   it("el cobro al ingresar se describe como el ingreso de la persona", () => {

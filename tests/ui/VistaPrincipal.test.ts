@@ -573,7 +573,7 @@ describe("VistaPrincipal", () => {
       expect(textosDeLasCeldas(fila("beto"))).toEqual(["beto", "participando", "crédito $ 34", "Entregar crédito"]);
     });
 
-    it("entregar el crédito entrega los créditos pendientes y queda entre los movimientos, junto a los cobros de garantía", async () => {
+    it("entregar el crédito entrega los créditos pendientes y queda entre los movimientos como plata que sale de la caja, y los cobros como plata que entra", async () => {
       const { aplicacion } = montar(almacenamientosConAnaInactiva()); // beto recibe 334
       await navegarA("Caja");
 
@@ -583,10 +583,13 @@ describe("VistaPrincipal", () => {
       hacerClic("Entregar", dialogoAbierto());
 
       expect(aplicacion.grupo().caja().montoPendienteDe("beto")).toBe(0);
-      expect(filasDe(elementoConTexto("summary", "Movimientos").parentElement!)).toEqual([
-        [fechaYHora(ahora()), "beto", "entrega", "$ 334"],
-        ...["dani", "carla", "beto", "ana"].map((nombre) => [fechaYHora(dia(1)), nombre, "cobro", "$ 1.000"]),
+      const movimientos = elementoConTexto("summary", "Movimientos").parentElement!;
+      expect(filasDe(movimientos)).toEqual([
+        [fechaYHora(ahora()), "beto", "−$ 334"],
+        ...["dani", "carla", "beto", "ana"].map((nombre) => [fechaYHora(dia(1)), nombre, "+$ 1.000"]),
       ]);
+      expect([...movimientos.querySelectorAll(".salida")].map(textoDe)).toEqual(["−$ 334"]);
+      expect([...movimientos.querySelectorAll(".entrada")].map(textoDe)).toEqual(Array(4).fill("+$ 1.000"));
     });
 
     it("sin saldos dice que no hay nada para cobrar ni entregar", async () => {

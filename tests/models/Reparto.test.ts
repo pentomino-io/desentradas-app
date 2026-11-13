@@ -12,6 +12,14 @@ describe("Reparto", () => {
     expect(reparto.monto()).toBe(800);
   });
 
+  it("una entrega saca de la caja el total de sus créditos", () => {
+    const reparto = new Reparto(dia(5), [nuevoCredito({ acreedor: "beto", monto: 800 })]);
+
+    const efecto = reparto.efectoEnCaja();
+
+    expect(efecto).toBe(-800);
+  });
+
   it("se describe como la entrega a su acreedor", () => {
     const reparto = new Reparto(dia(5), [nuevoCredito({ acreedor: "beto" })]);
 

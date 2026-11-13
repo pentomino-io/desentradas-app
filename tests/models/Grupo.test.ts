@@ -34,7 +34,7 @@ const movimientosDe = (grupo: Grupo) =>
   grupo
     .caja()
     .movimientos()
-    .map((movimiento) => [movimiento.fecha(), movimiento.tipo(), movimiento.persona(), movimiento.monto()]);
+    .map((movimiento) => [movimiento.fecha(), movimiento.persona(), movimiento.efectoEnCaja()]);
 
 describe("Grupo", () => {
   describe("nombre", () => {
@@ -223,7 +223,7 @@ describe("Grupo", () => {
       const ana = grupo.ingresar("ana", dia(3));
 
       expect(ana.garantia()).toBe(1500);
-      expect(movimientosDe(grupo)).toEqual([[dia(3), "cobro", "ana", 1500]]);
+      expect(movimientosDe(grupo)).toEqual([[dia(3), "ana", 1500]]);
     });
 
     it("no hay participante para quien no ingresó", () => {
@@ -318,7 +318,7 @@ describe("Grupo", () => {
 
       expect(ana.estado()).toBe("participando");
       expect(ana.garantia()).toBe(2000);
-      expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "cobro", "ana", 2000]);
+      expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "ana", 2000]);
     });
 
     it("cobrarle la garantía a quien la tiene incompleta cobra en efectivo la diferencia y lo habilita para asistir", () => {
@@ -330,7 +330,7 @@ describe("Grupo", () => {
 
       expect(ana.garantia()).toBe(1500);
       expect(grupo.puedeAsistir(ana)).toBe(true);
-      expect(movimientosDe(grupo).at(-1)).toEqual([dia(3), "cobro", "ana", 500]);
+      expect(movimientosDe(grupo).at(-1)).toEqual([dia(3), "ana", 500]);
     });
 
     it("cobrarle la garantía a quien tiene créditos pendientes los usa para cubrir parte, y cobra en efectivo sólo el resto", () => {
@@ -340,7 +340,7 @@ describe("Grupo", () => {
 
       expect(ana.garantia()).toBe(1000);
       expect(grupo.caja().montoPendienteDe("ana")).toBe(0);
-      expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "cobro", "ana", 500]);
+      expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "ana", 500]);
     });
 
     it("cobrarle la garantía a quien la tiene incompleta usa primero sus créditos pendientes para la diferencia", () => {
@@ -351,7 +351,7 @@ describe("Grupo", () => {
 
       expect(grupo.puedeAsistir(beto)).toBe(true);
       expect(grupo.caja().montoPendienteDe("beto")).toBe(0);
-      expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "cobro", "beto", 500]);
+      expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "beto", 500]);
     });
 
     it("cobrarle la garantía a quien tiene créditos pendientes que la cubren toda no cobra nada en efectivo y le deja el resto del crédito", () => {
@@ -362,9 +362,7 @@ describe("Grupo", () => {
 
       expect(grupo.puedeAsistir(ana)).toBe(true);
       expect(grupo.caja().montoPendienteDe("ana")).toBe(100);
-      expect(movimientosDe(grupo).filter(([, , persona]) => persona === "ana")).toEqual([
-        [dia(1), "cobro", "ana", 1000],
-      ]);
+      expect(movimientosDe(grupo).filter(([, persona]) => persona === "ana")).toEqual([[dia(1), "ana", 1000]]);
     });
 
     it("los créditos pendientes cubren la garantía por cobrar si alcanzan para toda, y no hay nada que cubrir a quien no le falta nada", () => {

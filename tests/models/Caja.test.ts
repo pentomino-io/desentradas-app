@@ -106,16 +106,11 @@ describe("Caja", () => {
       const movimientos = caja.movimientos();
 
       expect(
-        movimientos.map((movimiento) => [
-          movimiento.fecha(),
-          movimiento.tipo(),
-          movimiento.persona(),
-          movimiento.monto(),
-        ]),
+        movimientos.map((movimiento) => [movimiento.fecha(), movimiento.persona(), movimiento.efectoEnCaja()]),
       ).toEqual([
-        [dia(1), "cobro", "ana", 1000],
-        [dia(5), "entrega", "beto", 1000],
-        [dia(6), "cobro", "dario", 300],
+        [dia(1), "ana", 1000],
+        [dia(5), "beto", -1000],
+        [dia(6), "dario", 300],
       ]);
     });
 
