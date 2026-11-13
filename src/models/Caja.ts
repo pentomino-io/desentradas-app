@@ -62,11 +62,11 @@ export class Caja {
     return this._creditosPendientes.filter((credito) => credito.acreedor() === nombre);
   }
 
-  montoPendienteDe(nombre: string): number {
+  saldoAFavorDe(nombre: string): number {
     return Credito.montoTotalDe(this.creditosPendientesDe(nombre));
   }
 
-  totalPendiente(): number {
+  totalDeSaldosAFavor(): number {
     return Credito.montoTotalDe(this._creditosPendientes);
   }
 

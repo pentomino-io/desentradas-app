@@ -248,7 +248,7 @@ describe("Pagar", () => {
 
     comando.ejecutar(grupo, desempate);
 
-    expect(grupo.caja().montoPendienteDe("beto")).toBe(0);
+    expect(grupo.caja().saldoAFavorDe("beto")).toBe(0);
     const [pago] = grupo.caja().pagos();
     expect(pago.fecha()).toEqual(dia(4));
   });

@@ -28,7 +28,7 @@ export class PantallaCaja {
 
   private _totales(): Hijo[] {
     const porCompletar = this._entorno.grupo().totalPorCobrar();
-    const porPagar = this._entorno.grupo().caja().totalPendiente();
+    const porPagar = this._entorno.grupo().caja().totalDeSaldosAFavor();
     return [
       crear("p", {}, `En caja ${monto(this._entorno.grupo().caja().totalEnCaja())}`),
       porCompletar > 0 && crear("p", { class: "falta" }, `Garantías por completar ${monto(porCompletar)}`),
@@ -73,7 +73,7 @@ export class PantallaCaja {
   private _estadoDe(saldo: Saldo): string {
     const participante = this._entorno.grupo().participante(saldo.nombre())!;
     const situacion = this._entorno.grupo().situacionDe(participante);
-    return saldo.loCubrenSusCreditos() ? `${situacion} (la cubre su saldo a favor)` : situacion;
+    return saldo.loCubreSuSaldoAFavor() ? `${situacion} (la cubre su saldo a favor)` : situacion;
   }
 
   private _tablaDeMovimientos(): HTMLElement | undefined {

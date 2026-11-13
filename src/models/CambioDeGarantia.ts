@@ -2,12 +2,12 @@
 export class CambioDeGarantia {
   private _nombre: string;
   private _monto: number;
-  private _creditos: number;
+  private _saldoAFavor: number;
 
-  constructor(nombre: string, monto: number, creditos: number) {
+  constructor(nombre: string, monto: number, saldoAFavor: number) {
     this._nombre = nombre;
     this._monto = monto;
-    this._creditos = creditos;
+    this._saldoAFavor = saldoAFavor;
   }
 
   nombre(): string {
@@ -18,7 +18,7 @@ export class CambioDeGarantia {
     return this._monto;
   }
 
-  loCubrenSusCreditos(): boolean {
-    return this._monto < 0 && this._creditos >= -this._monto;
+  loCubreSuSaldoAFavor(): boolean {
+    return this._monto < 0 && this._saldoAFavor >= -this._monto;
   }
 }

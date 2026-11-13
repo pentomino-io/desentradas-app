@@ -5,8 +5,7 @@ import { desempate, dia, desentrada, nuevoCredito } from "./factories.ts";
 
 const nuevaCaja = () => new Caja(desempate);
 
-const montosPendientesDe = (caja: Caja, nombres: string[]) =>
-  nombres.map((nombre) => [nombre, caja.montoPendienteDe(nombre)]);
+const saldosAFavorDe = (caja: Caja, nombres: string[]) => nombres.map((nombre) => [nombre, caja.saldoAFavorDe(nombre)]);
 
 describe("Caja", () => {
   describe("reparto de desentradas", () => {
@@ -15,7 +14,7 @@ describe("Caja", () => {
 
       caja.repartir(desentrada({ monto: 1000, asistentes: ["beto", "carla"] }));
 
-      expect(montosPendientesDe(caja, ["beto", "carla"])).toEqual([
+      expect(saldosAFavorDe(caja, ["beto", "carla"])).toEqual([
         ["beto", 500],
         ["carla", 500],
       ]);
@@ -26,7 +25,7 @@ describe("Caja", () => {
 
       caja.repartir(desentrada({ monto: 1000, asistentes: ["carla", "beto", "ana"] }));
 
-      expect(montosPendientesDe(caja, ["ana", "beto", "carla"])).toEqual([
+      expect(saldosAFavorDe(caja, ["ana", "beto", "carla"])).toEqual([
         ["ana", 334],
         ["beto", 333],
         ["carla", 333],
@@ -38,7 +37,7 @@ describe("Caja", () => {
 
       caja.repartir(desentrada({ monto: 2, asistentes: ["carla", "beto", "ana"] }));
 
-      expect(montosPendientesDe(caja, ["ana", "beto", "carla"])).toEqual([
+      expect(saldosAFavorDe(caja, ["ana", "beto", "carla"])).toEqual([
         ["ana", 1],
         ["beto", 1],
         ["carla", 0],
@@ -52,18 +51,18 @@ describe("Caja", () => {
 
       caja.acreditar(nuevoCredito({ acreedor: "beto", monto: 200 }));
 
-      expect(caja.montoPendienteDe("beto")).toBe(200);
+      expect(caja.saldoAFavorDe("beto")).toBe(200);
     });
 
-    it("conoce el monto de los créditos pendientes, por nombre y en total", () => {
+    it("conoce el saldo a favor de cada uno y el total de saldos a favor", () => {
       const caja = nuevaCaja();
       caja.repartir(desentrada({ monto: 1000 }));
       caja.repartir(desentrada({ monto: 300, asistentes: ["beto"] }));
 
-      expect(caja.montoPendienteDe("beto")).toBe(800);
-      expect(caja.montoPendienteDe("carla")).toBe(500);
-      expect(caja.montoPendienteDe("dario")).toBe(0);
-      expect(caja.totalPendiente()).toBe(1300);
+      expect(caja.saldoAFavorDe("beto")).toBe(800);
+      expect(caja.saldoAFavorDe("carla")).toBe(500);
+      expect(caja.saldoAFavorDe("dario")).toBe(0);
+      expect(caja.totalDeSaldosAFavor()).toBe(1300);
     });
   });
 
@@ -81,7 +80,7 @@ describe("Caja", () => {
       expect(pago.monto()).toBe(800);
       expect(pago.creditos()).toEqual(creditosDeBeto);
       expect(caja.creditosPendientesDe("beto")).toEqual([]);
-      expect(caja.montoPendienteDe("carla")).toBe(500);
+      expect(caja.saldoAFavorDe("carla")).toBe(500);
       expect(caja.pagos()).toEqual([pago]);
     });
 
@@ -131,7 +130,7 @@ describe("Caja", () => {
 
       caja.cobrar(Cobro.alIngresar("ana", 1000, dia(1)));
 
-      expect(caja.totalPendiente()).toBe(0);
+      expect(caja.totalDeSaldosAFavor()).toBe(0);
     });
   });
 });

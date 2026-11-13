@@ -5,7 +5,7 @@ import type { Entorno } from "./Entorno.ts";
 
 export class DialogoDePagoDeSaldoAFavor extends Dialogo {
   constructor(entorno: Entorno, nombre: string) {
-    const aPagar = monto(entorno.grupo().caja().montoPendienteDe(nombre));
+    const aPagar = monto(entorno.grupo().caja().saldoAFavorDe(nombre));
     super(
       entorno,
       `Pagarle a ${nombre} su saldo a favor`,

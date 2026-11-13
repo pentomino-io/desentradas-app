@@ -31,7 +31,7 @@ const efecto = (nombres: readonly string[], cambio: CambioDeGarantia): string =>
   const deuda = `${enumeracion(nombres)} ${varios ? "deben" : "debe"} completar ${monto(-cambio.monto())}`;
   const cobertura = varios ? ", que pueden cubrir con su saldo a favor" : ", que puede cubrir con su saldo a favor";
   const consecuencia = varios ? "hasta entonces no pueden asistir" : "hasta entonces no puede asistir";
-  return `${deuda}${cambio.loCubrenSusCreditos() ? cobertura : ""}; ${consecuencia}.`;
+  return `${deuda}${cambio.loCubreSuSaldoAFavor() ? cobertura : ""}; ${consecuencia}.`;
 };
 
 const efectosEnLaPlata = (efectos: readonly CambioDeGarantia[]): string[] => {
@@ -39,10 +39,11 @@ const efectosEnLaPlata = (efectos: readonly CambioDeGarantia[]): string[] => {
 
   const grupos = new Map<string, CambioDeGarantia[]>();
   const ordenados = efectos.toSorted(
-    (uno, otro) => uno.monto() - otro.monto() || Number(uno.loCubrenSusCreditos()) - Number(otro.loCubrenSusCreditos()),
+    (uno, otro) =>
+      uno.monto() - otro.monto() || Number(uno.loCubreSuSaldoAFavor()) - Number(otro.loCubreSuSaldoAFavor()),
   );
   for (const cambio of ordenados) {
-    const clave = `${cambio.monto()} ${cambio.loCubrenSusCreditos()}`;
+    const clave = `${cambio.monto()} ${cambio.loCubreSuSaldoAFavor()}`;
     grupos.set(clave, [...(grupos.get(clave) ?? []), cambio]);
   }
   return [...grupos.values()].map((cambios) =>

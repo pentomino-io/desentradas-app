@@ -141,7 +141,7 @@ describe("Aplicacion", () => {
 
       aplicacion.pagar("beto", dia(4));
 
-      expect(aplicacion.grupo().caja().montoPendienteDe("beto")).toBe(0);
+      expect(aplicacion.grupo().caja().saldoAFavorDe("beto")).toBe(0);
       expect(aplicacion.grupo().caja().pagos()).toHaveLength(1);
     });
 

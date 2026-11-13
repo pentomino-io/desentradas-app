@@ -550,7 +550,7 @@ describe("VistaPrincipal", () => {
       },
     );
 
-    it("los saldos muestran por nombre el crédito de cada uno, y el total de créditos por pagar sin un total de garantías por completar en cero", async () => {
+    it("los saldos muestran por nombre el saldo a favor de cada uno, y el total de saldos a favor por pagar sin un total de garantías por completar en cero", async () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
       nuevaAplicacion(almacenamientos).registrarEncuentro(dia(3), ["dani", "carla"], ["ana", "beto"]); // carla y dani reciben 500
       montar(almacenamientos);
@@ -566,7 +566,7 @@ describe("VistaPrincipal", () => {
       ]);
     });
 
-    it("quien tiene la garantía incompleta y un crédito muestra las dos cosas, dice si su crédito la cubre, y cuenta en los dos totales, cada uno aparte", async () => {
+    it("quien tiene la garantía incompleta y saldo a favor muestra las dos cosas, dice si su saldo a favor la cubre, y cuenta en los dos totales, cada uno aparte", async () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
       nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1334 }));
       montar(almacenamientos);
@@ -631,7 +631,7 @@ describe("VistaPrincipal", () => {
       expect(textoDe(dialogoAbierto())).toContain("Hay que pagarle $ 334.");
       hacerClic("Registrar pago de $ 334", dialogoAbierto());
 
-      expect(aplicacion.grupo().caja().montoPendienteDe("beto")).toBe(0);
+      expect(aplicacion.grupo().caja().saldoAFavorDe("beto")).toBe(0);
       const movimientos = elementoConTexto("summary", "Movimientos").parentElement!;
       expect(filasDe(movimientos)).toEqual([
         [fechaYHora(ahora()), "beto", "−$ 334"],
@@ -949,7 +949,7 @@ describe("VistaPrincipal", () => {
       expect(textoDe(dialogoAbierto())).toContain("Hay que pagarle $ 334.");
       hacerClic("Registrar pago de $ 334", dialogoAbierto());
 
-      expect(aplicacion.grupo().caja().montoPendienteDe("beto")).toBe(0);
+      expect(aplicacion.grupo().caja().saldoAFavorDe("beto")).toBe(0);
       expect(casillaDeAsistencia("beto").checked).toBe(true);
     });
 
@@ -995,7 +995,7 @@ describe("VistaPrincipal", () => {
       expect(aplicacion.grupo().reglas().desentrada()).toBe(1500);
     });
 
-    it("cambiar las reglas avisa a quiénes les alcanzan los créditos para cubrir lo que les falta", async () => {
+    it("cambiar las reglas avisa a quiénes les alcanza el saldo a favor para cubrir lo que les falta", async () => {
       montar(almacenamientosConAnaInactiva()); // beto recibe 334, carla y dani 333
       await navegarA("Reglas");
       completar("¿De cuánto es la desentrada?", "1334");

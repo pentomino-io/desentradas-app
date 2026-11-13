@@ -11,14 +11,14 @@ export const avisoDeGarantia = (grupo: Grupo): HTMLParagraphElement =>
 export const tituloDelCobroDeLaGarantiaA = (nombre: string): string => `Cobrar la garantía a ${nombre}`;
 
 const efectivoParaLaGarantiaDe = (grupo: Grupo, participante: Participante): number =>
-  grupo.garantiaPorCobrarA(participante) - grupo.creditosParaLaGarantiaDe(participante);
+  grupo.garantiaPorCobrarA(participante) - grupo.saldoAFavorParaLaGarantiaDe(participante);
 
 export const cobroDeLaGarantiaA = (grupo: Grupo, participante: Participante): string => {
   const porCobrar = grupo.garantiaPorCobrarA(participante);
-  if (grupo.susCreditosCubrenLaGarantiaDe(participante))
+  if (grupo.suSaldoAFavorCubreLaGarantiaDe(participante))
     return `la garantía de ${monto(porCobrar)} la cubre su saldo a favor: no hay que cobrarle nada.`;
 
-  const deCreditos = grupo.creditosParaLaGarantiaDe(participante);
+  const deCreditos = grupo.saldoAFavorParaLaGarantiaDe(participante);
   if (deCreditos === 0) return `hay que cobrarle ${monto(porCobrar)} de garantía.`;
 
   const enEfectivo = monto(porCobrar - deCreditos);
@@ -29,12 +29,12 @@ const conMayuscula = (texto: string): string => texto[0].toUpperCase() + texto.s
 
 const avisoDeCompletarLaGarantia = (grupo: Grupo, participante: Participante): string => {
   const porCobrar = grupo.garantiaPorCobrarA(participante);
-  const deCreditos = grupo.creditosParaLaGarantiaDe(participante);
+  const deCreditos = grupo.saldoAFavorParaLaGarantiaDe(participante);
   const completar = `completar la garantía de ${monto(grupo.reglas().desentrada())}`;
   if (deCreditos === 0) return `Hay que cobrarle ${monto(porCobrar)} para ${completar}.`;
 
   const faltante = `Le faltan ${monto(porCobrar)} para ${completar}.`;
-  if (grupo.susCreditosCubrenLaGarantiaDe(participante))
+  if (grupo.suSaldoAFavorCubreLaGarantiaDe(participante))
     return `${faltante} Lo cubre su saldo a favor: no hay que cobrarle nada.`;
 
   const enEfectivo = monto(porCobrar - deCreditos);
@@ -47,7 +47,7 @@ const avisoDeCobro = (grupo: Grupo, participante: Participante): string =>
     : avisoDeCompletarLaGarantia(grupo, participante);
 
 export const registroDelCobroA = (grupo: Grupo, participante: Participante): string => {
-  if (grupo.susCreditosCubrenLaGarantiaDe(participante)) return "Registrar cobro con saldo a favor";
+  if (grupo.suSaldoAFavorCubreLaGarantiaDe(participante)) return "Registrar cobro con saldo a favor";
 
   return `Registrar cobro de ${monto(efectivoParaLaGarantiaDe(grupo, participante))}`;
 };

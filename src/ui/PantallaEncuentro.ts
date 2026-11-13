@@ -102,8 +102,8 @@ export class PantallaEncuentro {
       return boton("Cobrar garantía y habilitar", () => this._abrirCobro(participante));
     if (!this._planillaDeAsistencia().asiste(nombre)) return false;
 
-    const pendiente = this._entorno.grupo().caja().montoPendienteDe(nombre);
-    return pendiente > 0 && boton(`Pagar ${monto(pendiente)}`, () => this._pagar(nombre));
+    const saldoAFavor = this._entorno.grupo().caja().saldoAFavorDe(nombre);
+    return saldoAFavor > 0 && boton(`Pagar ${monto(saldoAFavor)}`, () => this._pagar(nombre));
   }
 
   private _hayAsistentes(): boolean {

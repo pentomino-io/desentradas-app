@@ -1,4 +1,4 @@
-// Los créditos cubren lo que falta de la garantía recién al cobrarla; antes, cada uno puede llevárselos.
+// El saldo a favor cubre lo que falta de la garantía recién al cobrarla; antes, cada uno puede llevárselo.
 export class Saldo {
   private _nombre: string;
   private _porCobrar: number;
@@ -30,7 +30,7 @@ export class Saldo {
     return this._aFavor > 0;
   }
 
-  loCubrenSusCreditos(): boolean {
+  loCubreSuSaldoAFavor(): boolean {
     return this.debe() && this._aFavor >= this._porCobrar;
   }
 }

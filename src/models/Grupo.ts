@@ -69,7 +69,7 @@ export class Grupo {
     this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cobro de la garantía", fecha);
 
     const monto = this.garantiaPorCobrarA(participante);
-    const deCreditos = this.creditosParaLaGarantiaDe(participante);
+    const deCreditos = this.saldoAFavorParaLaGarantiaDe(participante);
     participante.cobrarGarantia(fecha, this._desentradaVigente());
     this._caja.cobrar(Cobro.deGarantia(participante.nombre(), monto, fecha, deCreditos));
   }
@@ -125,13 +125,13 @@ export class Grupo {
     return participante.garantiaPorCobrar(this._desentradaVigente());
   }
 
-  creditosParaLaGarantiaDe(participante: Participante): number {
-    return Math.min(this.garantiaPorCobrarA(participante), this._caja.montoPendienteDe(participante.nombre()));
+  saldoAFavorParaLaGarantiaDe(participante: Participante): number {
+    return Math.min(this.garantiaPorCobrarA(participante), this._caja.saldoAFavorDe(participante.nombre()));
   }
 
-  susCreditosCubrenLaGarantiaDe(participante: Participante): boolean {
+  suSaldoAFavorCubreLaGarantiaDe(participante: Participante): boolean {
     const porCobrar = this.garantiaPorCobrarA(participante);
-    return porCobrar > 0 && this.creditosParaLaGarantiaDe(participante) === porCobrar;
+    return porCobrar > 0 && this.saldoAFavorParaLaGarantiaDe(participante) === porCobrar;
   }
 
   saldos(): readonly Saldo[] {
@@ -141,7 +141,7 @@ export class Grupo {
           new Saldo(
             participante.nombre(),
             this._faltanteDeGarantiaDe(participante),
-            this._caja.montoPendienteDe(participante.nombre()),
+            this._caja.saldoAFavorDe(participante.nombre()),
           ),
       )
       .filter((saldo) => saldo.debe() || saldo.tieneAFavor());
@@ -155,8 +155,8 @@ export class Grupo {
     return this._participantes.flatMap((participante) => {
       const nuevoSaldo = participante.saldoDeGarantia(reglas.desentrada());
       const cambia = nuevoSaldo !== 0 && nuevoSaldo !== participante.saldoDeGarantia(this._desentradaVigente());
-      const creditos = this._caja.montoPendienteDe(participante.nombre());
-      return cambia ? [new CambioDeGarantia(participante.nombre(), nuevoSaldo, creditos)] : [];
+      const saldoAFavor = this._caja.saldoAFavorDe(participante.nombre());
+      return cambia ? [new CambioDeGarantia(participante.nombre(), nuevoSaldo, saldoAFavor)] : [];
     });
   }
 
