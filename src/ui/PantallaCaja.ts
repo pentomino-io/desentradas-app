@@ -1,7 +1,7 @@
 import { fechaYHora, monto, montoConSigno } from "../app/Formato.ts";
 import type { Movimiento } from "../models/Movimiento.ts";
 import type { Saldo } from "../models/Saldo.ts";
-import { Dialogo } from "./Dialogo.ts";
+import { DialogoDePagoDeSaldoAFavor } from "./DialogoDePagoDeSaldoAFavor.ts";
 import { DialogoDeCobroDeGarantia, tituloDelCobroDeLaGarantiaA } from "./DialogoDeCobroDeGarantia.ts";
 import { boton, crear, desplegable, fila, type Hijo, tabla, tablaOAviso } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
@@ -106,13 +106,6 @@ export class PantallaCaja {
   }
 
   private _abrirEntrega(saldo: Saldo): void {
-    const nombre = saldo.nombre();
-    new Dialogo(
-      this._entorno,
-      `Pagarle a ${nombre} su saldo a favor`,
-      [crear("p", {}, `Hay que pagarle ${monto(saldo.aFavor())}.`)],
-      "Pagar",
-      () => this._entorno.aplicacion().repartir(nombre, this._entorno.ahora()),
-    ).abrir();
+    new DialogoDePagoDeSaldoAFavor(this._entorno, saldo.nombre()).abrir();
   }
 }

@@ -2,7 +2,7 @@ import { monto } from "../app/Formato.ts";
 import { campoDeTexto, casilla } from "./Campos.ts";
 import { Dialogo } from "./Dialogo.ts";
 import type { Participante } from "../models/Participante.ts";
-import { avisoDeGarantia, cobroDeLaGarantiaA } from "./DialogoDeCobroDeGarantia.ts";
+import { avisoDeGarantia, cobroDeLaGarantiaA, registroDelCobroA } from "./DialogoDeCobroDeGarantia.ts";
 import { crear, estaMarcado, valorDe } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 
@@ -78,8 +78,12 @@ export class DialogoDeRegistro {
     const nombre = participante.nombre();
     const pregunta = `${yaHayAlguien(nombre)} ¿Es la misma persona?`;
     const cobro = `En ese caso, ${cobroDeLaGarantiaA(this._entorno.grupo(), participante)}`;
-    new Dialogo(this._entorno, this._titulo, [crear("p", {}, `${pregunta} ${cobro}`)], "Sí", () =>
-      this._cobrarGarantia(nombre),
+    new Dialogo(
+      this._entorno,
+      this._titulo,
+      [crear("p", {}, `${pregunta} ${cobro}`)],
+      registroDelCobroA(this._entorno.grupo(), participante),
+      () => this._cobrarGarantia(nombre),
     )
       .conTextoDeCancelacion("No, es otra persona", () => this.abrir(pedidoDeOtroNombre(nombre), true))
       .abrir();

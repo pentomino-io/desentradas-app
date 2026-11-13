@@ -46,10 +46,10 @@ const avisoDeCobro = (grupo: Grupo, participante: Participante): string =>
     ? conMayuscula(cobroDeLaGarantiaA(grupo, participante))
     : avisoDeCompletarLaGarantia(grupo, participante);
 
-const textoDeConfirmacion = (grupo: Grupo, participante: Participante): string => {
-  if (grupo.susCreditosCubrenLaGarantiaDe(participante)) return "Usar su saldo a favor";
+export const registroDelCobroA = (grupo: Grupo, participante: Participante): string => {
+  if (grupo.susCreditosCubrenLaGarantiaDe(participante)) return "Registrar cobro con saldo a favor";
 
-  return `Cobrar ${monto(efectivoParaLaGarantiaDe(grupo, participante))}`;
+  return `Registrar cobro de ${monto(efectivoParaLaGarantiaDe(grupo, participante))}`;
 };
 
 export class DialogoDeCobroDeGarantia extends Dialogo {
@@ -64,7 +64,7 @@ export class DialogoDeCobroDeGarantia extends Dialogo {
       entorno,
       titulo,
       [crear("p", {}, `${avisoDeCobro(entorno.grupo(), participante)} ${consecuencia}`)],
-      textoDeConfirmacion(entorno.grupo(), participante),
+      registroDelCobroA(entorno.grupo(), participante),
       cobrar,
     );
   }

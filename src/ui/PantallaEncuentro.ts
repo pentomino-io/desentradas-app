@@ -3,6 +3,7 @@ import type { PlanillaDeAsistencia } from "../app/PlanillaDeAsistencia.ts";
 import type { Participante } from "../models/Participante.ts";
 import { Dialogo, mostrarEnDialogo } from "./Dialogo.ts";
 import { DialogoDeCobroDeGarantia, tituloDelCobroDeLaGarantiaA } from "./DialogoDeCobroDeGarantia.ts";
+import { DialogoDePagoDeSaldoAFavor } from "./DialogoDePagoDeSaldoAFavor.ts";
 import { DialogoDeRegistro } from "./DialogoDeRegistro.ts";
 import { alerta, boton, botonDeEnvio, crear, fila, formulario, type Hijo, tablaOAviso } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
@@ -138,10 +139,7 @@ export class PantallaEncuentro {
   }
 
   private _entregar(nombre: string): void {
-    this._entorno.intentarYRefrescar(
-      () => this._entorno.aplicacion().repartir(nombre, this._entorno.ahora()),
-      this._errores,
-    );
+    new DialogoDePagoDeSaldoAFavor(this._entorno, nombre).abrir();
   }
 
   private _abrirIngreso(): void {
