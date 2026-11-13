@@ -6,7 +6,7 @@ import { crear } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 
 export const avisoDeGarantia = (grupo: Grupo): HTMLParagraphElement =>
-  crear("p", {}, `Hay que cobrarle ${monto(grupo.reglas().garantia())} de garantía.`);
+  crear("p", {}, `Hay que cobrarle ${monto(grupo.reglas().desentrada())} de garantía.`);
 
 export const tituloDelCobroDeLaGarantiaA = (nombre: string): string => `Cobrar la garantía a ${nombre}`;
 
@@ -30,7 +30,7 @@ const conMayuscula = (texto: string): string => texto[0].toUpperCase() + texto.s
 const avisoDeCompletarLaGarantia = (grupo: Grupo, participante: Participante): string => {
   const porCobrar = grupo.garantiaPorCobrarA(participante);
   const deCreditos = grupo.creditosParaLaGarantiaDe(participante);
-  const completar = `completar la garantía de ${monto(grupo.reglas().garantia())}`;
+  const completar = `completar la garantía de ${monto(grupo.reglas().desentrada())}`;
   if (deCreditos === 0) return `Hay que cobrarle ${monto(porCobrar)} para ${completar}.`;
 
   const faltante = `Le faltan ${monto(porCobrar)} para ${completar}.`;

@@ -464,21 +464,21 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual(["beto"]);
     });
 
-    it("subir la garantía desmarca a quienes quedan con la garantía incompleta, porque ya no pueden asistir", () => {
+    it("subir la desentrada desmarca a quienes quedan con la garantía incompleta, porque ya no pueden asistir", () => {
       const aplicacion = aplicacionConAnaYBeto();
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("ana");
       aplicacion.ingresarAsistente("carla", dia(3));
 
-      aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+      aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
 
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual([]);
     });
 
-    it("subir la garantía desmarca también a quien tiene créditos que cubren lo que le falta, porque tiene que aceptar el cobro", () => {
+    it("subir la desentrada desmarca también a quien tiene créditos que cubren lo que le falta, porque tiene que aceptar el cobro", () => {
       const aplicacion = aplicacionConAnaInactiva(); // beto tiene $ 1.000 de crédito
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
 
-      aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+      aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
 
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual([]);
     });

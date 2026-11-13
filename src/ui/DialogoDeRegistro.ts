@@ -51,7 +51,7 @@ export class DialogoDeRegistro {
         campoDeTexto("Nombre", "nombre"),
         this._ingresarSinPagar === undefined
           ? avisoDeGarantia(this._entorno.grupo())
-          : casilla(`Pagó la garantía de ${monto(this._entorno.grupo().reglas().garantia())}`, "pago", pago),
+          : casilla(`Pagó la garantía de ${monto(this._entorno.grupo().reglas().desentrada())}`, "pago", pago),
       ],
       "Registrar",
       (formulario) => this._registrar(valorDe(formulario, "nombre").trim(), this._pago(formulario)),

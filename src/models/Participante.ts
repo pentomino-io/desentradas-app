@@ -52,8 +52,8 @@ export class Participante {
     return this._estado().nombre();
   }
 
-  situacion(garantiaVigente: number): Situacion {
-    return this._estado().situacion(garantiaVigente);
+  situacion(desentradaVigente: number): Situacion {
+    return this._estado().situacion(desentradaVigente);
   }
 
   historial(): readonly Transicion[] {
@@ -64,16 +64,16 @@ export class Participante {
     return this._ultimaTransicion().fecha();
   }
 
-  puedeAsistir(garantiaVigente: number): boolean {
-    return this.garantiaPorCobrar(garantiaVigente) === 0;
+  puedeAsistir(desentradaVigente: number): boolean {
+    return this.garantiaPorCobrar(desentradaVigente) === 0;
   }
 
-  saldoDeGarantia(garantiaVigente: number): number {
-    return this._estado().saldoDeGarantia(garantiaVigente);
+  saldoDeGarantia(desentradaVigente: number): number {
+    return this._estado().saldoDeGarantia(desentradaVigente);
   }
 
-  garantiaPorCobrar(garantiaVigente: number): number {
-    return Math.max(0, garantiaVigente - this.garantia());
+  garantiaPorCobrar(desentradaVigente: number): number {
+    return Math.max(0, desentradaVigente - this.garantia());
   }
 
   garantia(): number {

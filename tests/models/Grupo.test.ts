@@ -15,13 +15,13 @@ const grupoConAnaInactiva = () => {
 
 const grupoConGarantiaInactivaIncompletaYCompleta = () => {
   const { grupo, ana, beto } = grupoConAnaInactiva();
-  grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+  grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
   const carla = grupo.ingresar("carla", dia(3));
   return { grupo, ana, beto, carla };
 };
 
 const grupoConAnaInactivaConCreditos = () => {
-  const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+  const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
   const ana = grupo.ingresar("ana", dia(1));
   const beto = grupo.ingresar("beto", dia(1));
   const carla = grupo.ingresar("carla", dia(1));
@@ -127,11 +127,11 @@ describe("Grupo", () => {
     });
   });
 
-  describe("cambio de garantía", () => {
-    it("bajar la garantía les devuelve el excedente como crédito pendiente a quienes participan, y nada a los inactivos", () => {
+  describe("cambio de desentrada", () => {
+    it("bajar la desentrada les devuelve el excedente de garantía como crédito pendiente a quienes participan, y nada a los inactivos", () => {
       const { grupo, ana, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
 
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 600 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 600 }));
 
       expect(beto.garantia()).toBe(600);
       expect(grupo.caja().montoPendienteDe("beto")).toBe(1400);
@@ -139,10 +139,10 @@ describe("Grupo", () => {
       expect(grupo.caja().montoPendienteDe("ana")).toBe(0);
     });
 
-    it("subir la garantía deja con la garantía incompleta a quien tiene menos, aunque tenga créditos pendientes, que siguen pendientes", () => {
+    it("subir la desentrada deja con la garantía incompleta a quien tiene menos, aunque tenga créditos pendientes, que siguen pendientes", () => {
       const { grupo, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
 
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
 
       expect(grupo.situacionDe(beto)).toBe("garantía incompleta");
       expect(grupo.garantiaPorCobrarA(beto)).toBe(500);
@@ -154,14 +154,14 @@ describe("Grupo", () => {
     const comoLista = (efecto: CambioDeGarantia) => [efecto.nombre(), efecto.monto(), efecto.loCubrenSusCreditos()];
 
     const grupoConGarantiasDistintas = () => {
-      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+      const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
       grupo.ingresar("carla", dia(1));
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 2, asistentes: ["beto", "carla"], ausentes: ["ana"] }));
       grupo.pagar("beto", dia(3));
       grupo.pagar("carla", dia(3));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1200 })); // beto y carla deben $ 200
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1200 })); // beto y carla deben $ 200
       grupo.ingresar("dani", dia(3));
       return grupo;
     };
@@ -169,7 +169,7 @@ describe("Grupo", () => {
     it("son lo que pasa a deber quien queda con la garantía incompleta y el crédito que recibe quien tiene un excedente, sin nada para los inactivos", () => {
       const grupo = grupoConGarantiasDistintas();
 
-      const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(4), garantia: 1100 }));
+      const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(4), desentrada: 1100 }));
 
       expect(efectos.map(comoLista)).toEqual([
         ["beto", -100, false],
@@ -181,7 +181,7 @@ describe("Grupo", () => {
     it("se sabe si los créditos pendientes de alguien cubren lo que le falta, aunque no se apliquen solos", () => {
       const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
 
-      const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+      const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
 
       expect(efectos.map(comoLista)).toEqual([["beto", -500, true]]);
     });
@@ -189,7 +189,7 @@ describe("Grupo", () => {
     it("los créditos pendientes que no alcanzan para lo que falta no lo cubren", () => {
       const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
 
-      const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(3), garantia: 2500 }));
+      const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(3), desentrada: 2500 }));
 
       expect(efectos.map(comoLista)).toEqual([["beto", -1500, false]]);
     });
@@ -198,7 +198,7 @@ describe("Grupo", () => {
       const grupo = grupoConGarantiasDistintas();
 
       const efectos = grupo.efectosDeCambiarLasReglas(
-        reglas({ rigeDesde: dia(4), garantia: 1200, toleranciaDeFaltas: 3 }),
+        reglas({ rigeDesde: dia(4), desentrada: 1200, toleranciaDeFaltas: 3 }),
       );
 
       expect(efectos).toEqual([]);
@@ -216,9 +216,9 @@ describe("Grupo", () => {
       expect(grupo.participantes()).toEqual([ana]);
     });
 
-    it("ingresar cobra en efectivo la garantía de las reglas actuales", () => {
-      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), garantia: 1500 }));
+    it("ingresar cobra en efectivo una garantía igual a la desentrada actual", () => {
+      const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
 
       const ana = grupo.ingresar("ana", dia(3));
 
@@ -240,7 +240,7 @@ describe("Grupo", () => {
     });
 
     it("quien ingresó sin pagar puede pagar la garantía para participar", () => {
-      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+      const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       const ana = grupo.ingresarSinPagar("ana", dia(1));
 
       grupo.cobrarGarantia("ana", dia(2));
@@ -344,7 +344,7 @@ describe("Grupo", () => {
   describe("cobro de garantía", () => {
     it("cobrarle la garantía a un inactivo la cobra en efectivo según las reglas actuales y lo vuelve a hacer participar", () => {
       const { grupo, ana } = grupoConAnaInactiva();
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 2000 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 2000 }));
 
       grupo.cobrarGarantia("ana", dia(4));
 
@@ -354,9 +354,9 @@ describe("Grupo", () => {
     });
 
     it("cobrarle la garantía a quien la tiene incompleta cobra en efectivo la diferencia y lo habilita para asistir", () => {
-      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+      const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       const ana = grupo.ingresar("ana", dia(1));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), garantia: 1500 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
 
       grupo.cobrarGarantia("ana", dia(3));
 
@@ -377,7 +377,7 @@ describe("Grupo", () => {
 
     it("cobrarle la garantía a quien la tiene incompleta usa primero sus créditos pendientes para la diferencia", () => {
       const { grupo, beto } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 2500 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 2500 }));
 
       grupo.cobrarGarantia("beto", dia(4));
 
@@ -388,7 +388,7 @@ describe("Grupo", () => {
 
     it("cobrarle la garantía a quien tiene créditos pendientes que la cubren toda no cobra nada en efectivo y le deja el resto del crédito", () => {
       const { grupo, ana } = grupoConAnaInactivaConCreditos();
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(4), garantia: 400 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(4), desentrada: 400 }));
 
       grupo.cobrarGarantia("ana", dia(5));
 
@@ -399,14 +399,14 @@ describe("Grupo", () => {
 
     it("los créditos pendientes cubren la garantía por cobrar si alcanzan para toda, y no hay nada que cubrir a quien no le falta nada", () => {
       const { grupo, ana, beto, carla } = grupoConAnaInactivaConCreditos(); // ana tiene $ 500 de crédito, beto $ 1.500, carla nada
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(4), garantia: 400 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(4), desentrada: 400 }));
 
       const cubiertas = [ana, beto, carla].map((participante) => grupo.susCreditosCubrenLaGarantiaDe(participante));
 
       expect(cubiertas).toEqual([true, false, false]);
     });
 
-    it("la garantía por cobrar es lo que falta para llegar a la actual: toda para un inactivo, la diferencia para quien la tiene incompleta, nada para quien la tiene completa", () => {
+    it("la garantía por cobrar es lo que falta para llegar a la desentrada actual: toda para un inactivo, la diferencia para quien la tiene incompleta, nada para quien la tiene completa", () => {
       const { grupo, ana, beto, carla } = grupoConGarantiaInactivaIncompletaYCompleta();
 
       const porCobrar = [ana, beto, carla].map((participante) => grupo.garantiaPorCobrarA(participante));
@@ -486,7 +486,7 @@ describe("Grupo", () => {
     });
 
     it("la desentrada de quien falta se reparte en créditos entre los asistentes", () => {
-      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+      const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
       grupo.ingresar("carla", dia(1));
@@ -498,9 +498,9 @@ describe("Grupo", () => {
     });
 
     it("quien falta con la garantía incompleta pierde la que tiene y queda inactivo", () => {
-      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+      const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       const ana = grupo.ingresar("ana", dia(1));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), garantia: 2000 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 2000 }));
       grupo.ingresar("beto", dia(2));
 
       grupo.registrarEncuentro(nuevoEncuentro({ numero: 3, asistentes: ["beto"], ausentes: ["ana"] }));
@@ -532,10 +532,10 @@ describe("Grupo", () => {
       expect(grupo.encuentros()).toHaveLength(2);
     });
 
-    it("quien participa con una garantía menor a la actual no puede figurar como asistente de un encuentro", () => {
-      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+    it("quien participa con una garantía menor a la desentrada actual no puede figurar como asistente de un encuentro", () => {
+      const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       grupo.ingresar("ana", dia(1));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), garantia: 1500 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
 
       expect(() => {
         grupo.registrarEncuentro(nuevoEncuentro({ numero: 3, asistentes: ["ana"] }));
@@ -587,7 +587,7 @@ describe("Grupo", () => {
 
     it("no se puede registrar un encuentro anterior al cobro de una garantía cubierta con créditos", () => {
       const { grupo } = grupoConAnaInactivaConCreditos();
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(4), garantia: 400 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(4), desentrada: 400 }));
       grupo.cobrarGarantia("ana", dia(6));
 
       expect(() => {
@@ -681,7 +681,7 @@ describe("Grupo", () => {
       expect(posibles).toEqual([beto, carla]);
     });
 
-    it("pueden asistir quienes participan con la garantía actual completa", () => {
+    it("pueden asistir quienes participan con la garantía completa para la desentrada actual", () => {
       const { grupo, ana, beto, carla } = grupoConGarantiaInactivaIncompletaYCompleta();
 
       const pueden = [ana, beto, carla].map((participante) => grupo.puedeAsistir(participante));
@@ -689,7 +689,7 @@ describe("Grupo", () => {
       expect(pueden).toEqual([false, false, true]);
     });
 
-    it("la situación de cada uno distingue a quienes participan con la garantía actual completa de quienes la tienen incompleta", () => {
+    it("la situación de cada uno distingue a quienes participan con la garantía completa para la desentrada actual de quienes la tienen incompleta", () => {
       const { grupo, ana, beto, carla } = grupoConGarantiaInactivaIncompletaYCompleta();
 
       const situaciones = [ana, beto, carla].map((participante) => grupo.situacionDe(participante));
@@ -728,7 +728,7 @@ describe("Grupo", () => {
     const comoLista = (saldo: Saldo) => [saldo.nombre(), saldo.porCobrar(), saldo.aFavor()];
 
     it("quien tiene créditos pendientes tiene un saldo positivo por ellos, y quien no los tiene no tiene saldo", () => {
-      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+      const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       grupo.ingresar("ana", dia(1));
       grupo.ingresar("beto", dia(1));
       grupo.ingresar("carla", dia(1));
@@ -741,7 +741,7 @@ describe("Grupo", () => {
 
     it("el saldo de quien tiene la garantía incompleta tiene por cobrar lo que le falta, aparte de sus créditos a favor, y un inactivo no debe nada", () => {
       const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 2500 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 2500 }));
 
       const saldos = grupo.saldos();
 
@@ -750,7 +750,7 @@ describe("Grupo", () => {
 
     it("el total por cobrar no descuenta los créditos de quien tiene la garantía incompleta", () => {
       const { grupo } = grupoConAnaInactiva(); // beto tiene $ 1.000 de crédito
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
 
       const total = grupo.totalPorCobrar();
 
@@ -759,7 +759,7 @@ describe("Grupo", () => {
 
     it("el total por cobrar es lo que les falta a quienes tienen la garantía incompleta, sin contar a los inactivos", () => {
       const { grupo } = grupoConGarantiaInactivaIncompletaYCompleta();
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(4), garantia: 2000 })); // beto debe 1.000 y carla 500
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(4), desentrada: 2000 })); // beto debe 1.000 y carla 500
 
       const total = grupo.totalPorCobrar();
 

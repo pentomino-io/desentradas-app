@@ -11,7 +11,7 @@ export abstract class Estado {
     throw new TransicionInvalida("ir", this.nombre());
   }
 
-  abstract situacion(garantiaVigente: number): Situacion;
+  abstract situacion(desentradaVigente: number): Situacion;
 
   abstract falto(): Estado;
 
@@ -27,7 +27,7 @@ export abstract class Estado {
     return 0;
   }
 
-  saldoDeGarantia(_garantiaVigente: number): number {
+  saldoDeGarantia(_desentradaVigente: number): number {
     return 0;
   }
 

@@ -1,15 +1,15 @@
 export class Reglas {
   private _rigeDesde: Date;
   private _toleranciaDeFaltas: number;
-  private _garantia: number;
+  private _desentrada: number;
 
-  constructor(rigeDesde: Date, toleranciaDeFaltas: number, garantia: number) {
+  constructor(rigeDesde: Date, toleranciaDeFaltas: number, desentrada: number) {
     if (toleranciaDeFaltas < 1) throw new Error("La tolerancia de faltas debe ser al menos 1");
-    if (garantia <= 0) throw new Error("La desentrada debe ser positiva");
+    if (desentrada <= 0) throw new Error("La desentrada debe ser positiva");
 
     this._rigeDesde = rigeDesde;
     this._toleranciaDeFaltas = toleranciaDeFaltas;
-    this._garantia = garantia;
+    this._desentrada = desentrada;
   }
 
   rigeDesde(): Date {
@@ -20,8 +20,8 @@ export class Reglas {
     return this._toleranciaDeFaltas;
   }
 
-  garantia(): number {
-    return this._garantia;
+  desentrada(): number {
+    return this._desentrada;
   }
 
   superaLaTolerancia(faltas: number): boolean {

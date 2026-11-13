@@ -6,7 +6,7 @@ export type ReglasJson = { rigeDesde: string; toleranciaDeFaltas: number; garant
 export const reglasAJson = (reglas: Reglas): ReglasJson => ({
   rigeDesde: reglas.rigeDesde().toISOString(),
   toleranciaDeFaltas: reglas.toleranciaDeFaltas(),
-  garantia: reglas.garantia(),
+  garantia: reglas.desentrada(),
 });
 
 export const reglasDesdeJson = (json: unknown): Reglas => {

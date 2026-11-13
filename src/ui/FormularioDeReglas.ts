@@ -2,10 +2,11 @@ import { Reglas } from "../models/Reglas.ts";
 import { campoNumerico } from "./Campos.ts";
 import { numeroDe } from "./dom.ts";
 
-export const explicacionDeLaGarantia = "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
+export const explicacionDeLaDesentrada =
+  "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
 
-export const campoDeGarantia = (garantia = 1, ayuda?: string): HTMLElement =>
-  campoNumerico("¿De cuánto es la desentrada?", "garantia", garantia, 1, ayuda);
+export const campoDeGarantia = (desentrada = 1, ayuda?: string): HTMLElement =>
+  campoNumerico("¿De cuánto es la desentrada?", "desentrada", desentrada, 1, ayuda);
 
 export const camposDeReglas = (reglas: Reglas): HTMLElement[] => [
   campoNumerico(
@@ -14,8 +15,8 @@ export const camposDeReglas = (reglas: Reglas): HTMLElement[] => [
     reglas.toleranciaDeFaltas(),
     1,
   ),
-  campoDeGarantia(reglas.garantia()),
+  campoDeGarantia(reglas.desentrada()),
 ];
 
 export const reglasDesde = (formulario: HTMLFormElement, rigeDesde: Date): Reglas =>
-  new Reglas(rigeDesde, numeroDe(formulario, "toleranciaDeFaltas"), numeroDe(formulario, "garantia"));
+  new Reglas(rigeDesde, numeroDe(formulario, "toleranciaDeFaltas"), numeroDe(formulario, "desentrada"));

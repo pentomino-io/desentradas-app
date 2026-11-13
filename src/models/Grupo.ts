@@ -54,7 +54,7 @@ export class Grupo {
   }
 
   ingresar(nombre: string, fecha: Date): Participante {
-    const garantia = this._garantiaVigente();
+    const garantia = this._desentradaVigente();
     const participante = this._incorporar(Participante.pagando(nombre.trim(), fecha, garantia), fecha);
     this._caja.cobrar(Cobro.alIngresar(participante.nombre(), garantia, fecha));
     return participante;
@@ -70,7 +70,7 @@ export class Grupo {
 
     const monto = this.garantiaPorCobrarA(participante);
     const deCreditos = this.creditosParaLaGarantiaDe(participante);
-    participante.cobrarGarantia(fecha, this._garantiaVigente());
+    participante.cobrarGarantia(fecha, this._desentradaVigente());
     this._caja.cobrar(Cobro.deGarantia(participante.nombre(), monto, fecha, deCreditos));
   }
 
@@ -114,15 +114,15 @@ export class Grupo {
   }
 
   puedeAsistir(participante: Participante): boolean {
-    return participante.puedeAsistir(this._garantiaVigente());
+    return participante.puedeAsistir(this._desentradaVigente());
   }
 
   situacionDe(participante: Participante): Situacion {
-    return participante.situacion(this._garantiaVigente());
+    return participante.situacion(this._desentradaVigente());
   }
 
   garantiaPorCobrarA(participante: Participante): number {
-    return participante.garantiaPorCobrar(this._garantiaVigente());
+    return participante.garantiaPorCobrar(this._desentradaVigente());
   }
 
   creditosParaLaGarantiaDe(participante: Participante): number {
@@ -153,8 +153,8 @@ export class Grupo {
 
   efectosDeCambiarLasReglas(reglas: Reglas): readonly CambioDeGarantia[] {
     return this._participantes.flatMap((participante) => {
-      const nuevoSaldo = participante.saldoDeGarantia(reglas.garantia());
-      const cambia = nuevoSaldo !== 0 && nuevoSaldo !== participante.saldoDeGarantia(this._garantiaVigente());
+      const nuevoSaldo = participante.saldoDeGarantia(reglas.desentrada());
+      const cambia = nuevoSaldo !== 0 && nuevoSaldo !== participante.saldoDeGarantia(this._desentradaVigente());
       const creditos = this._caja.montoPendienteDe(participante.nombre());
       return cambia ? [new CambioDeGarantia(participante.nombre(), nuevoSaldo, creditos)] : [];
     });
@@ -164,17 +164,17 @@ export class Grupo {
     return this._participantes.find((participante) => participante.nombre() === nombre);
   }
 
-  private _garantiaVigente(): number {
-    return this.reglas().garantia();
+  private _desentradaVigente(): number {
+    return this.reglas().desentrada();
   }
 
   private _faltanteDeGarantiaDe(participante: Participante): number {
-    return Math.max(0, -participante.saldoDeGarantia(this._garantiaVigente()));
+    return Math.max(0, -participante.saldoDeGarantia(this._desentradaVigente()));
   }
 
   private _devolverLosExcedentesDeGarantia(reglas: Reglas): void {
     for (const participante of this._participantes) {
-      const excedente = participante.bajarGarantia(reglas.rigeDesde(), reglas.garantia());
+      const excedente = participante.bajarGarantia(reglas.rigeDesde(), reglas.desentrada());
       if (excedente > 0) this._caja.acreditar(new Credito(participante.nombre(), excedente));
     }
   }

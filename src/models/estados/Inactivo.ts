@@ -13,7 +13,7 @@ export class Inactivo extends Estado {
     return "inactivo";
   }
 
-  situacion(_garantiaVigente: number): Situacion {
+  situacion(_desentradaVigente: number): Situacion {
     return "inactivo";
   }
 

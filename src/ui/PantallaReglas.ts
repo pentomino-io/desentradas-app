@@ -5,13 +5,16 @@ import type { CambioDeGarantia } from "../models/CambioDeGarantia.ts";
 import { Dialogo } from "./Dialogo.ts";
 import { alerta, botonDeEnvio, crear, desplegable, fila, formulario, intentar, tabla } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
-import { camposDeReglas, explicacionDeLaGarantia, reglasDesde } from "./FormularioDeReglas.ts";
+import { camposDeReglas, explicacionDeLaDesentrada, reglasDesde } from "./FormularioDeReglas.ts";
 import { alfabetico } from "./Orden.ts";
 
 const faltasSeguidas = (cantidad: number): string =>
   `${cantidad} ${cantidad === 1 ? "falta seguida" : "faltas seguidas"}`;
 
-const valoresDe = (reglas: Reglas): string[] => [faltasSeguidas(reglas.toleranciaDeFaltas()), monto(reglas.garantia())];
+const valoresDe = (reglas: Reglas): string[] => [
+  faltasSeguidas(reglas.toleranciaDeFaltas()),
+  monto(reglas.desentrada()),
+];
 
 const explicacionDeLaTolerancia =
   "Quien falta más veces seguidas deja de aparecer en la lista de asistencia; para volver hay que usar Reingresar, en Participantes.";
@@ -52,8 +55,8 @@ const cambiosEntre = (vigentes: Reglas, nuevas: Reglas): string[] => {
   if (nuevas.toleranciaDeFaltas() !== vigentes.toleranciaDeFaltas()) {
     cambios.push(`La tolerancia de faltas pasa de ${vigentes.toleranciaDeFaltas()} a ${nuevas.toleranciaDeFaltas()}.`);
   }
-  if (nuevas.garantia() !== vigentes.garantia()) {
-    cambios.push(`La desentrada pasa de ${monto(vigentes.garantia())} a ${monto(nuevas.garantia())}.`);
+  if (nuevas.desentrada() !== vigentes.desentrada()) {
+    cambios.push(`La desentrada pasa de ${monto(vigentes.desentrada())} a ${monto(nuevas.desentrada())}.`);
   }
   return cambios;
 };
@@ -86,14 +89,14 @@ export class PantallaReglas {
   }
 
   private _reglasVigentes(): HTMLElement {
-    const [tolerancia, garantia] = valoresDe(this._entorno.grupo().reglas());
+    const [tolerancia, desentrada] = valoresDe(this._entorno.grupo().reglas());
     return crear(
       "dl",
       {},
       crear("dt", {}, "Tolerancia de faltas"),
       crear("dd", {}, tolerancia, crear("small", {}, explicacionDeLaTolerancia)),
       crear("dt", {}, "Desentrada"),
-      crear("dd", {}, garantia, crear("small", {}, explicacionDeLaGarantia)),
+      crear("dd", {}, desentrada, crear("small", {}, explicacionDeLaDesentrada)),
     );
   }
 

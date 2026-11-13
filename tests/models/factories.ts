@@ -18,12 +18,12 @@ export const nuevoEncuentro = ({
 export const reglas = ({
   rigeDesde = dia(1),
   toleranciaDeFaltas = 2,
-  garantia = 1000,
+  desentrada = 1000,
 }: {
   rigeDesde?: Date;
   toleranciaDeFaltas?: number;
-  garantia?: number;
-} = {}) => new Reglas(rigeDesde, toleranciaDeFaltas, garantia);
+  desentrada?: number;
+} = {}) => new Reglas(rigeDesde, toleranciaDeFaltas, desentrada);
 
 export const nuevoParticipante = (garantia = 1000) => Participante.pagando("ana", dia(1), garantia);
 

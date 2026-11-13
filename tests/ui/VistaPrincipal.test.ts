@@ -7,7 +7,7 @@ import { VistaPrincipal } from "../../src/ui/VistaPrincipal.ts";
 import { ahora, aplicacionConGrupo, nuevaAplicacion } from "../app/factories.ts";
 import { dia, reglas } from "../models/factories.ts";
 
-const explicacionDeLaGarantia = "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
+const explicacionDeLaDesentrada = "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
 
 const nuevosAlmacenamientos = () => ({
   bitacora: new AlmacenamientoEnMemoria(),
@@ -40,7 +40,7 @@ const almacenamientosConGarantiasIncompletas = () => {
   const almacenamientos = almacenamientosConAnaInactiva();
   const aplicacion = nuevaAplicacion(almacenamientos);
   ["beto", "carla", "dani"].forEach((nombre) => aplicacion.pagar(nombre, dia(3)));
-  aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+  aplicacion.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
   return almacenamientos;
 };
 
@@ -230,7 +230,7 @@ describe("VistaPrincipal", () => {
 
       expect(aplicacion.grupo().nombre()).toBe("Fútbol de los jueves");
       expect(aplicacion.grupo().reglas().toleranciaDeFaltas()).toBe(3);
-      expect(aplicacion.grupo().reglas().garantia()).toBe(1000);
+      expect(aplicacion.grupo().reglas().desentrada()).toBe(1000);
       expect(aplicacion.grupo().reglas().rigeDesde()).toEqual(ahora());
       expect(textoDe(document.querySelector("h1")!)).toBe("Fútbol de los jueves");
       expect([...document.querySelectorAll("nav a")].map(textoDe)).toEqual([
@@ -251,12 +251,12 @@ describe("VistaPrincipal", () => {
       expect(preguntaLaTolerancia).toBe(false);
     });
 
-    it("el formulario inicial explica la garantía en su campo", () => {
+    it("el formulario inicial explica la desentrada en su campo", () => {
       montar();
 
-      const campoDeGarantia = etiqueta("¿De cuánto es la desentrada?")!;
+      const campoDeLaDesentrada = etiqueta("¿De cuánto es la desentrada?")!;
 
-      expect(textoDe(campoDeGarantia)).toContain(explicacionDeLaGarantia);
+      expect(textoDe(campoDeLaDesentrada)).toContain(explicacionDeLaDesentrada);
     });
 
     it.each([
@@ -300,7 +300,7 @@ describe("VistaPrincipal", () => {
       const almacenamientos = nuevosAlmacenamientos();
       nuevaAplicacion(almacenamientos).crearGrupo(
         "Fútbol de los jueves",
-        reglas({ toleranciaDeFaltas: 3, garantia: 1500 }),
+        reglas({ toleranciaDeFaltas: 3, desentrada: 1500 }),
       );
       const { aplicacion } = montar(almacenamientos);
       await navegarA("Historial");
@@ -434,7 +434,7 @@ describe("VistaPrincipal", () => {
 
     it("registrar el nombre de un inactivo con un crédito que cubre toda la garantía avisa que no hay que cobrarle nada", async () => {
       const almacenamientos = almacenamientosConAnaInactivaConCreditos();
-      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 400 }));
+      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 400 }));
       montar(almacenamientos);
       await navegarA("Participantes");
       hacerClic("Registrar participante");
@@ -568,7 +568,7 @@ describe("VistaPrincipal", () => {
 
     it("quien tiene la garantía incompleta y un crédito muestra las dos cosas, dice si su crédito la cubre, y cuenta en los dos totales, cada uno aparte", async () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
-      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1334 }));
+      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1334 }));
       montar(almacenamientos);
 
       await navegarA("Caja");
@@ -608,7 +608,7 @@ describe("VistaPrincipal", () => {
 
     it("a quien tiene un crédito que cubre lo que le falta de la garantía se la completa con él, sin cobrarle nada", async () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334
-      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1300 }));
+      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1300 }));
       const { aplicacion } = montar(almacenamientos);
       await navegarA("Caja");
 
@@ -909,7 +909,7 @@ describe("VistaPrincipal", () => {
 
     it("a quien tiene créditos pendientes que cubren toda la garantía no se le cobra nada en efectivo", () => {
       const almacenamientos = almacenamientosConAnaInactivaConCreditos();
-      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 400 }));
+      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 400 }));
       const { aplicacion } = montar(almacenamientos);
       hacerClic("Empezar encuentro");
 
@@ -925,7 +925,7 @@ describe("VistaPrincipal", () => {
 
     it("a quien tiene la garantía incompleta y créditos pendientes se le cobra la diferencia en parte con ellos", () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334
-      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
+      nuevaAplicacion(almacenamientos).cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 1500 }));
       const { aplicacion } = montar(almacenamientos);
       hacerClic("Empezar encuentro");
 
@@ -974,7 +974,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Cambiar reglas");
       hacerClic("Confirmar", dialogoAbierto());
 
-      expect(aplicacion.grupo().reglas().garantia()).toBe(1500);
+      expect(aplicacion.grupo().reglas().desentrada()).toBe(1500);
       expect(aplicacion.grupo().reglas().rigeDesde()).toEqual(ahora());
       const versiones = elementoConTexto("summary", "Versiones anteriores").parentElement!;
       expect([...versiones.querySelectorAll("th")].map(textoDe)).toEqual(["Desde", "Tolerancia", "Desentrada"]);
@@ -992,7 +992,7 @@ describe("VistaPrincipal", () => {
       expect(textoDe(dialogoAbierto())).toContain(
         "La desentrada pasa de $ 1.500 a $ 1.200. beto, carla y dani deben completar $ 200; hasta entonces no pueden asistir. eli queda con $ 300 a favor.",
       );
-      expect(aplicacion.grupo().reglas().garantia()).toBe(1500);
+      expect(aplicacion.grupo().reglas().desentrada()).toBe(1500);
     });
 
     it("cambiar las reglas avisa a quiénes les alcanzan los créditos para cubrir lo que les falta", async () => {
@@ -1045,14 +1045,14 @@ describe("VistaPrincipal", () => {
       ]);
     });
 
-    it("la garantía se explica junto a su valor vigente, y no otra vez en el campo para cambiarla", async () => {
+    it("la desentrada se explica junto a su valor vigente, y no otra vez en el campo para cambiarla", async () => {
       montar(almacenamientosConAnaInactiva());
 
       await navegarA("Reglas");
 
-      expect(textoDe(elementoConTexto("dt", "Desentrada").nextElementSibling!)).toContain(explicacionDeLaGarantia);
+      expect(textoDe(elementoConTexto("dt", "Desentrada").nextElementSibling!)).toContain(explicacionDeLaDesentrada);
       const cambio = elementoConTexto("summary", "Cambiar reglas").parentElement!;
-      expect(textoDe(etiqueta("¿De cuánto es la desentrada?", cambio)!)).not.toContain(explicacionDeLaGarantia);
+      expect(textoDe(etiqueta("¿De cuánto es la desentrada?", cambio)!)).not.toContain(explicacionDeLaDesentrada);
     });
   });
 
