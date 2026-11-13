@@ -506,9 +506,9 @@ describe("VistaPrincipal", () => {
       expect(buscar("p", (texto) => texto.startsWith("Desentradas por completar"), document)).toBeUndefined();
       expect(hayElementoConTexto("p", "Créditos por entregar $ 2.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
-        ["beto", "inactivo", "$ 334", "Entregar crédito"],
-        ["carla", "participando", "$ 833", "Entregar crédito"],
-        ["dani", "participando", "$ 833", "Entregar crédito"],
+        ["beto", "inactivo", "+$ 334", "Entregar crédito"],
+        ["carla", "participando", "+$ 833", "Entregar crédito"],
+        ["dani", "participando", "+$ 833", "Entregar crédito"],
       ]);
     });
 
@@ -522,17 +522,12 @@ describe("VistaPrincipal", () => {
       expect(hayElementoConTexto("p", "Desentradas por completar $ 1.002")).toBe(true);
       expect(hayElementoConTexto("p", "Créditos por entregar $ 1.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
-        [
-          "beto",
-          "desentrada incompleta (la cubre su crédito)",
-          "falta $ 334, $ 334",
-          "Cobrar desentrada Entregar crédito",
-        ],
-        ["carla", "desentrada incompleta", "falta $ 334, $ 333", "Cobrar desentrada Entregar crédito"],
-        ["dani", "desentrada incompleta", "falta $ 334, $ 333", "Cobrar desentrada Entregar crédito"],
+        ["beto", "desentrada incompleta (la cubre su crédito)", "−$ 334, +$ 334", "Cobrar desentrada Entregar crédito"],
+        ["carla", "desentrada incompleta", "−$ 334, +$ 333", "Cobrar desentrada Entregar crédito"],
+        ["dani", "desentrada incompleta", "−$ 334, +$ 333", "Cobrar desentrada Entregar crédito"],
       ]);
-      expect(textoDe(fila("beto").querySelector(".falta")!)).toBe("falta $ 334");
-      expect(textoDe(fila("beto").querySelector(".credito")!)).toBe("$ 334");
+      expect(textoDe(fila("beto").querySelector(".falta")!)).toBe("−$ 334");
+      expect(textoDe(fila("beto").querySelector(".credito")!)).toBe("+$ 334");
     });
 
     it("cobrar la garantía desde la caja cobra lo que falta para completarla", async () => {
@@ -551,10 +546,10 @@ describe("VistaPrincipal", () => {
       expect(textosDeLasCeldas(fila("carla"))).toEqual([
         "carla",
         "desentrada incompleta",
-        "falta $ 500",
+        "−$ 500",
         "Cobrar desentrada",
       ]);
-      expect(textoDe(fila("carla").querySelector(".falta")!)).toBe("falta $ 500");
+      expect(textoDe(fila("carla").querySelector(".falta")!)).toBe("−$ 500");
     });
 
     it("a quien tiene un crédito que cubre lo que le falta de la garantía se la completa con él, sin cobrarle nada", async () => {
@@ -570,7 +565,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Usar su crédito", dialogoAbierto());
 
       expect(aplicacion.grupo().puedeAsistir(aplicacion.grupo().participante("beto")!)).toBe(true);
-      expect(textosDeLasCeldas(fila("beto"))).toEqual(["beto", "participando", "$ 34", "Entregar crédito"]);
+      expect(textosDeLasCeldas(fila("beto"))).toEqual(["beto", "participando", "+$ 34", "Entregar crédito"]);
     });
 
     it("entregar el crédito entrega los créditos pendientes y queda entre los movimientos como plata que sale de la caja, y los cobros como plata que entra", async () => {
