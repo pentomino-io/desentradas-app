@@ -48,6 +48,8 @@ export class Cobro implements Movimiento {
   }
 
   describir(): string {
-    return this._motivo === "ingreso" ? `el ingreso de ${this._persona}` : `el cobro de la garantía a ${this._persona}`;
+    return this._motivo === "ingreso"
+      ? `el ingreso de ${this._persona}`
+      : `el cobro de la desentrada a ${this._persona}`;
   }
 }

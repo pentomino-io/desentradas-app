@@ -5,7 +5,7 @@ export class Reglas {
 
   constructor(rigeDesde: Date, toleranciaDeFaltas: number, garantia: number) {
     if (toleranciaDeFaltas < 1) throw new Error("La tolerancia de faltas debe ser al menos 1");
-    if (garantia <= 0) throw new Error("La garantía debe ser positiva");
+    if (garantia <= 0) throw new Error("La desentrada debe ser positiva");
 
     this._rigeDesde = rigeDesde;
     this._toleranciaDeFaltas = toleranciaDeFaltas;

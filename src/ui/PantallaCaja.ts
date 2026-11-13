@@ -30,7 +30,7 @@ export class PantallaCaja {
     const porCompletar = this._entorno.grupo().totalPorCobrar();
     const porEntregar = this._entorno.grupo().caja().totalPendiente();
     return [
-      porCompletar > 0 && crear("p", { class: "falta" }, `Garantías por completar ${monto(porCompletar)}`),
+      porCompletar > 0 && crear("p", { class: "falta" }, `Desentradas por completar ${monto(porCompletar)}`),
       porEntregar > 0 && crear("p", { class: "credito" }, `Créditos por entregar ${monto(porEntregar)}`),
     ];
   }
@@ -52,7 +52,7 @@ export class PantallaCaja {
       crear(
         "span",
         {},
-        saldo.debe() && boton("Cobrar garantía", () => this._abrirCobro(saldo.nombre())),
+        saldo.debe() && boton("Cobrar desentrada", () => this._abrirCobro(saldo.nombre())),
         saldo.debe() && saldo.tieneAFavor() && " ",
         saldo.tieneAFavor() && boton("Entregar crédito", () => this._abrirEntrega(saldo)),
       ),

@@ -12,7 +12,7 @@ describe("Reglas", () => {
   it("la garantía debe ser positiva", () => {
     expect(() => {
       new Reglas(dia(1), 2, 0);
-    }).toThrow("La garantía debe ser positiva");
+    }).toThrow("La desentrada debe ser positiva");
   });
 
   it("conocen desde cuándo rigen, la tolerancia de faltas y la garantía", () => {

@@ -53,7 +53,7 @@ const cambiosEntre = (vigentes: Reglas, nuevas: Reglas): string[] => {
     cambios.push(`La tolerancia de faltas pasa de ${vigentes.toleranciaDeFaltas()} a ${nuevas.toleranciaDeFaltas()}.`);
   }
   if (nuevas.garantia() !== vigentes.garantia()) {
-    cambios.push(`La garantía pasa de ${monto(vigentes.garantia())} a ${monto(nuevas.garantia())}.`);
+    cambios.push(`La desentrada pasa de ${monto(vigentes.garantia())} a ${monto(nuevas.garantia())}.`);
   }
   return cambios;
 };
@@ -92,7 +92,7 @@ export class PantallaReglas {
       {},
       crear("dt", {}, "Tolerancia de faltas"),
       crear("dd", {}, tolerancia, crear("small", {}, explicacionDeLaTolerancia)),
-      crear("dt", {}, "Garantía"),
+      crear("dt", {}, "Desentrada"),
       crear("dd", {}, garantia, crear("small", {}, explicacionDeLaGarantia)),
     );
   }
@@ -121,7 +121,7 @@ export class PantallaReglas {
     const anteriores = this._entorno.grupo().reglasAnteriores().toReversed();
     return tabla(
       undefined,
-      ["Desde", "Tolerancia", "Garantía"],
+      ["Desde", "Tolerancia", "Desentrada"],
       anteriores.map((reglas) => fila(fechaYHora(reglas.rigeDesde()), ...valoresDe(reglas))),
     );
   }

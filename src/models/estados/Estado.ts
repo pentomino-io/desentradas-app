@@ -2,7 +2,7 @@ import { TransicionInvalida } from "./TransicionInvalida.ts";
 
 export type NombreDeEstado = "participando" | "inactivo";
 
-export type Situacion = NombreDeEstado | "garantía incompleta";
+export type Situacion = NombreDeEstado | "desentrada incompleta";
 
 export abstract class Estado {
   abstract nombre(): NombreDeEstado;
@@ -16,11 +16,11 @@ export abstract class Estado {
   abstract falto(): Estado;
 
   cobrarGarantia(_garantia: number): Estado {
-    throw new TransicionInvalida("cobrar la garantía", this.nombre());
+    throw new TransicionInvalida("cobrar la desentrada", this.nombre());
   }
 
   bajarGarantia(_garantia: number): Estado {
-    throw new TransicionInvalida("bajar la garantía", this.nombre());
+    throw new TransicionInvalida("bajar la desentrada", this.nombre());
   }
 
   garantia(): number {

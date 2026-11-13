@@ -5,7 +5,7 @@ import { numeroDe } from "./dom.ts";
 export const explicacionDeLaGarantia = "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
 
 export const campoDeGarantia = (garantia = 1, ayuda?: string): HTMLElement =>
-  campoNumerico("¿Cuánto se paga de garantía?", "garantia", garantia, 1, ayuda);
+  campoNumerico("¿De cuánto es la desentrada?", "garantia", garantia, 1, ayuda);
 
 export const camposDeReglas = (reglas: Reglas): HTMLElement[] => [
   campoNumerico(
