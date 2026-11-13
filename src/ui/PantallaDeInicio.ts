@@ -4,7 +4,7 @@ import { alerta, botonDeEnvio, crear, formulario, numeroDe, valorDe } from "./do
 import type { Entorno } from "./Entorno.ts";
 import { explicacionDeLaCargaFallida } from "./ExplicacionDeErrores.ts";
 import { Importacion } from "./Importacion.ts";
-import { campoDeGarantia, explicacionDeLaDesentrada } from "./FormularioDeReglas.ts";
+import { campoDeDesentrada, explicacionDeLaDesentrada } from "./FormularioDeReglas.ts";
 
 const toleranciaDeFaltasInicial = 3;
 
@@ -28,7 +28,7 @@ export class PantallaDeInicio {
       formulario(
         (completado) => this._crearGrupo(completado),
         campoDeTexto("Nombre del grupo", "nombreDelGrupo", creacionAnterior?.nombreDelGrupo() ?? ""),
-        campoDeGarantia(creacionAnterior?.reglas().desentrada(), explicacionDeLaDesentrada),
+        campoDeDesentrada(creacionAnterior?.reglas().desentrada(), explicacionDeLaDesentrada),
         this._errores,
         botonDeEnvio("Crear"),
       ),
