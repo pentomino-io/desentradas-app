@@ -30,6 +30,7 @@ export class PantallaCaja {
     const porCompletar = this._entorno.grupo().totalPorCobrar();
     const porEntregar = this._entorno.grupo().caja().totalPendiente();
     return [
+      crear("p", {}, `En caja ${monto(this._entorno.grupo().caja().totalEnCaja())}`),
       porCompletar > 0 && crear("p", { class: "falta" }, `Desentradas por completar ${monto(porCompletar)}`),
       porEntregar > 0 && crear("p", { class: "credito" }, `Créditos por entregar ${monto(porEntregar)}`),
     ];

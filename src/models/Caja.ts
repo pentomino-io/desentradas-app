@@ -54,6 +54,13 @@ export class Caja {
     return this._cobrosYRepartos().findLast((movimiento) => movimiento.fecha() > fecha);
   }
 
+  totalEnCaja(): number {
+    return this.movimientos().reduce(
+      (total, movimiento) => (movimiento.tipo() === "cobro" ? total + movimiento.monto() : total - movimiento.monto()),
+      0,
+    );
+  }
+
   creditosPendientesDe(nombre: string): readonly Credito[] {
     return this._creditosPendientes.filter((credito) => credito.acreedor() === nombre);
   }

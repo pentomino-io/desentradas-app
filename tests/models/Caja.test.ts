@@ -119,6 +119,18 @@ describe("Caja", () => {
       ]);
     });
 
+    it("el total en caja es lo cobrado en efectivo menos lo entregado", () => {
+      const caja = nuevaCaja();
+      caja.cobrar(Cobro.alIngresar("ana", 1000, dia(1)));
+      caja.distribuir(garantiaPerdida({ persona: "ana", monto: 1000, numero: 2, asistentes: ["beto", "carla"] }));
+      caja.cobrar(Cobro.deGarantia("beto", 800, dia(3), 500));
+      caja.repartir("carla", dia(4));
+
+      const total = caja.totalEnCaja();
+
+      expect(total).toBe(800);
+    });
+
     it("un cobro no genera créditos", () => {
       const caja = nuevaCaja();
 

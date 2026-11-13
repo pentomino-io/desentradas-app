@@ -477,6 +477,25 @@ describe("VistaPrincipal", () => {
   });
 
   describe("pantalla de caja", () => {
+    it.each([
+      {
+        caso: "lo cobrado menos lo entregado",
+        almacenamientos: almacenamientosConAnaInactiva,
+        primerosTotales: ["En caja $ 4.000", "Créditos por entregar $ 1.000"],
+      },
+      { caso: "nada", almacenamientos: almacenamientosConGrupoSinParticipantes, primerosTotales: ["En caja $ 0"] },
+    ])(
+      "la caja muestra antes que los demás totales cuánta plata hay en caja: $caso",
+      async ({ almacenamientos, primerosTotales }) => {
+        montar(almacenamientos());
+
+        await navegarA("Caja");
+
+        const parrafos = [...document.querySelectorAll("section > p")].map(textoDe);
+        expect(parrafos.slice(0, primerosTotales.length)).toEqual(primerosTotales);
+      },
+    );
+
     it("los saldos muestran por nombre el crédito de cada uno, y el total de créditos por entregar sin un total de garantías por completar en cero", async () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
       nuevaAplicacion(almacenamientos).registrarEncuentro(dia(3), ["dani", "carla"], ["ana", "beto"]); // carla y dani reciben 500
