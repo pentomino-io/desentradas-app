@@ -66,7 +66,7 @@ export class PantallaCaja {
       {},
       saldo.debe() && crear("span", { class: "falta" }, `falta ${monto(saldo.porCobrar())}`),
       saldo.debe() && saldo.tieneAFavor() && ", ",
-      saldo.tieneAFavor() && crear("span", { class: "credito" }, `crédito ${monto(saldo.aFavor())}`),
+      saldo.tieneAFavor() && crear("span", { class: "credito" }, monto(saldo.aFavor())),
     );
   }
 
