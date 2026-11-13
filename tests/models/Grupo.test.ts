@@ -166,7 +166,7 @@ describe("Grupo", () => {
       return grupo;
     };
 
-    it("son lo que pasa a deber quien queda con la garantía incompleta y lo que queda a favor de quien tiene un excedente, sin nada para los inactivos", () => {
+    it("son lo que pasa a deber quien queda con la garantía incompleta y el excedente de quien tiene de más, sin los inactivos", () => {
       const grupo = grupoConGarantiasDistintas();
 
       const efectos = grupo.efectosDeCambiarLasReglas(reglas({ rigeDesde: dia(4), desentrada: 1100 }));
@@ -218,19 +218,6 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo)).toEqual([]);
       expect(grupo.posiblesAsistentes()).toEqual([ana]);
       expect(grupo.puedeAsistir(ana)).toBe(false);
-    });
-
-    it("a quien ingresó se le cobra en efectivo la desentrada vigente como garantía para que participe", () => {
-      const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
-      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
-      const ana = grupo.ingresar("ana", dia(3));
-
-      grupo.cobrarGarantia("ana", dia(4));
-
-      expect(ana.estado()).toBe("participando");
-      expect(ana.garantia()).toBe(1500);
-      expect(grupo.puedeAsistir(ana)).toBe(true);
-      expect(movimientosDe(grupo)).toEqual([[dia(4), "ana", 1500]]);
     });
 
     it("no hay participante para quien no ingresó", () => {
@@ -317,7 +304,20 @@ describe("Grupo", () => {
   });
 
   describe("cobro de garantía", () => {
-    it("cobrarle la garantía a un inactivo la cobra en efectivo según las reglas actuales y lo vuelve a hacer participar", () => {
+    it("a quien acaba de ingresar se le cobra en efectivo toda la desentrada vigente y queda participando", () => {
+      const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
+      grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
+      const ana = grupo.ingresar("ana", dia(3));
+
+      grupo.cobrarGarantia("ana", dia(4));
+
+      expect(ana.estado()).toBe("participando");
+      expect(ana.garantia()).toBe(1500);
+      expect(grupo.puedeAsistir(ana)).toBe(true);
+      expect(movimientosDe(grupo)).toEqual([[dia(4), "ana", 1500]]);
+    });
+
+    it("cobrarle la garantía a un inactivo la cobra en efectivo según las reglas vigentes y lo vuelve a hacer participar", () => {
       const { grupo, ana } = grupoConAnaInactiva();
       grupo.cambiarReglas(reglas({ rigeDesde: dia(3), desentrada: 2000 }));
 
@@ -328,7 +328,7 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo).at(-1)).toEqual([dia(4), "ana", 2000]);
     });
 
-    it("cobrarle la garantía a quien la tiene incompleta cobra en efectivo la diferencia y lo habilita para asistir", () => {
+    it("cobrarle la garantía a quien la tiene incompleta cobra en efectivo la diferencia y ya puede asistir", () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
       grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
@@ -340,7 +340,7 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo).at(-1)).toEqual([dia(3), "ana", 500]);
     });
 
-    it("cobrarle la garantía a quien tiene saldo a favor lo usa para cubrir parte, y cobra en efectivo sólo el resto", () => {
+    it("cobrarle la garantía a un inactivo con saldo a favor usa el saldo para cubrir parte y cobra en efectivo sólo el resto", () => {
       const { grupo, ana } = grupoConAnaInactivaConSaldoAFavor();
 
       grupo.cobrarGarantia("ana", dia(4));
@@ -372,7 +372,7 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo).filter(([, persona]) => persona === "ana")).toEqual([[dia(1), "ana", 1000]]);
     });
 
-    it("el saldo a favor cubre la garantía por cobrar si alcanza para toda, y no hay nada que cubrir a quien no le falta nada", () => {
+    it("el saldo a favor cubre la garantía por cobrar sólo si alcanza para toda; no hay nada que cubrir a quien la tiene completa", () => {
       const { grupo, ana, beto, carla } = grupoConAnaInactivaConSaldoAFavor(); // ana tiene $ 500 a favor, beto $ 1.500, carla nada
       grupo.cambiarReglas(reglas({ rigeDesde: dia(4), desentrada: 400 }));
 
@@ -381,7 +381,7 @@ describe("Grupo", () => {
       expect(cubiertas).toEqual([true, false, false]);
     });
 
-    it("la garantía por cobrar es lo que falta para llegar a la desentrada actual: toda para un inactivo, la diferencia para quien la tiene incompleta, nada para quien la tiene completa", () => {
+    it("la garantía por cobrar es lo que falta para llegar a la desentrada vigente: toda para un inactivo, la diferencia para quien la tiene incompleta, nada para quien la tiene completa", () => {
       const { grupo, ana, beto, carla } = grupoConGarantiaInactivaIncompletaYCompleta();
 
       const porCobrar = [ana, beto, carla].map((participante) => grupo.garantiaPorCobrarA(participante));
@@ -653,7 +653,7 @@ describe("Grupo", () => {
   });
 
   describe("posibles asistentes", () => {
-    it("son quienes participan y los inactivos que no superan la tolerancia de faltas", () => {
+    it("son quienes están participando y los inactivos que no superan la tolerancia de faltas", () => {
       const grupo = nuevoGrupo(reglas({ toleranciaDeFaltas: 1 }));
       ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
       const beto = ingresarCobrandoLaGarantia(grupo, "beto", dia(1));
@@ -695,7 +695,7 @@ describe("Grupo", () => {
       expect(quienesYaNoParticipan).toEqual([ana]);
     });
 
-    it("la tolerancia de faltas es la de las reglas actuales", () => {
+    it("la tolerancia de faltas es la de las reglas vigentes", () => {
       const grupo = nuevoGrupo(reglas({ toleranciaDeFaltas: 1 }));
       const ana = ingresarCobrandoLaGarantia(grupo, "ana", dia(1));
       const beto = ingresarCobrandoLaGarantia(grupo, "beto", dia(1));

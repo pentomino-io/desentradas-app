@@ -71,7 +71,7 @@ describe("Bitacora", () => {
       expect(bitacora.grupo().participante("beto")).toBeUndefined();
     });
 
-    it("deshacer devuelve el comando deshecho", () => {
+    it("deshacer informa qué comando se deshizo", () => {
       const bitacora = bitacoraConGrupo();
       bitacora.ejecutar(new Ingresar("ana", dia(1)));
       const ingresarABeto = new Ingresar("beto", dia(1));
@@ -106,7 +106,7 @@ describe("Bitacora", () => {
       expect(bitacora.puedeDeshacer()).toBe(true);
     });
 
-    it("deshacer reconstruye el grupo desde cero, así que las referencias anteriores dejan de valer", () => {
+    it("después de deshacer, el grupo y sus participantes son objetos nuevos", () => {
       const bitacora = bitacoraConGrupo();
       bitacora.ejecutar(new Ingresar("ana", dia(1)));
       bitacora.ejecutar(new Ingresar("beto", dia(1)));
@@ -165,7 +165,7 @@ describe("Bitacora", () => {
       });
     });
 
-    it("no se puede leer una bitácora de una versión anterior", () => {
+    it("no se puede leer una bitácora de una versión anterior a la 2", () => {
       expect(() => {
         Bitacora.desdeJson({ version: 1, comandos: [] }, desempate);
       }).toThrow(VersionAnterior);

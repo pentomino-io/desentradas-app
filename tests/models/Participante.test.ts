@@ -32,7 +32,7 @@ describe("Participante", () => {
       expect(ana.puedeAsistir(1500)).toBe(true);
     });
 
-    it("quien acaba de ingresar está recién ingresado", () => {
+    it("quien todavía no faltó ni se le cobró la garantía desde que ingresó está recién ingresado", () => {
       const ana = new Participante("ana", dia(1));
 
       const recien = ana.recienIngresado();
@@ -104,7 +104,7 @@ describe("Participante", () => {
       expect(ana.historial().at(-1)?.disparador()).toBe("cambio de reglas");
     });
 
-    it("bajarle la garantía a una que no es menor que la suya no la cambia", () => {
+    it("bajarle la garantía a un monto mayor que el que tiene no la cambia", () => {
       const ana = nuevoParticipante(1000);
 
       const excedente = ana.bajarGarantia(dia(2), 1500);
@@ -130,7 +130,7 @@ describe("Participante", () => {
       expect(porCobrar).toBe(0);
     });
 
-    it("con la garantía incompleta, cobrarle la garantía se la completa y lo habilita para asistir", () => {
+    it("con la garantía incompleta, cobrarle la garantía se la completa y puede asistir", () => {
       const ana = nuevoParticipante(1000);
 
       ana.cobrarGarantia(dia(2), 1500);
@@ -151,7 +151,7 @@ describe("Participante", () => {
   });
 
   describe("inactivo", () => {
-    it("no está habilitado para asistir", () => {
+    it("no puede asistir", () => {
       const ana = inactivo();
 
       expect(ana.puedeAsistir(1000)).toBe(false);
@@ -223,7 +223,7 @@ describe("Participante", () => {
       );
     });
 
-    it("la fecha del último cambio es la de la última transición del historial", () => {
+    it("la fecha del último cambio es la del cambio de estado más reciente", () => {
       const ana = nuevoParticipante();
       ana.voy(nuevoEncuentro({ numero: 2 }));
 

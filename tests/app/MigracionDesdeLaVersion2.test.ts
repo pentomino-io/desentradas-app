@@ -32,13 +32,13 @@ describe("Migración desde la versión 2", () => {
     expect(comandos).toEqual([{ tipo: "cambiar reglas", reglas: { ...reglas, desentrada: 1500 } }]);
   });
 
-  it("repartir pasa a llamarse pagar", () => {
+  it("«repartir» pasa a llamarse «pagar»", () => {
     const comandos = migrarComando({ tipo: "repartir", nombre: "beto", fecha: dia(3).toISOString() });
 
     expect(comandos).toEqual([{ tipo: "pagar", nombre: "beto", fecha: dia(3).toISOString() }]);
   });
 
-  it("ingresar pasa a ser ingresar y cobrar la garantía en la misma fecha", () => {
+  it("«ingresar» de la versión 2 pasa a ser «ingresar» y «cobrar garantía» en la misma fecha", () => {
     const comandos = migrarComando({ tipo: "ingresar", nombre: "ana", fecha: dia(1).toISOString() });
 
     expect(comandos).toEqual([
@@ -71,7 +71,7 @@ describe("Migración desde la versión 2", () => {
     ).toEqual([[dia(3), 1500]]);
   });
 
-  it("ingresar sin pagar pasa a llamarse ingresar", () => {
+  it("«ingresar sin pagar» pasa a llamarse «ingresar»", () => {
     const comandos = migrarComando({ tipo: "ingresar sin pagar", nombre: "ana", fecha: dia(1).toISOString() });
 
     expect(comandos).toEqual([{ tipo: "ingresar", nombre: "ana", fecha: dia(1).toISOString() }]);

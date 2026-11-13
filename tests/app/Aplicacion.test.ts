@@ -80,7 +80,7 @@ describe("Aplicacion", () => {
       expect(aplicacion.errorDeCarga()?.message).toBe("Formato inválido: el texto no es JSON");
     });
 
-    it("si lo guardado es de una versión anterior, se empieza sin grupo y se recuerda que es de esa versión", () => {
+    it("si lo guardado es de una versión anterior a la 2, se empieza sin grupo y se recuerda que es de esa versión", () => {
       const almacenamiento = new AlmacenamientoEnMemoria();
       almacenamiento.guardar(JSON.stringify({ version: 1, comandos: [] }));
 
@@ -127,7 +127,7 @@ describe("Aplicacion", () => {
       expect(aplicacion.grupo().participante("ana")).toBeDefined();
     });
 
-    it("registrar encuentro registra el encuentro con sus asistentes en el grupo", () => {
+    it("registrar encuentro lo agrega al grupo y deja inactivos a los ausentes", () => {
       const aplicacion = aplicacionConAnaYBeto();
 
       aplicacion.registrarEncuentro(dia(2), ["beto"], ["ana"]);
@@ -145,7 +145,7 @@ describe("Aplicacion", () => {
       expect(aplicacion.grupo().caja().pagos()).toHaveLength(1);
     });
 
-    it("cobrar la garantía vuelve a hacer participar a un inactivo", () => {
+    it("cobrar la garantía vuelve a hacer participar a quien superó la tolerancia", () => {
       const aplicacion = aplicacionConAnaFueraDeLaTolerancia();
 
       aplicacion.cobrarGarantia("ana", dia(5));
@@ -186,7 +186,7 @@ describe("Aplicacion", () => {
       expect(aplicacion.comandos().at(-1)).toBeInstanceOf(CobrarGarantia);
     });
 
-    it("deshacer devuelve el comando deshecho", () => {
+    it("deshacer informa qué comando se deshizo", () => {
       const aplicacion = aplicacionConAnaInactiva();
       const ultimo = aplicacion.comandos().at(-1);
 
@@ -221,7 +221,7 @@ describe("Aplicacion", () => {
       expect(aplicacion.creacionDeshecha()).toBeUndefined();
     });
 
-    it("deshacer un comando sobre el grupo que no registra un encuentro no empieza una planilla de asistencia ni deja una creación deshecha", () => {
+    it("deshacer un comando que no es la creación del grupo ni un registro de encuentro no empieza una planilla de asistencia ni deja una creación deshecha", () => {
       const aplicacion = aplicacionConGrupo();
       aplicacion.ingresar("ana", dia(1));
 
@@ -314,7 +314,7 @@ describe("Aplicacion", () => {
       expect(almacenamientos.planilla.leer()).toBeUndefined();
     });
 
-    it("registrar el encuentro según la planilla lo registra en la fecha dada con los asistentes de la planilla, y la descarta", () => {
+    it("registrar el encuentro según la planilla usa la fecha dada y los marcados como asistentes, y descarta la planilla", () => {
       const aplicacion = aplicacionConAnaYBeto();
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
 
@@ -326,7 +326,7 @@ describe("Aplicacion", () => {
       expect(aplicacion.tienePlanillaDeAsistencia()).toBe(false);
     });
 
-    it("registrar el encuentro según la planilla recuerda a los posibles asistentes sin marcar como ausentes", () => {
+    it("registrar el encuentro según la planilla toma como ausentes a los posibles asistentes sin marcar", () => {
       const aplicacion = aplicacionConGrupo();
       ["ana", "beto", "carla"].forEach((nombre) => aplicacion.ingresar(nombre, dia(1)));
       aplicacion.cobrarGarantia("beto", dia(1));
@@ -348,7 +348,7 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asistentes()).toEqual(["beto"]);
     });
 
-    it("cobrarle la garantía a un inactivo como asistente lo deja participando y marcado como presente", () => {
+    it("cobrarle la garantía como asistente a quien superó la tolerancia lo deja participando y marcado como presente", () => {
       const aplicacion = aplicacionConAnaFueraDeLaTolerancia();
       aplicacion.empezarPlanillaDeAsistencia();
 
@@ -359,7 +359,7 @@ describe("Aplicacion", () => {
       expect(aplicacion.planillaDeAsistencia().asiste("ana")).toBe(true);
     });
 
-    it("quedan ausentes los posibles asistentes sin marcar, incluso un inactivo que no superó la tolerancia", () => {
+    it("los ausentes de la planilla son los posibles asistentes sin marcar, incluso un inactivo que no superó la tolerancia", () => {
       const aplicacion = aplicacionConAnaInactiva();
       aplicacion.empezarPlanillaDeAsistencia().marcarComoPresente("beto");
 

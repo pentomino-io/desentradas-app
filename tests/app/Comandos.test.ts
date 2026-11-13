@@ -101,7 +101,7 @@ describe("ComandoSobreElGrupo", () => {
     expect(grupo.participante("ana")).toBeDefined();
   });
 
-  it("no tiene asistencia salvo que sea el registro de un encuentro", () => {
+  it("sólo el registro de un encuentro recuerda una asistencia", () => {
     const comando = new Ingresar("ana", dia(1));
 
     const asistencia = comando.asistencia();
@@ -272,7 +272,7 @@ describe("Comandos en JSON", () => {
     }).toThrow('Formato inválido: comando desconocido "expulsar"');
   });
 
-  it("no se puede leer un comando cuyo tipo es el nombre de algo que todo objeto hereda", () => {
+  it("no se puede leer un comando cuyo tipo es una propiedad heredada, como «constructor»", () => {
     expect(() => {
       comandoDesdeJson({ tipo: "constructor" });
     }).toThrow('Formato inválido: comando desconocido "constructor"');

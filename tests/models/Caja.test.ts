@@ -9,7 +9,7 @@ const saldosAFavorDe = (caja: Caja, nombres: string[]) => nombres.map((nombre) =
 
 describe("Caja", () => {
   describe("reparto de desentradas", () => {
-    it("una desentrada se reparte en partes iguales entre los asistentes al encuentro faltado", () => {
+    it("una desentrada se reparte en partes iguales entre los asistentes al encuentro en que se perdió", () => {
       const caja = nuevaCaja();
 
       caja.repartir(desentrada({ monto: 1000, asistentes: ["beto", "carla"] }));
@@ -46,7 +46,7 @@ describe("Caja", () => {
   });
 
   describe("saldos a favor", () => {
-    it("un crédito acreditado suma al saldo a favor de su acreedor", () => {
+    it("cada crédito pendiente suma al saldo a favor de su acreedor", () => {
       const caja = nuevaCaja();
 
       caja.acreditar(nuevoCredito({ acreedor: "beto", monto: 200 }));
@@ -54,7 +54,7 @@ describe("Caja", () => {
       expect(caja.saldoAFavorDe("beto")).toBe(200);
     });
 
-    it("conoce el saldo a favor de cada uno y el total de saldos a favor", () => {
+    it("el saldo a favor de cada uno suma lo que recibió de cada desentrada, y el total suma los de todos", () => {
       const caja = nuevaCaja();
       caja.repartir(desentrada({ monto: 1000 }));
       caja.repartir(desentrada({ monto: 300, asistentes: ["beto"] }));
@@ -63,6 +63,14 @@ describe("Caja", () => {
       expect(caja.saldoAFavorDe("carla")).toBe(500);
       expect(caja.saldoAFavorDe("dario")).toBe(0);
       expect(caja.totalDeSaldosAFavor()).toBe(1300);
+    });
+
+    it("cobrarle a alguien no le genera saldo a favor", () => {
+      const caja = nuevaCaja();
+
+      caja.cobrar(Cobro.deGarantia("ana", 1000, dia(1), 0));
+
+      expect(caja.totalDeSaldosAFavor()).toBe(0);
     });
   });
 
@@ -123,14 +131,6 @@ describe("Caja", () => {
       const total = caja.totalEnCaja();
 
       expect(total).toBe(800);
-    });
-
-    it("un cobro no deja saldo a favor", () => {
-      const caja = nuevaCaja();
-
-      caja.cobrar(Cobro.deGarantia("ana", 1000, dia(1), 0));
-
-      expect(caja.totalDeSaldosAFavor()).toBe(0);
     });
   });
 });

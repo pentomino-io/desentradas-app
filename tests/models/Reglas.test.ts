@@ -23,7 +23,7 @@ describe("Reglas", () => {
     expect(reglas.desentrada()).toBe(1000);
   });
 
-  it("se supera la tolerancia con más faltas que las toleradas", () => {
+  it("con tantas faltas como la tolerancia todavía no se la supera; con una más, sí", () => {
     const lasReglas = reglas({ toleranciaDeFaltas: 2 });
 
     expect(lasReglas.superaLaTolerancia(2)).toBe(false);
