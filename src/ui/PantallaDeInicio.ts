@@ -1,9 +1,12 @@
 import { campoDeTexto } from "./Campos.ts";
-import { alerta, botonDeEnvio, crear, formulario, valorDe } from "./dom.ts";
+import { Reglas } from "../models/Reglas.ts";
+import { alerta, botonDeEnvio, crear, formulario, numeroDe, valorDe } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 import { explicacionDeLaCargaFallida } from "./ExplicacionDeErrores.ts";
 import { Importacion } from "./Importacion.ts";
-import { camposDeReglas, explicacionDeLaGarantia, reglasDesde } from "./FormularioDeReglas.ts";
+import { campoDeGarantia, explicacionDeLaGarantia } from "./FormularioDeReglas.ts";
+
+const toleranciaDeFaltasInicial = 3;
 
 export class PantallaDeInicio {
   private _entorno: Entorno;
@@ -25,7 +28,7 @@ export class PantallaDeInicio {
       formulario(
         (completado) => this._crearGrupo(completado),
         campoDeTexto("Nombre del grupo", "nombreDelGrupo", creacionAnterior?.nombreDelGrupo() ?? ""),
-        ...camposDeReglas(creacionAnterior?.reglas(), explicacionDeLaGarantia),
+        campoDeGarantia(creacionAnterior?.reglas().garantia(), explicacionDeLaGarantia),
         this._errores,
         botonDeEnvio("Crear"),
       ),
@@ -40,7 +43,7 @@ export class PantallaDeInicio {
 
   private _crearGrupo(formulario: HTMLFormElement): void {
     this._entorno.intentarYRefrescar(() => {
-      const reglas = reglasDesde(formulario, this._entorno.ahora());
+      const reglas = new Reglas(this._entorno.ahora(), toleranciaDeFaltasInicial, numeroDe(formulario, "garantia"));
       this._entorno.aplicacion().crearGrupo(valorDe(formulario, "nombreDelGrupo"), reglas);
     }, this._errores);
   }

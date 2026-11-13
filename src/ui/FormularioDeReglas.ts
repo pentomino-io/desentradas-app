@@ -4,14 +4,17 @@ import { numeroDe } from "./dom.ts";
 
 export const explicacionDeLaGarantia = "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
 
-export const camposDeReglas = (reglas?: Reglas, ayudaDeLaGarantia?: string): HTMLElement[] => [
+export const campoDeGarantia = (garantia = 1, ayuda?: string): HTMLElement =>
+  campoNumerico("¿Cuánto se paga de garantía?", "garantia", garantia, 1, ayuda);
+
+export const camposDeReglas = (reglas: Reglas): HTMLElement[] => [
   campoNumerico(
     "¿Hasta cuántas faltas seguidas sigue apareciendo alguien en la lista de asistencia?",
     "toleranciaDeFaltas",
-    reglas?.toleranciaDeFaltas() ?? 1,
+    reglas.toleranciaDeFaltas(),
     1,
   ),
-  campoNumerico("¿Cuánto se paga de garantía?", "garantia", reglas?.garantia() ?? 1, 1, ayudaDeLaGarantia),
+  campoDeGarantia(reglas.garantia()),
 ];
 
 export const reglasDesde = (formulario: HTMLFormElement, rigeDesde: Date): Reglas =>

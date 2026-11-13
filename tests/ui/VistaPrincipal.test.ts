@@ -216,19 +216,19 @@ describe("VistaPrincipal", () => {
   });
 
   describe("formulario inicial", () => {
-    it("crear el grupo, con reglas que rigen desde el momento de crearlo, muestra su nombre y las pantallas", () => {
+    it("crear el grupo, con reglas que rigen desde el momento de crearlo y toleran 3 faltas seguidas, muestra su nombre y las pantallas", () => {
       const { aplicacion } = montar();
       expect(document.querySelector("nav")).toBeNull();
       expect(pantallaActual()).toBe("Crear el grupo");
       expect(hayEtiqueta("Rige desde")).toBe(false);
+      expect(hayEtiqueta("¿Hasta cuántas faltas seguidas")).toBe(false);
 
       completar("Nombre del grupo", "Fútbol de los jueves");
-      completar("¿Hasta cuántas faltas seguidas sigue apareciendo alguien en la lista de asistencia?", "2");
       completar("¿Cuánto se paga de garantía?", "1000");
       hacerClic("Crear");
 
       expect(aplicacion.grupo().nombre()).toBe("Fútbol de los jueves");
-      expect(aplicacion.grupo().reglas().toleranciaDeFaltas()).toBe(2);
+      expect(aplicacion.grupo().reglas().toleranciaDeFaltas()).toBe(3);
       expect(aplicacion.grupo().reglas().garantia()).toBe(1000);
       expect(aplicacion.grupo().reglas().rigeDesde()).toEqual(ahora());
       expect(textoDe(document.querySelector("h1")!)).toBe("Fútbol de los jueves");
@@ -301,9 +301,6 @@ describe("VistaPrincipal", () => {
       expect(aplicacion.tieneGrupo()).toBe(false);
       expect(pantallaActual()).toBe("Crear el grupo");
       expect(campo("Nombre del grupo").value).toBe("Fútbol de los jueves");
-      expect(campo("¿Hasta cuántas faltas seguidas sigue apareciendo alguien en la lista de asistencia?").value).toBe(
-        "3",
-      );
       expect(campo("¿Cuánto se paga de garantía?").value).toBe("1500");
     });
   });
