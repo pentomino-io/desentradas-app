@@ -223,7 +223,6 @@ describe("VistaPrincipal", () => {
       expect(document.querySelector("nav")).toBeNull();
       expect(pantallaActual()).toBe("Crear el grupo");
       expect(hayEtiqueta("Rige desde")).toBe(false);
-      expect(hayEtiqueta("¿Hasta cuántas faltas seguidas")).toBe(false);
 
       completar("Nombre del grupo", "Fútbol de los jueves");
       completar("¿De cuánto es la desentrada?", "1000");
@@ -242,6 +241,14 @@ describe("VistaPrincipal", () => {
         "Reglas",
       ]);
       expect(pantallaActual()).toBe("Encuentro");
+    });
+
+    it("el formulario inicial no pregunta la tolerancia de faltas", () => {
+      montar();
+
+      const preguntaLaTolerancia = hayEtiqueta("¿Hasta cuántas faltas seguidas");
+
+      expect(preguntaLaTolerancia).toBe(false);
     });
 
     it("el formulario inicial explica la garantía en su campo", () => {
