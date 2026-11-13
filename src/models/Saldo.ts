@@ -1,4 +1,4 @@
-// El saldo a favor cubre lo que falta de la garantía recién al cobrarla; antes, cada uno puede llevárselo.
+// El saldo a favor cubre lo que falta de la garantía recién al cobrarla; hasta entonces, se le puede pagar.
 export class Saldo {
   private _nombre: string;
   private _porCobrar: number;
