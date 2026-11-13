@@ -335,7 +335,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Cobrar $ 1.000", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
-      expect(filasDeQuienesParticipan()).toContainEqual(["ana", "participando"]);
+      expect(filasDeQuienesParticipan()).toContainEqual(["ana", "participando", ""]);
       expect(hayDesplegable("Quienes ya no participan")).toBe(false);
     });
 
@@ -349,7 +349,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Registrar", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("ana")?.garantia()).toBe(1000);
-      expect(filasDeQuienesParticipan()).toEqual([["ana", "participando"]]);
+      expect(filasDeQuienesParticipan()).toEqual([["ana", "participando", ""]]);
     });
 
     it("registrar un participante sin que pague la garantía lo deja inactivo y sin faltas entre quienes participan, sin cobrarle nada", async () => {
@@ -360,8 +360,23 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Registrar", dialogoAbierto());
 
-      expect(filasDeQuienesParticipan()).toEqual([["ana", "inactivo (0/2 faltas)"]]);
+      expect(filasDeQuienesParticipan()).toEqual([["ana", "inactivo (0/2 faltas)", "Cobrar garantía"]]);
       expect(aplicacion.grupo().caja().movimientos()).toEqual([]);
+    });
+
+    it("a quien se registró sin pagar se le puede cobrar la garantía desde su fila, y pasa a participar", async () => {
+      const almacenamientos = almacenamientosConGrupoSinParticipantes();
+      nuevaAplicacion(almacenamientos).ingresarSinPagar("ana", dia(1));
+      const { aplicacion } = montar(almacenamientos);
+      await navegarA("Participantes");
+
+      hacerClic("Cobrar garantía", fila("ana"));
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Cobrar la garantía a ana");
+      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 1.000 de garantía. Puede empezar a asistir.");
+      hacerClic("Cobrar $ 1.000", dialogoAbierto());
+
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("participando");
+      expect(filasDeQuienesParticipan()).toEqual([["ana", "participando", ""]]);
     });
 
     it("registrar sin que pague la garantía el nombre de quien ya no participa pide otro nombre", async () => {
@@ -463,7 +478,7 @@ describe("VistaPrincipal", () => {
 
       await navegarA("Participantes");
 
-      expect(filasDeQuienesParticipan()).toContainEqual(["beto", "garantía incompleta"]);
+      expect(filasDeQuienesParticipan()).toContainEqual(["beto", "garantía incompleta", ""]);
     });
 
     it("registrar el nombre de alguien con la garantía incompleta pide otro nombre", async () => {
@@ -495,7 +510,7 @@ describe("VistaPrincipal", () => {
 
       await navegarA("Participantes");
 
-      expect(textosDeLasCeldas(fila("ana"))).toEqual(["ana", "inactivo (1/3 faltas)"]);
+      expect(textosDeLasCeldas(fila("ana"))).toEqual(["ana", "inactivo (1/3 faltas)", ""]);
     });
 
     it("sin nadie que participe dice que todavía no hay nadie", async () => {

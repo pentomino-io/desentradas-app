@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TransicionInvalida } from "../../src/models/estados/TransicionInvalida.ts";
+import { Participante } from "../../src/models/Participante.ts";
 import { dia, nuevoEncuentro, nuevoParticipante } from "./factories.ts";
 
 const inactivo = () => {
@@ -166,6 +167,42 @@ describe("Participante", () => {
       expect(ana.estado()).toBe("participando");
       expect(ana.garantia()).toBe(2000);
       expect(ana.faltas()).toBe(0);
+    });
+  });
+
+  describe("ingreso sin pagar", () => {
+    it("quien ingresó sin pagar está recién ingresado sin pagar", () => {
+      const ana = Participante.sinPagar("ana", dia(1));
+
+      const recien = ana.recienIngresoSinPagar();
+
+      expect(recien).toBe(true);
+    });
+
+    it.each([
+      { caso: "ingresó pagando", ana: () => nuevoParticipante() },
+      {
+        caso: "ingresó sin pagar y faltó",
+        ana: () => {
+          const ana = Participante.sinPagar("ana", dia(1));
+          ana.falto(nuevoEncuentro({ numero: 2 }));
+          return ana;
+        },
+      },
+      {
+        caso: "ingresó sin pagar y después pagó",
+        ana: () => {
+          const ana = Participante.sinPagar("ana", dia(1));
+          ana.cobrarGarantia(dia(2), 1000);
+          return ana;
+        },
+      },
+    ])("quien $caso no está recién ingresado sin pagar", ({ ana }) => {
+      const participante = ana();
+
+      const recien = participante.recienIngresoSinPagar();
+
+      expect(recien).toBe(false);
     });
   });
 

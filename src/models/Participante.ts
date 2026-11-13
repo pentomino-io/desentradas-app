@@ -80,6 +80,10 @@ export class Participante {
     return this._estado().garantia();
   }
 
+  recienIngresoSinPagar(): boolean {
+    return this._historial.length === 1 && this.estado() === "inactivo";
+  }
+
   faltas(): number {
     return this._estado().faltas();
   }

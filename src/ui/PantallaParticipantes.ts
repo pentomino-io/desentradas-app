@@ -1,6 +1,6 @@
 import type { Grupo } from "../models/Grupo.ts";
 import type { Participante } from "../models/Participante.ts";
-import { DialogoDeCobroDeGarantia } from "./DialogoDeCobroDeGarantia.ts";
+import { DialogoDeCobroDeGarantia, tituloDelCobroDeLaGarantiaA } from "./DialogoDeCobroDeGarantia.ts";
 import { DialogoDeRegistro } from "./DialogoDeRegistro.ts";
 import { boton, crear, desplegable, fila, type Hijo, tabla, tablaOAviso } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
@@ -44,7 +44,7 @@ export class PantallaParticipantes {
     const activos = grupo.posiblesAsistentes().toSorted(porAtencionYNombre(grupo));
     return tablaOAviso(
       "Quienes participan",
-      ["Nombre", "Estado"],
+      ["Nombre", "Estado", ""],
       activos.map((participante) => this._filaDeActivo(participante)),
       "Todavía no hay nadie",
       boton("Registrar participante", () => this._abrirIngreso()),
@@ -52,7 +52,11 @@ export class PantallaParticipantes {
   }
 
   private _filaDeActivo(participante: Participante): HTMLTableRowElement {
-    return fila(participante.nombre(), estadoDe(this._entorno.grupo(), participante));
+    return fila(
+      participante.nombre(),
+      estadoDe(this._entorno.grupo(), participante),
+      participante.recienIngresoSinPagar() && boton("Cobrar garantía", () => this._abrirCobro(participante)),
+    );
   }
 
   private _tablaDeQuienesYaNoParticipan(): HTMLElement | undefined {
@@ -83,6 +87,15 @@ export class PantallaParticipantes {
     )
       .conIngresoSinPagar((nombre) => this._entorno.aplicacion().ingresarSinPagar(nombre, this._entorno.ahora()))
       .abrir();
+  }
+
+  private _abrirCobro(participante: Participante): void {
+    new DialogoDeCobroDeGarantia(
+      this._entorno,
+      participante,
+      tituloDelCobroDeLaGarantiaA(participante.nombre()),
+      "Puede empezar a asistir.",
+    ).abrir();
   }
 
   private _abrirReingreso(participante: Participante): void {
