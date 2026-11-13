@@ -32,7 +32,7 @@ export class PantallaCaja {
     return [
       crear("p", {}, `En caja ${monto(this._entorno.grupo().caja().totalEnCaja())}`),
       porCompletar > 0 && crear("p", { class: "falta" }, `Garantías por completar ${monto(porCompletar)}`),
-      porEntregar > 0 && crear("p", { class: "credito" }, `Créditos por entregar ${monto(porEntregar)}`),
+      porEntregar > 0 && crear("p", { class: "credito" }, `Créditos por pagar ${monto(porEntregar)}`),
     ];
   }
 
@@ -41,7 +41,7 @@ export class PantallaCaja {
       "Saldos",
       ["Nombre", "Estado", "Saldo", ""],
       saldos.map((saldo) => this._filaDeSaldo(saldo)),
-      "No hay nada para cobrar ni entregar",
+      "No hay nada para cobrar ni pagar",
     );
   }
 
@@ -55,7 +55,7 @@ export class PantallaCaja {
         {},
         saldo.debe() && boton("Cobrar garantía", () => this._abrirCobro(saldo.nombre())),
         saldo.debe() && saldo.tieneAFavor() && " ",
-        saldo.tieneAFavor() && boton("Entregar crédito", () => this._abrirEntrega(saldo)),
+        saldo.tieneAFavor() && boton("Pagar crédito", () => this._abrirEntrega(saldo)),
       ),
     );
   }
@@ -109,9 +109,9 @@ export class PantallaCaja {
     const nombre = saldo.nombre();
     new Dialogo(
       this._entorno,
-      `Entregar crédito a ${nombre}`,
-      [crear("p", {}, `Hay que entregarle ${monto(saldo.aFavor())}.`)],
-      "Entregar",
+      `Pagar crédito a ${nombre}`,
+      [crear("p", {}, `Hay que pagarle ${monto(saldo.aFavor())}.`)],
+      "Pagar",
       () => this._entorno.aplicacion().repartir(nombre, this._entorno.ahora()),
     ).abrir();
   }

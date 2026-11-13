@@ -513,7 +513,7 @@ describe("VistaPrincipal", () => {
       {
         caso: "lo cobrado menos lo entregado",
         almacenamientos: almacenamientosConAnaInactiva,
-        primerosTotales: ["En caja $ 4.000", "Créditos por entregar $ 1.000"],
+        primerosTotales: ["En caja $ 4.000", "Créditos por pagar $ 1.000"],
       },
       { caso: "nada", almacenamientos: almacenamientosConGrupoSinParticipantes, primerosTotales: ["En caja $ 0"] },
     ])(
@@ -536,11 +536,11 @@ describe("VistaPrincipal", () => {
       await navegarA("Caja");
 
       expect(buscar("p", (texto) => texto.startsWith("Garantías por completar"), document)).toBeUndefined();
-      expect(hayElementoConTexto("p", "Créditos por entregar $ 2.000")).toBe(true);
+      expect(hayElementoConTexto("p", "Créditos por pagar $ 2.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
-        ["beto", "inactivo", "+$ 334", "Entregar crédito"],
-        ["carla", "participando", "+$ 833", "Entregar crédito"],
-        ["dani", "participando", "+$ 833", "Entregar crédito"],
+        ["beto", "inactivo", "+$ 334", "Pagar crédito"],
+        ["carla", "participando", "+$ 833", "Pagar crédito"],
+        ["dani", "participando", "+$ 833", "Pagar crédito"],
       ]);
     });
 
@@ -552,11 +552,11 @@ describe("VistaPrincipal", () => {
       await navegarA("Caja");
 
       expect(hayElementoConTexto("p", "Garantías por completar $ 1.002")).toBe(true);
-      expect(hayElementoConTexto("p", "Créditos por entregar $ 1.000")).toBe(true);
+      expect(hayElementoConTexto("p", "Créditos por pagar $ 1.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
-        ["beto", "garantía incompleta (la cubre su crédito)", "−$ 334, +$ 334", "Cobrar garantía Entregar crédito"],
-        ["carla", "garantía incompleta", "−$ 334, +$ 333", "Cobrar garantía Entregar crédito"],
-        ["dani", "garantía incompleta", "−$ 334, +$ 333", "Cobrar garantía Entregar crédito"],
+        ["beto", "garantía incompleta (la cubre su crédito)", "−$ 334, +$ 334", "Cobrar garantía Pagar crédito"],
+        ["carla", "garantía incompleta", "−$ 334, +$ 333", "Cobrar garantía Pagar crédito"],
+        ["dani", "garantía incompleta", "−$ 334, +$ 333", "Cobrar garantía Pagar crédito"],
       ]);
       expect(textoDe(fila("beto").querySelector(".falta")!)).toBe("−$ 334");
       expect(textoDe(fila("beto").querySelector(".credito")!)).toBe("+$ 334");
@@ -592,17 +592,17 @@ describe("VistaPrincipal", () => {
       hacerClic("Usar su crédito", dialogoAbierto());
 
       expect(aplicacion.grupo().puedeAsistir(aplicacion.grupo().participante("beto")!)).toBe(true);
-      expect(textosDeLasCeldas(fila("beto"))).toEqual(["beto", "participando", "+$ 34", "Entregar crédito"]);
+      expect(textosDeLasCeldas(fila("beto"))).toEqual(["beto", "participando", "+$ 34", "Pagar crédito"]);
     });
 
     it("entregar el crédito entrega los créditos pendientes y queda entre los movimientos como plata que sale de la caja, y los cobros como plata que entra", async () => {
       const { aplicacion } = montar(almacenamientosConAnaInactiva()); // beto recibe 334
       await navegarA("Caja");
 
-      hacerClic("Entregar crédito", fila("beto"));
-      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Entregar crédito a beto");
-      expect(textoDe(dialogoAbierto())).toContain("Hay que entregarle $ 334.");
-      hacerClic("Entregar", dialogoAbierto());
+      hacerClic("Pagar crédito", fila("beto"));
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Pagar crédito a beto");
+      expect(textoDe(dialogoAbierto())).toContain("Hay que pagarle $ 334.");
+      hacerClic("Pagar", dialogoAbierto());
 
       expect(aplicacion.grupo().caja().montoPendienteDe("beto")).toBe(0);
       const movimientos = elementoConTexto("summary", "Movimientos").parentElement!;
@@ -619,7 +619,7 @@ describe("VistaPrincipal", () => {
 
       await navegarA("Caja");
 
-      expect(hayElementoConTexto("p", "No hay nada para cobrar ni entregar")).toBe(true);
+      expect(hayElementoConTexto("p", "No hay nada para cobrar ni pagar")).toBe(true);
       expect(document.querySelector("table")).toBeNull();
     });
   });
@@ -917,7 +917,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Empezar encuentro");
       casillaDeAsistencia("beto").click();
 
-      hacerClic("Entregar $ 334", fila("beto"));
+      hacerClic("Pagar $ 334", fila("beto"));
 
       expect(aplicacion.grupo().caja().montoPendienteDe("beto")).toBe(0);
     });

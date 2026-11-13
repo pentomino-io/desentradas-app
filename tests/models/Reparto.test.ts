@@ -25,7 +25,7 @@ describe("Reparto", () => {
 
     const descripcion = reparto.describir();
 
-    expect(descripcion).toBe("la entrega a beto");
+    expect(descripcion).toBe("el pago a beto");
   });
 
   it("no se puede repartir sin créditos", () => {

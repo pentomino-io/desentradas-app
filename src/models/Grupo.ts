@@ -75,7 +75,7 @@ export class Grupo {
   }
 
   repartir(nombre: string, fecha: Date): Reparto {
-    this._asertarQueNoEsAnteriorAlUltimoMovimiento("La entrega", fecha);
+    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El pago", fecha);
 
     return this._caja.repartir(nombre, fecha);
   }

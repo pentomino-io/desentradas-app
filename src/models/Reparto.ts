@@ -25,7 +25,7 @@ export class Reparto implements Movimiento {
   }
 
   describir(): string {
-    return `la entrega a ${this.acreedor()}`;
+    return `el pago a ${this.acreedor()}`;
   }
 
   creditos(): readonly Credito[] {

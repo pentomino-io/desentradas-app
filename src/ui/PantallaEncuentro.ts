@@ -102,7 +102,7 @@ export class PantallaEncuentro {
     if (!this._planillaDeAsistencia().asiste(nombre)) return false;
 
     const pendiente = this._entorno.grupo().caja().montoPendienteDe(nombre);
-    return pendiente > 0 && boton(`Entregar ${monto(pendiente)}`, () => this._entregar(nombre));
+    return pendiente > 0 && boton(`Pagar ${monto(pendiente)}`, () => this._entregar(nombre));
   }
 
   private _hayAsistentes(): boolean {

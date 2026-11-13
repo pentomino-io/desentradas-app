@@ -455,7 +455,7 @@ describe("Grupo", () => {
 
       expect(() => {
         grupo.cobrarGarantia("ana", dia(4));
-      }).toThrow("El cobro de la garantía no puede ser anterior a la entrega a beto");
+      }).toThrow("El cobro de la garantía no puede ser anterior al pago a beto");
       expect(ana.estado()).toBe("inactivo");
     });
   });
@@ -602,7 +602,7 @@ describe("Grupo", () => {
 
       expect(() => {
         grupo.registrarEncuentro(nuevoEncuentro({ numero: 4, asistentes: ["beto"] }));
-      }).toThrow("El encuentro no puede ser anterior a la entrega a beto");
+      }).toThrow("El encuentro no puede ser anterior al pago a beto");
       expect(grupo.encuentros()).toHaveLength(1);
     });
 
@@ -784,7 +784,7 @@ describe("Grupo", () => {
 
       expect(() => {
         grupo.repartir("beto", dia(4));
-      }).toThrow("La entrega no puede ser anterior al cobro de la garantía a ana");
+      }).toThrow("El pago no puede ser anterior al cobro de la garantía a ana");
       expect(grupo.caja().repartos()).toEqual([]);
     });
 
@@ -798,7 +798,7 @@ describe("Grupo", () => {
 
       expect(() => {
         grupo.repartir("carla", dia(4));
-      }).toThrow("La entrega no puede ser anterior a la entrega a beto");
+      }).toThrow("El pago no puede ser anterior al pago a beto");
       expect(grupo.caja().montoPendienteDe("carla")).toBe(500);
       expect(grupo.caja().repartos()).toEqual([repartoABeto]);
     });
@@ -809,7 +809,7 @@ describe("Grupo", () => {
 
       expect(() => {
         grupo.repartir("beto", dia(5));
-      }).toThrow("La entrega no puede ser anterior al último encuentro");
+      }).toThrow("El pago no puede ser anterior al último encuentro");
       expect(grupo.caja().repartos()).toEqual([]);
     });
   });
