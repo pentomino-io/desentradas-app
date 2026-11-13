@@ -339,7 +339,7 @@ describe("Descripción de los comandos", () => {
     const comando = new Repartir("beto", dia(4));
 
     expect(comando.fecha()).toEqual(dia(4));
-    expect(comando.describir()).toBe("Se le pagó su crédito a beto");
+    expect(comando.describir()).toBe("Se le pagó su saldo a favor a beto");
   });
 
   it("cambiar reglas lleva la fecha desde la que rigen las nuevas reglas y se describe como que se cambiaron las reglas, sin más datos", () => {

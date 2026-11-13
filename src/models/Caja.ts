@@ -33,7 +33,7 @@ export class Caja {
 
   repartir(nombre: string, fecha: Date): Reparto {
     const creditos = this.creditosPendientesDe(nombre);
-    if (creditos.length === 0) throw new Error(`${nombre} no tiene créditos pendientes`);
+    if (creditos.length === 0) throw new Error(`${nombre} no tiene saldo a favor`);
 
     this._creditosPendientes = this._creditosPendientes.filter((credito) => credito.acreedor() !== nombre);
     const reparto = new Reparto(fecha, creditos);

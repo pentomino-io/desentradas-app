@@ -22,11 +22,11 @@ const enumeracion = (nombres: readonly string[]): string => formatoDeEnumeracion
 const efecto = (nombres: readonly string[], cambio: CambioDeGarantia): string => {
   const varios = nombres.length > 1;
   if (cambio.monto() > 0) {
-    return `${enumeracion(nombres)} ${varios ? "reciben" : "recibe"} un crédito de ${monto(cambio.monto())}.`;
+    return `${enumeracion(nombres)} ${varios ? "quedan" : "queda"} con ${monto(cambio.monto())} a favor.`;
   }
 
   const deuda = `${enumeracion(nombres)} ${varios ? "deben" : "debe"} completar ${monto(-cambio.monto())}`;
-  const cobertura = varios ? ", que pueden cubrir con sus créditos" : ", que puede cubrir con su crédito";
+  const cobertura = varios ? ", que pueden cubrir con su saldo a favor" : ", que puede cubrir con su saldo a favor";
   const consecuencia = varios ? "hasta entonces no pueden asistir" : "hasta entonces no puede asistir";
   return `${deuda}${cambio.loCubrenSusCreditos() ? cobertura : ""}; ${consecuencia}.`;
 };

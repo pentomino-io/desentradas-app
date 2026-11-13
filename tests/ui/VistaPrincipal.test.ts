@@ -406,7 +406,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Registrar", dialogoAbierto());
 
       expect(textoDe(dialogoAbierto())).toContain(
-        "En ese caso, hay que cobrarle $ 500 en efectivo; los otros $ 500 de la garantía de $ 1.000 salen de su crédito.",
+        "En ese caso, hay que cobrarle $ 500 en efectivo; los otros $ 500 de la garantía de $ 1.000 salen de su saldo a favor.",
       );
     });
 
@@ -422,7 +422,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Registrar", dialogoAbierto());
 
       expect(textoDe(dialogoAbierto())).toContain(
-        "En ese caso, la garantía de $ 400 la cubre su crédito: no hay que cobrarle nada.",
+        "En ese caso, la garantía de $ 400 la cubre su saldo a favor: no hay que cobrarle nada.",
       );
     });
 
@@ -513,7 +513,7 @@ describe("VistaPrincipal", () => {
       {
         caso: "lo cobrado menos lo entregado",
         almacenamientos: almacenamientosConAnaInactiva,
-        primerosTotales: ["En caja $ 4.000", "Créditos por pagar $ 1.000"],
+        primerosTotales: ["En caja $ 4.000", "Saldos a favor por pagar $ 1.000"],
       },
       { caso: "nada", almacenamientos: almacenamientosConGrupoSinParticipantes, primerosTotales: ["En caja $ 0"] },
     ])(
@@ -536,11 +536,11 @@ describe("VistaPrincipal", () => {
       await navegarA("Caja");
 
       expect(buscar("p", (texto) => texto.startsWith("Garantías por completar"), document)).toBeUndefined();
-      expect(hayElementoConTexto("p", "Créditos por pagar $ 2.000")).toBe(true);
+      expect(hayElementoConTexto("p", "Saldos a favor por pagar $ 2.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
-        ["beto", "inactivo", "+$ 334", "Pagar crédito"],
-        ["carla", "participando", "+$ 833", "Pagar crédito"],
-        ["dani", "participando", "+$ 833", "Pagar crédito"],
+        ["beto", "inactivo", "+$ 334", "Pagar saldo a favor"],
+        ["carla", "participando", "+$ 833", "Pagar saldo a favor"],
+        ["dani", "participando", "+$ 833", "Pagar saldo a favor"],
       ]);
     });
 
@@ -552,11 +552,16 @@ describe("VistaPrincipal", () => {
       await navegarA("Caja");
 
       expect(hayElementoConTexto("p", "Garantías por completar $ 1.002")).toBe(true);
-      expect(hayElementoConTexto("p", "Créditos por pagar $ 1.000")).toBe(true);
+      expect(hayElementoConTexto("p", "Saldos a favor por pagar $ 1.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
-        ["beto", "garantía incompleta (la cubre su crédito)", "−$ 334, +$ 334", "Cobrar garantía Pagar crédito"],
-        ["carla", "garantía incompleta", "−$ 334, +$ 333", "Cobrar garantía Pagar crédito"],
-        ["dani", "garantía incompleta", "−$ 334, +$ 333", "Cobrar garantía Pagar crédito"],
+        [
+          "beto",
+          "garantía incompleta (la cubre su saldo a favor)",
+          "−$ 334, +$ 334",
+          "Cobrar garantía Pagar saldo a favor",
+        ],
+        ["carla", "garantía incompleta", "−$ 334, +$ 333", "Cobrar garantía Pagar saldo a favor"],
+        ["dani", "garantía incompleta", "−$ 334, +$ 333", "Cobrar garantía Pagar saldo a favor"],
       ]);
       expect(textoDe(fila("beto").querySelector(".falta")!)).toBe("−$ 334");
       expect(textoDe(fila("beto").querySelector(".credito")!)).toBe("+$ 334");
@@ -587,20 +592,20 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Cobrar garantía", fila("beto"));
       expect(textoDe(dialogoAbierto())).toContain(
-        "Le faltan $ 300 para completar la garantía de $ 1.300. Lo cubre su crédito: no hay que cobrarle nada.",
+        "Le faltan $ 300 para completar la garantía de $ 1.300. Lo cubre su saldo a favor: no hay que cobrarle nada.",
       );
-      hacerClic("Usar su crédito", dialogoAbierto());
+      hacerClic("Usar su saldo a favor", dialogoAbierto());
 
       expect(aplicacion.grupo().puedeAsistir(aplicacion.grupo().participante("beto")!)).toBe(true);
-      expect(textosDeLasCeldas(fila("beto"))).toEqual(["beto", "participando", "+$ 34", "Pagar crédito"]);
+      expect(textosDeLasCeldas(fila("beto"))).toEqual(["beto", "participando", "+$ 34", "Pagar saldo a favor"]);
     });
 
     it("entregar el crédito entrega los créditos pendientes y queda entre los movimientos como plata que sale de la caja, y los cobros como plata que entra", async () => {
       const { aplicacion } = montar(almacenamientosConAnaInactiva()); // beto recibe 334
       await navegarA("Caja");
 
-      hacerClic("Pagar crédito", fila("beto"));
-      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Pagar crédito a beto");
+      hacerClic("Pagar saldo a favor", fila("beto"));
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Pagar saldo a favor a beto");
       expect(textoDe(dialogoAbierto())).toContain("Hay que pagarle $ 334.");
       hacerClic("Pagar", dialogoAbierto());
 
@@ -872,7 +877,7 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Cobrar garantía y habilitar", fila("ana"));
       expect(textoDe(dialogoAbierto())).toContain(
-        "Hay que cobrarle $ 500 en efectivo; los otros $ 500 de la garantía de $ 1.000 salen de su crédito.",
+        "Hay que cobrarle $ 500 en efectivo; los otros $ 500 de la garantía de $ 1.000 salen de su saldo a favor.",
       );
       hacerClic("Cobrar $ 500", dialogoAbierto());
 
@@ -888,9 +893,9 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Cobrar garantía y habilitar", fila("ana"));
       expect(textoDe(dialogoAbierto())).toContain(
-        "La garantía de $ 400 la cubre su crédito: no hay que cobrarle nada.",
+        "La garantía de $ 400 la cubre su saldo a favor: no hay que cobrarle nada.",
       );
-      hacerClic("Usar su crédito", dialogoAbierto());
+      hacerClic("Usar su saldo a favor", dialogoAbierto());
 
       expect(aplicacion.grupo().caja().movimientos()).toHaveLength(3);
       expect(casillaDeAsistencia("ana").checked).toBe(true);
@@ -904,7 +909,7 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Cobrar garantía y habilitar", fila("beto"));
       expect(textoDe(dialogoAbierto())).toContain(
-        "Le faltan $ 500 para completar la garantía de $ 1.500. Hay que cobrarle $ 166 en efectivo; los otros $ 334 salen de su crédito.",
+        "Le faltan $ 500 para completar la garantía de $ 1.500. Hay que cobrarle $ 166 en efectivo; los otros $ 334 salen de su saldo a favor.",
       );
       hacerClic("Cobrar $ 166", dialogoAbierto());
 
@@ -959,7 +964,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Cambiar reglas");
 
       expect(textoDe(dialogoAbierto())).toContain(
-        "La desentrada pasa de $ 1.500 a $ 1.200. beto, carla y dani deben completar $ 200; hasta entonces no pueden asistir. eli recibe un crédito de $ 300.",
+        "La desentrada pasa de $ 1.500 a $ 1.200. beto, carla y dani deben completar $ 200; hasta entonces no pueden asistir. eli queda con $ 300 a favor.",
       );
       expect(aplicacion.grupo().reglas().garantia()).toBe(1500);
     });
@@ -972,7 +977,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Cambiar reglas");
 
       expect(textoDe(dialogoAbierto())).toContain(
-        "carla y dani deben completar $ 334; hasta entonces no pueden asistir. beto debe completar $ 334, que puede cubrir con su crédito; hasta entonces no puede asistir.",
+        "carla y dani deben completar $ 334; hasta entonces no pueden asistir. beto debe completar $ 334, que puede cubrir con su saldo a favor; hasta entonces no puede asistir.",
       );
     });
 

@@ -90,7 +90,7 @@ describe("Caja", () => {
 
       expect(() => {
         caja.repartir("beto", dia(5));
-      }).toThrow("beto no tiene créditos pendientes");
+      }).toThrow("beto no tiene saldo a favor");
       expect(caja.repartos()).toEqual([]);
     });
   });
