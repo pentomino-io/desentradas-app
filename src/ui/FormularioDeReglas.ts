@@ -3,7 +3,7 @@ import { campoNumerico } from "./Campos.ts";
 import { numeroDe } from "./dom.ts";
 
 export const explicacionDeLaDesentrada =
-  "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
+  "Se adelanta como garantía antes de asistir; quien falta la pierde y se reparte entre quienes fueron.";
 
 export const campoDeDesentrada = (desentrada = 1, ayuda?: string): HTMLElement =>
   campoNumerico("¿De cuánto es la desentrada?", "desentrada", desentrada, 1, ayuda);

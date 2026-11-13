@@ -7,7 +7,8 @@ import { VistaPrincipal } from "../../src/ui/VistaPrincipal.ts";
 import { ahora, aplicacionConGrupo, ingresarCobrandoLaGarantia, nuevaAplicacion } from "../app/factories.ts";
 import { dia, reglas } from "../models/factories.ts";
 
-const explicacionDeLaDesentrada = "Se paga al ingresar; quien falta la pierde y se reparte entre quienes fueron.";
+const explicacionDeLaDesentrada =
+  "Se adelanta como garantía antes de asistir; quien falta la pierde y se reparte entre quienes fueron.";
 
 const nuevosAlmacenamientos = () => ({
   bitacora: new AlmacenamientoEnMemoria(),
