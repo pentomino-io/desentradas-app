@@ -15,7 +15,7 @@ export class Participando extends Estado {
   }
 
   situacion(garantiaVigente: number): Situacion {
-    return this.saldoDeGarantia(garantiaVigente) < 0 ? "desentrada incompleta" : "participando";
+    return this.saldoDeGarantia(garantiaVigente) < 0 ? "garantía incompleta" : "participando";
   }
 
   override voy(): Estado {
@@ -31,7 +31,7 @@ export class Participando extends Estado {
   }
 
   override cobrarGarantia(garantia: number): Estado {
-    if (this._garantia >= garantia) throw new TransicionInvalida("cobrar la desentrada", "con la desentrada completa");
+    if (this._garantia >= garantia) throw new TransicionInvalida("cobrar la garantía", "con la garantía completa");
 
     return new Participando(garantia);
   }

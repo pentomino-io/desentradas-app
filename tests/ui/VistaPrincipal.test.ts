@@ -257,7 +257,7 @@ describe("VistaPrincipal", () => {
         caso: "son de una versión anterior",
         guardado: JSON.stringify({ version: 1, comandos: [] }),
         aviso:
-          "Los datos guardados son de una versión anterior de la app, sin desentradas, y no se pueden usar. Creá el grupo de nuevo.",
+          "Los datos guardados son de una versión anterior de la app, sin garantías, y no se pueden usar. Creá el grupo de nuevo.",
       },
       {
         caso: "no se pueden leer",
@@ -330,7 +330,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Reingresar", fila("ana"));
       expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Reingresar a ana");
       expect(textoDe(dialogoAbierto())).toContain(
-        "Hay que cobrarle $ 1.000 de desentrada. Vuelve a la lista de asistencia.",
+        "Hay que cobrarle $ 1.000 de garantía. Vuelve a la lista de asistencia.",
       );
       hacerClic("Cobrar $ 1.000", dialogoAbierto());
 
@@ -387,7 +387,7 @@ describe("VistaPrincipal", () => {
 
       hacerClic("Registrar", dialogoAbierto());
       expect(textoDe(dialogoAbierto())).toContain(
-        "Ya hay alguien con el nombre ana. ¿Es la misma persona? En ese caso, hay que cobrarle $ 1.000 de desentrada.",
+        "Ya hay alguien con el nombre ana. ¿Es la misma persona? En ese caso, hay que cobrarle $ 1.000 de garantía.",
       );
       hacerClic("Sí", dialogoAbierto());
 
@@ -406,7 +406,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Registrar", dialogoAbierto());
 
       expect(textoDe(dialogoAbierto())).toContain(
-        "En ese caso, hay que cobrarle $ 500 en efectivo; los otros $ 500 de la desentrada de $ 1.000 salen de su crédito.",
+        "En ese caso, hay que cobrarle $ 500 en efectivo; los otros $ 500 de la garantía de $ 1.000 salen de su crédito.",
       );
     });
 
@@ -422,7 +422,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Registrar", dialogoAbierto());
 
       expect(textoDe(dialogoAbierto())).toContain(
-        "En ese caso, la desentrada de $ 400 la cubre su crédito: no hay que cobrarle nada.",
+        "En ese caso, la garantía de $ 400 la cubre su crédito: no hay que cobrarle nada.",
       );
     });
 
@@ -463,7 +463,7 @@ describe("VistaPrincipal", () => {
 
       await navegarA("Participantes");
 
-      expect(filasDeQuienesParticipan()).toContainEqual(["beto", "desentrada incompleta"]);
+      expect(filasDeQuienesParticipan()).toContainEqual(["beto", "garantía incompleta"]);
     });
 
     it("registrar el nombre de alguien con la garantía incompleta pide otro nombre", async () => {
@@ -535,7 +535,7 @@ describe("VistaPrincipal", () => {
 
       await navegarA("Caja");
 
-      expect(buscar("p", (texto) => texto.startsWith("Desentradas por completar"), document)).toBeUndefined();
+      expect(buscar("p", (texto) => texto.startsWith("Garantías por completar"), document)).toBeUndefined();
       expect(hayElementoConTexto("p", "Créditos por entregar $ 2.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
         ["beto", "inactivo", "+$ 334", "Entregar crédito"],
@@ -551,12 +551,12 @@ describe("VistaPrincipal", () => {
 
       await navegarA("Caja");
 
-      expect(hayElementoConTexto("p", "Desentradas por completar $ 1.002")).toBe(true);
+      expect(hayElementoConTexto("p", "Garantías por completar $ 1.002")).toBe(true);
       expect(hayElementoConTexto("p", "Créditos por entregar $ 1.000")).toBe(true);
       expect(filasDe(elementoConTexto("caption", "Saldos").parentElement!)).toEqual([
-        ["beto", "desentrada incompleta (la cubre su crédito)", "−$ 334, +$ 334", "Cobrar desentrada Entregar crédito"],
-        ["carla", "desentrada incompleta", "−$ 334, +$ 333", "Cobrar desentrada Entregar crédito"],
-        ["dani", "desentrada incompleta", "−$ 334, +$ 333", "Cobrar desentrada Entregar crédito"],
+        ["beto", "garantía incompleta (la cubre su crédito)", "−$ 334, +$ 334", "Cobrar garantía Entregar crédito"],
+        ["carla", "garantía incompleta", "−$ 334, +$ 333", "Cobrar garantía Entregar crédito"],
+        ["dani", "garantía incompleta", "−$ 334, +$ 333", "Cobrar garantía Entregar crédito"],
       ]);
       expect(textoDe(fila("beto").querySelector(".falta")!)).toBe("−$ 334");
       expect(textoDe(fila("beto").querySelector(".credito")!)).toBe("+$ 334");
@@ -566,21 +566,16 @@ describe("VistaPrincipal", () => {
       const { aplicacion } = montar(almacenamientosConGarantiasIncompletas());
       await navegarA("Caja");
 
-      hacerClic("Cobrar desentrada", fila("beto"));
-      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Cobrar la desentrada a beto");
+      hacerClic("Cobrar garantía", fila("beto"));
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Cobrar la garantía a beto");
       expect(textoDe(dialogoAbierto())).toContain(
-        "Hay que cobrarle $ 500 para completar la desentrada de $ 1.500. Puede volver a asistir.",
+        "Hay que cobrarle $ 500 para completar la garantía de $ 1.500. Puede volver a asistir.",
       );
       hacerClic("Cobrar $ 500", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("beto")?.garantia()).toBe(1500);
-      expect(hayElementoConTexto("p", "Desentradas por completar $ 1.000")).toBe(true);
-      expect(textosDeLasCeldas(fila("carla"))).toEqual([
-        "carla",
-        "desentrada incompleta",
-        "−$ 500",
-        "Cobrar desentrada",
-      ]);
+      expect(hayElementoConTexto("p", "Garantías por completar $ 1.000")).toBe(true);
+      expect(textosDeLasCeldas(fila("carla"))).toEqual(["carla", "garantía incompleta", "−$ 500", "Cobrar garantía"]);
       expect(textoDe(fila("carla").querySelector(".falta")!)).toBe("−$ 500");
     });
 
@@ -590,9 +585,9 @@ describe("VistaPrincipal", () => {
       const { aplicacion } = montar(almacenamientos);
       await navegarA("Caja");
 
-      hacerClic("Cobrar desentrada", fila("beto"));
+      hacerClic("Cobrar garantía", fila("beto"));
       expect(textoDe(dialogoAbierto())).toContain(
-        "Le faltan $ 300 para completar la desentrada de $ 1.300. Lo cubre su crédito: no hay que cobrarle nada.",
+        "Le faltan $ 300 para completar la garantía de $ 1.300. Lo cubre su crédito: no hay que cobrarle nada.",
       );
       hacerClic("Usar su crédito", dialogoAbierto());
 
@@ -658,8 +653,8 @@ describe("VistaPrincipal", () => {
       casillaDeAsistencia("beto").click();
       casillaDeAsistencia("carla").click();
       expect(casillaDeAsistencia("ana").disabled).toBe(true);
-      hacerClic("Cobrar desentrada y habilitar", fila("ana"));
-      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 1.000 de desentrada.");
+      hacerClic("Cobrar garantía y habilitar", fila("ana"));
+      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 1.000 de garantía.");
       hacerClic("Cobrar $ 1.000", dialogoAbierto());
       expect(casillaDeAsistencia("ana").disabled).toBe(false);
       expect(casillaDeAsistencia("ana").checked).toBe(true);
@@ -806,7 +801,7 @@ describe("VistaPrincipal", () => {
         "",
         "ana",
         "inactivo (1/2 faltas)",
-        "Cobrar desentrada y habilitar",
+        "Cobrar garantía y habilitar",
       ]);
     });
 
@@ -833,7 +828,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Registrar", dialogoAbierto());
 
       expect(textoDe(dialogoAbierto().querySelector("[role=alert]")!)).toBe(
-        "beto ya está en la lista de asistencia: completá su desentrada ahí. Si es otra persona, escribí otro nombre.",
+        "beto ya está en la lista de asistencia: completá su garantía ahí. Si es otra persona, escribí otro nombre.",
       );
     });
 
@@ -846,7 +841,7 @@ describe("VistaPrincipal", () => {
       hacerClic("Registrar", dialogoAbierto());
 
       expect(textoDe(dialogoAbierto())).toContain(
-        "Ya hay alguien con el nombre ana. ¿Es la misma persona? En ese caso, hay que cobrarle $ 1.000 de desentrada.",
+        "Ya hay alguien con el nombre ana. ¿Es la misma persona? En ese caso, hay que cobrarle $ 1.000 de garantía.",
       );
     });
 
@@ -854,10 +849,10 @@ describe("VistaPrincipal", () => {
       const { aplicacion } = montar(almacenamientosConGarantiasIncompletas());
       hacerClic("Empezar encuentro");
 
-      hacerClic("Cobrar desentrada y habilitar", fila("beto"));
-      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Cobrar la desentrada a beto");
+      hacerClic("Cobrar garantía y habilitar", fila("beto"));
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Cobrar la garantía a beto");
       expect(textoDe(dialogoAbierto())).toContain(
-        "Hay que cobrarle $ 500 para completar la desentrada de $ 1.500. Queda presente en este encuentro.",
+        "Hay que cobrarle $ 500 para completar la garantía de $ 1.500. Queda presente en este encuentro.",
       );
       hacerClic("Cobrar $ 500", dialogoAbierto());
 
@@ -866,8 +861,8 @@ describe("VistaPrincipal", () => {
       expect(textosDeLasCeldas(fila("carla"))).toEqual([
         "",
         "carla",
-        "desentrada incompleta",
-        "Cobrar desentrada y habilitar",
+        "garantía incompleta",
+        "Cobrar garantía y habilitar",
       ]);
     });
 
@@ -875,9 +870,9 @@ describe("VistaPrincipal", () => {
       const { aplicacion } = montar(almacenamientosConAnaInactivaConCreditos());
       hacerClic("Empezar encuentro");
 
-      hacerClic("Cobrar desentrada y habilitar", fila("ana"));
+      hacerClic("Cobrar garantía y habilitar", fila("ana"));
       expect(textoDe(dialogoAbierto())).toContain(
-        "Hay que cobrarle $ 500 en efectivo; los otros $ 500 de la desentrada de $ 1.000 salen de su crédito.",
+        "Hay que cobrarle $ 500 en efectivo; los otros $ 500 de la garantía de $ 1.000 salen de su crédito.",
       );
       hacerClic("Cobrar $ 500", dialogoAbierto());
 
@@ -891,9 +886,9 @@ describe("VistaPrincipal", () => {
       const { aplicacion } = montar(almacenamientos);
       hacerClic("Empezar encuentro");
 
-      hacerClic("Cobrar desentrada y habilitar", fila("ana"));
+      hacerClic("Cobrar garantía y habilitar", fila("ana"));
       expect(textoDe(dialogoAbierto())).toContain(
-        "La desentrada de $ 400 la cubre su crédito: no hay que cobrarle nada.",
+        "La garantía de $ 400 la cubre su crédito: no hay que cobrarle nada.",
       );
       hacerClic("Usar su crédito", dialogoAbierto());
 
@@ -907,9 +902,9 @@ describe("VistaPrincipal", () => {
       const { aplicacion } = montar(almacenamientos);
       hacerClic("Empezar encuentro");
 
-      hacerClic("Cobrar desentrada y habilitar", fila("beto"));
+      hacerClic("Cobrar garantía y habilitar", fila("beto"));
       expect(textoDe(dialogoAbierto())).toContain(
-        "Le faltan $ 500 para completar la desentrada de $ 1.500. Hay que cobrarle $ 166 en efectivo; los otros $ 334 salen de su crédito.",
+        "Le faltan $ 500 para completar la garantía de $ 1.500. Hay que cobrarle $ 166 en efectivo; los otros $ 334 salen de su crédito.",
       );
       hacerClic("Cobrar $ 166", dialogoAbierto());
 
@@ -1184,7 +1179,7 @@ describe("VistaPrincipal", () => {
         caso: "anterior",
         version: 1,
         explicacion:
-          "Esta copia de seguridad es de una versión anterior de la app, sin desentradas, y no se puede importar. No se cambió nada.",
+          "Esta copia de seguridad es de una versión anterior de la app, sin garantías, y no se puede importar. No se cambió nada.",
       },
       {
         caso: "más nueva",

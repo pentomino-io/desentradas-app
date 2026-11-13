@@ -33,7 +33,7 @@ describe("Participante", () => {
 
       const situacion = ana.situacion(1500);
 
-      expect(situacion).toBe("desentrada incompleta");
+      expect(situacion).toBe("garantía incompleta");
     });
 
     it("ir a un encuentro lo mantiene participando con la misma garantía", () => {

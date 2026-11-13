@@ -98,7 +98,7 @@ export class PantallaEncuentro {
   private _accionDe(participante: Participante): HTMLElement | false {
     const nombre = participante.nombre();
     if (!this._entorno.grupo().puedeAsistir(participante))
-      return boton("Cobrar desentrada y habilitar", () => this._abrirCobro(participante));
+      return boton("Cobrar garantía y habilitar", () => this._abrirCobro(participante));
     if (!this._planillaDeAsistencia().asiste(nombre)) return false;
 
     const pendiente = this._entorno.grupo().caja().montoPendienteDe(nombre);
@@ -157,7 +157,7 @@ export class PantallaEncuentro {
 
   private _pedidoDeIrALaListaPor(participante: Participante): string {
     const participando = this._entorno.grupo().situacionDe(participante) === "participando";
-    const accion = participando ? "marcala" : "completá su desentrada";
+    const accion = participando ? "marcala" : "completá su garantía";
     return `${participante.nombre()} ya está en la lista de asistencia: ${accion} ahí. Si es otra persona, escribí otro nombre.`;
   }
 

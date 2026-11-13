@@ -151,7 +151,7 @@ describe("Ingresar", () => {
 });
 
 describe("IngresarSinPagar", () => {
-  it("deja a la persona en el grupo sin cobrarle la desentrada", () => {
+  it("deja a la persona en el grupo sin cobrarle la garantía", () => {
     const grupo = nuevoGrupo();
     const comando = new IngresarSinPagar("ana", dia(1));
 
@@ -197,7 +197,7 @@ describe("CobrarGarantia", () => {
     const descripcion = comando.describir();
     const json = comando.aJson();
 
-    expect(descripcion).toBe("Se cobró la desentrada a ana");
+    expect(descripcion).toBe("Se cobró la garantía a ana");
     expect(json).toEqual({ tipo: "cobrar garantía", nombre: "ana", fecha: dia(3).toISOString() });
   });
 });
@@ -325,7 +325,7 @@ describe("Descripción de los comandos", () => {
     const comando = new CobrarGarantia("ana", dia(3));
 
     expect(comando.fecha()).toEqual(dia(3));
-    expect(comando.describir()).toBe("Se cobró la desentrada a ana");
+    expect(comando.describir()).toBe("Se cobró la garantía a ana");
   });
 
   it("registrar encuentro lleva la fecha del encuentro y se describe como un encuentro con cuántos vinieron de los posibles asistentes", () => {

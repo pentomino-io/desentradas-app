@@ -66,7 +66,7 @@ export class Grupo {
 
   cobrarGarantia(nombre: string, fecha: Date): void {
     const participante = this._participanteLlamado(nombre.trim());
-    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cobro de la desentrada", fecha);
+    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El cobro de la garantía", fecha);
 
     const monto = this.garantiaPorCobrarA(participante);
     const deCreditos = this.creditosParaLaGarantiaDe(participante);

@@ -32,7 +32,7 @@ describe("Cobro", () => {
 
     const descripcion = cobro.describir();
 
-    expect(descripcion).toBe("el cobro de la desentrada a ana");
+    expect(descripcion).toBe("el cobro de la garantía a ana");
   });
 
   it("el monto de un cobro debe ser positivo", () => {

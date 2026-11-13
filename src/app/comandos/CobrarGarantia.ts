@@ -13,7 +13,7 @@ export class CobrarGarantia extends ComandoSobreUnaPersona {
   }
 
   describir(): string {
-    return `Se cobró la desentrada a ${this._nombre}`;
+    return `Se cobró la garantía a ${this._nombre}`;
   }
 
   aJson(): ComandoJson {

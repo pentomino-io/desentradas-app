@@ -144,7 +144,7 @@ describe("Grupo", () => {
 
       grupo.cambiarReglas(reglas({ rigeDesde: dia(3), garantia: 1500 }));
 
-      expect(grupo.situacionDe(beto)).toBe("desentrada incompleta");
+      expect(grupo.situacionDe(beto)).toBe("garantía incompleta");
       expect(grupo.garantiaPorCobrarA(beto)).toBe(500);
       expect(grupo.caja().montoPendienteDe("beto")).toBe(1000);
     });
@@ -239,7 +239,7 @@ describe("Grupo", () => {
       expect(grupo.puedeAsistir(ana)).toBe(false);
     });
 
-    it("quien ingresó sin pagar puede pagar la desentrada para participar", () => {
+    it("quien ingresó sin pagar puede pagar la garantía para participar", () => {
       const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
       const ana = grupo.ingresarSinPagar("ana", dia(1));
 
@@ -444,7 +444,7 @@ describe("Grupo", () => {
 
       expect(() => {
         grupo.cobrarGarantia("ana", dia(1));
-      }).toThrow("El cobro de la desentrada no puede ser anterior al último encuentro");
+      }).toThrow("El cobro de la garantía no puede ser anterior al último encuentro");
       expect(ana.estado()).toBe("inactivo");
       expect(grupo.caja().movimientos()).toHaveLength(2);
     });
@@ -455,7 +455,7 @@ describe("Grupo", () => {
 
       expect(() => {
         grupo.cobrarGarantia("ana", dia(4));
-      }).toThrow("El cobro de la desentrada no puede ser anterior a la entrega a beto");
+      }).toThrow("El cobro de la garantía no puede ser anterior a la entrega a beto");
       expect(ana.estado()).toBe("inactivo");
     });
   });
@@ -581,7 +581,7 @@ describe("Grupo", () => {
 
       expect(() => {
         grupo.registrarEncuentro(nuevoEncuentro({ numero: 4, asistentes: ["beto"] }));
-      }).toThrow("El encuentro no puede ser anterior al cobro de la desentrada a ana");
+      }).toThrow("El encuentro no puede ser anterior al cobro de la garantía a ana");
       expect(grupo.encuentros()).toHaveLength(1);
     });
 
@@ -592,7 +592,7 @@ describe("Grupo", () => {
 
       expect(() => {
         grupo.registrarEncuentro(nuevoEncuentro({ numero: 5, asistentes: ["beto"] }));
-      }).toThrow("El encuentro no puede ser anterior al cobro de la desentrada a ana");
+      }).toThrow("El encuentro no puede ser anterior al cobro de la garantía a ana");
       expect(grupo.encuentros()).toHaveLength(2);
     });
 
@@ -694,7 +694,7 @@ describe("Grupo", () => {
 
       const situaciones = [ana, beto, carla].map((participante) => grupo.situacionDe(participante));
 
-      expect(situaciones).toEqual(["inactivo", "desentrada incompleta", "participando"]);
+      expect(situaciones).toEqual(["inactivo", "garantía incompleta", "participando"]);
     });
 
     it("quienes ya no participan son los que superaron la tolerancia de faltas", () => {
@@ -784,7 +784,7 @@ describe("Grupo", () => {
 
       expect(() => {
         grupo.repartir("beto", dia(4));
-      }).toThrow("La entrega no puede ser anterior al cobro de la desentrada a ana");
+      }).toThrow("La entrega no puede ser anterior al cobro de la garantía a ana");
       expect(grupo.caja().repartos()).toEqual([]);
     });
 
