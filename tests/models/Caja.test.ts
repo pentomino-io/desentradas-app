@@ -67,7 +67,7 @@ describe("Caja", () => {
   });
 
   describe("pagos", () => {
-    it("pagar salda de una vez todos los créditos pendientes de una persona", () => {
+    it("pagar le paga a una persona todo su saldo a favor de una vez, sin tocar el de los demás", () => {
       const caja = nuevaCaja();
       caja.repartir(desentrada({ monto: 1000 }));
       caja.repartir(desentrada({ monto: 300, asistentes: ["beto"] }));

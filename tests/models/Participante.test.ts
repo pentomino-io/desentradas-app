@@ -21,7 +21,7 @@ describe("Participante", () => {
       expect(ana.puedeAsistir(1500)).toBe(true);
     });
 
-    it("con una garantía menor a la desentrada vigente no está habilitado para asistir", () => {
+    it("con la garantía incompleta no puede asistir", () => {
       const ana = nuevoParticipante(1000);
 
       const puedeAsistir = ana.puedeAsistir(1500);
@@ -29,7 +29,7 @@ describe("Participante", () => {
       expect(puedeAsistir).toBe(false);
     });
 
-    it("con una garantía menor a la desentrada vigente está en situación de garantía incompleta", () => {
+    it("con una garantía menor a la desentrada está en situación de garantía incompleta", () => {
       const ana = nuevoParticipante(1000);
 
       const situacion = ana.situacion(1500);
@@ -81,7 +81,7 @@ describe("Participante", () => {
       expect(ana.historial()).toHaveLength(1);
     });
 
-    it("con la garantía incompleta, le falta cobrar la diferencia con la desentrada vigente", () => {
+    it("con la garantía incompleta, le falta cobrar la diferencia con la desentrada", () => {
       const ana = nuevoParticipante(1000);
 
       const porCobrar = ana.garantiaPorCobrar(1500);
@@ -97,7 +97,7 @@ describe("Participante", () => {
       expect(porCobrar).toBe(0);
     });
 
-    it("con la garantía incompleta, cobrarle la garantía lo deja participando con la desentrada vigente", () => {
+    it("con la garantía incompleta, cobrarle la garantía se la completa y lo habilita para asistir", () => {
       const ana = nuevoParticipante(1000);
 
       ana.cobrarGarantia(dia(2), 1500);
@@ -142,7 +142,7 @@ describe("Participante", () => {
       expect(ana.faltas()).toBe(2);
     });
 
-    it("le falta cobrar como garantía toda la desentrada vigente", () => {
+    it("a quien no tiene garantía le falta cobrar toda la desentrada", () => {
       const ana = inactivo();
 
       const porCobrar = ana.garantiaPorCobrar(1500);

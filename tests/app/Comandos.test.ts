@@ -242,7 +242,7 @@ describe("RegistrarEncuentro", () => {
 });
 
 describe("Pagar", () => {
-  it("paga los créditos pendientes de la persona en la fecha indicada", () => {
+  it("le paga a la persona su saldo a favor en la fecha indicada", () => {
     const grupo = grupoConAnaInactiva();
     const comando = new Pagar("beto", dia(4));
 

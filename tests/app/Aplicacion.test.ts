@@ -136,7 +136,7 @@ describe("Aplicacion", () => {
       expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
     });
 
-    it("pagar salda los créditos pendientes de la persona", () => {
+    it("pagar deja sin saldo a favor a la persona", () => {
       const aplicacion = aplicacionConAnaInactiva();
 
       aplicacion.pagar("beto", dia(4));

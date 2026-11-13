@@ -550,7 +550,7 @@ describe("VistaPrincipal", () => {
       },
     );
 
-    it("los saldos muestran por nombre el saldo a favor de cada uno, y el total de saldos a favor por pagar sin un total de garantías por completar en cero", async () => {
+    it("la caja muestra el saldo a favor de cada uno y el total por pagar, sin un total de garantías por completar en cero", async () => {
       const almacenamientos = almacenamientosConAnaInactiva(); // beto recibe 334, carla y dani 333
       nuevaAplicacion(almacenamientos).registrarEncuentro(dia(3), ["dani", "carla"], ["ana", "beto"]); // carla y dani reciben 500
       montar(almacenamientos);
@@ -622,7 +622,7 @@ describe("VistaPrincipal", () => {
       expect(textosDeLasCeldas(fila("beto"))).toEqual(["beto", "participando", "+$ 34", "Pagar saldo a favor"]);
     });
 
-    it("pagar el saldo a favor salda los créditos pendientes y queda entre los movimientos como plata que sale de la caja, y los cobros como plata que entra", async () => {
+    it("pagar el saldo a favor lo deja en cero y queda entre los movimientos como plata que sale de la caja, y los cobros como plata que entra", async () => {
       const { aplicacion } = montar(almacenamientosConAnaInactiva()); // beto recibe 334
       await navegarA("Caja");
 

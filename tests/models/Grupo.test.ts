@@ -216,7 +216,7 @@ describe("Grupo", () => {
       expect(grupo.participantes()).toEqual([ana]);
     });
 
-    it("ingresar cobra en efectivo una garantía igual a la desentrada actual", () => {
+    it("al ingresar se cobra en efectivo la desentrada vigente como garantía", () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
 
@@ -532,7 +532,7 @@ describe("Grupo", () => {
       expect(grupo.encuentros()).toHaveLength(2);
     });
 
-    it("quien participa con una garantía menor a la desentrada actual no puede figurar como asistente de un encuentro", () => {
+    it("quien tiene la garantía incompleta no puede figurar como asistente de un encuentro", () => {
       const grupo = nuevoGrupo(reglas({ desentrada: 1000 }));
       grupo.ingresar("ana", dia(1));
       grupo.cambiarReglas(reglas({ rigeDesde: dia(2), desentrada: 1500 }));
@@ -681,7 +681,7 @@ describe("Grupo", () => {
       expect(posibles).toEqual([beto, carla]);
     });
 
-    it("pueden asistir quienes participan con la garantía completa para la desentrada actual", () => {
+    it("pueden asistir quienes tienen la garantía completa", () => {
       const { grupo, ana, beto, carla } = grupoConGarantiaInactivaIncompletaYCompleta();
 
       const pueden = [ana, beto, carla].map((participante) => grupo.puedeAsistir(participante));
@@ -689,7 +689,7 @@ describe("Grupo", () => {
       expect(pueden).toEqual([false, false, true]);
     });
 
-    it("la situación de cada uno distingue a quienes participan con la garantía completa para la desentrada actual de quienes la tienen incompleta", () => {
+    it("la situación de cada uno distingue a los inactivos, a quienes tienen la garantía incompleta y a quienes la tienen completa", () => {
       const { grupo, ana, beto, carla } = grupoConGarantiaInactivaIncompletaYCompleta();
 
       const situaciones = [ana, beto, carla].map((participante) => grupo.situacionDe(participante));
@@ -768,7 +768,7 @@ describe("Grupo", () => {
   });
 
   describe("pagos", () => {
-    it("pagar salda los créditos pendientes de una persona y queda registrado en la caja", () => {
+    it("pagar deja sin saldo a favor a la persona y queda registrado en la caja", () => {
       const { grupo } = grupoConAnaInactiva();
 
       const pago = grupo.pagar("beto", dia(4));
