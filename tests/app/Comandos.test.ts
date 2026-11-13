@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CrearGrupo } from "../../src/app/comandos/CrearGrupo.ts";
 import { Ingresar } from "../../src/app/comandos/Ingresar.ts";
+import { IngresarSinPagar } from "../../src/app/comandos/IngresarSinPagar.ts";
 import { CobrarGarantia } from "../../src/app/comandos/CobrarGarantia.ts";
 import { RegistrarEncuentro } from "../../src/app/comandos/RegistrarEncuentro.ts";
 import { Repartir } from "../../src/app/comandos/Repartir.ts";
@@ -149,6 +150,27 @@ describe("Ingresar", () => {
   });
 });
 
+describe("IngresarSinPagar", () => {
+  it("deja a la persona en el grupo sin cobrarle la desentrada", () => {
+    const grupo = nuevoGrupo();
+    const comando = new IngresarSinPagar("ana", dia(1));
+
+    comando.ejecutar(grupo, desempate);
+
+    expect(grupo.participante("ana")?.estado()).toBe("inactivo");
+    expect(grupo.caja().movimientos()).toEqual([]);
+  });
+
+  it("se convierte a JSON con el nombre y la fecha en formato ISO, y vuelve igual", () => {
+    const comando = new IngresarSinPagar(" ana ", dia(1));
+
+    const json = comando.aJson();
+
+    expect(json).toEqual({ tipo: "ingresar sin pagar", nombre: "ana", fecha: dia(1).toISOString() });
+    expect(comandoDesdeJson(json).aJson()).toEqual(json);
+  });
+});
+
 describe("CobrarGarantia", () => {
   it("le cobra la garantía a la persona en la fecha indicada", () => {
     const grupo = grupoConAnaInactiva();
@@ -290,6 +312,13 @@ describe("Descripción de los comandos", () => {
 
     expect(comando.fecha()).toEqual(dia(1));
     expect(comando.describir()).toBe("Ingresó ana");
+  });
+
+  it("ingresar sin pagar lleva la fecha de ingreso y se describe como que ingresó la persona sin pagar", () => {
+    const comando = new IngresarSinPagar("ana", dia(1));
+
+    expect(comando.fecha()).toEqual(dia(1));
+    expect(comando.describir()).toBe("Ingresó ana, sin pagar la garantía");
   });
 
   it("cobrar garantía lleva la fecha del cobro y se describe como que se le cobró la garantía a la persona", () => {

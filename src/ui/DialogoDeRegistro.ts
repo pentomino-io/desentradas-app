@@ -1,8 +1,9 @@
-import { campoDeTexto } from "./Campos.ts";
+import { monto } from "../app/Formato.ts";
+import { campoDeTexto, casilla } from "./Campos.ts";
 import { Dialogo } from "./Dialogo.ts";
 import type { Participante } from "../models/Participante.ts";
 import { avisoDeGarantia, cobroDeLaGarantiaA } from "./DialogoDeCobroDeGarantia.ts";
-import { crear, valorDe } from "./dom.ts";
+import { crear, estaMarcado, valorDe } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 
 const yaHayAlguien = (nombre: string): string => `Ya hay alguien con el nombre ${nombre}.`;
@@ -15,6 +16,7 @@ export class DialogoDeRegistro {
   private _ingresar: (nombre: string) => void;
   private _cobrarGarantia: (nombre: string) => void;
   private _pedidoPorNombreUsado: (participante: Participante) => string;
+  private _ingresarSinPagar: ((nombre: string) => void) | undefined;
 
   constructor(
     entorno: Entorno,
@@ -27,6 +29,12 @@ export class DialogoDeRegistro {
     this._ingresar = ingresar;
     this._cobrarGarantia = cobrarGarantia;
     this._pedidoPorNombreUsado = (participante) => pedidoDeOtroNombre(participante.nombre());
+    this._ingresarSinPagar = undefined;
+  }
+
+  conIngresoSinPagar(ingresarSinPagar: (nombre: string) => void): this {
+    this._ingresarSinPagar = ingresarSinPagar;
+    return this;
   }
 
   conPedidoPorNombreUsado(pedido: (participante: Participante) => string): this {
@@ -34,25 +42,32 @@ export class DialogoDeRegistro {
     return this;
   }
 
-  abrir(pedido?: string): void {
+  abrir(pedido?: string, pago = false): void {
     new Dialogo(
       this._entorno,
       this._titulo,
       [
         pedido !== undefined && crear("p", {}, pedido),
         campoDeTexto("Nombre", "nombre"),
-        avisoDeGarantia(this._entorno.grupo()),
+        this._ingresarSinPagar === undefined
+          ? avisoDeGarantia(this._entorno.grupo())
+          : casilla(`Pagó la garantía de ${monto(this._entorno.grupo().reglas().garantia())}`, "pago", pago),
       ],
       "Registrar",
-      (formulario) => this._registrar(valorDe(formulario, "nombre").trim()),
+      (formulario) => this._registrar(valorDe(formulario, "nombre").trim(), this._pago(formulario)),
     ).abrir();
   }
 
-  private _registrar(nombre: string): void {
+  private _pago(formulario: HTMLFormElement): boolean {
+    return this._ingresarSinPagar === undefined || estaMarcado(formulario, "pago");
+  }
+
+  private _registrar(nombre: string, pago: boolean): void {
     const participante = this._entorno.grupo().participante(nombre);
     if (participante === undefined) {
-      this._ingresar(nombre);
-    } else if (this._entorno.grupo().situacionDe(participante) === "inactivo") {
+      if (pago) this._ingresar(nombre);
+      else this._ingresarSinPagar!(nombre);
+    } else if (pago && this._entorno.grupo().situacionDe(participante) === "inactivo") {
       this._preguntarSiEsLaMismaPersona(participante);
     } else {
       throw new Error(this._pedidoPorNombreUsado(participante));
@@ -66,7 +81,7 @@ export class DialogoDeRegistro {
     new Dialogo(this._entorno, this._titulo, [crear("p", {}, `${pregunta} ${cobro}`)], "Sí", () =>
       this._cobrarGarantia(nombre),
     )
-      .conTextoDeCancelacion("No, es otra persona", () => this.abrir(pedidoDeOtroNombre(nombre)))
+      .conTextoDeCancelacion("No, es otra persona", () => this.abrir(pedidoDeOtroNombre(nombre), true))
       .abrir();
   }
 }

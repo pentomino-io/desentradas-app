@@ -25,7 +25,7 @@ export const reglas = ({
   garantia?: number;
 } = {}) => new Reglas(rigeDesde, toleranciaDeFaltas, garantia);
 
-export const nuevoParticipante = (garantia = 1000) => new Participante("ana", dia(1), garantia);
+export const nuevoParticipante = (garantia = 1000) => Participante.pagando("ana", dia(1), garantia);
 
 export const desempate = new DesempateAlfabetico();
 

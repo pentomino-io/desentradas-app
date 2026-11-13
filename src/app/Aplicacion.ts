@@ -4,6 +4,7 @@ import { PlanillaDeAsistencia } from "./PlanillaDeAsistencia.ts";
 import type { Comando } from "./Comando.ts";
 import { CrearGrupo } from "./comandos/CrearGrupo.ts";
 import { Ingresar } from "./comandos/Ingresar.ts";
+import { IngresarSinPagar } from "./comandos/IngresarSinPagar.ts";
 import { CobrarGarantia } from "./comandos/CobrarGarantia.ts";
 import { RegistrarEncuentro } from "./comandos/RegistrarEncuentro.ts";
 import { Repartir } from "./comandos/Repartir.ts";
@@ -79,6 +80,10 @@ export class Aplicacion {
 
   ingresar(nombre: string, fecha: Date): void {
     this._ejecutar(new Ingresar(nombre, fecha));
+  }
+
+  ingresarSinPagar(nombre: string, fecha: Date): void {
+    this._ejecutar(new IngresarSinPagar(nombre, fecha));
   }
 
   cobrarGarantia(nombre: string, fecha: Date): void {

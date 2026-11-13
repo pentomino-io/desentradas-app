@@ -109,6 +109,8 @@ const completar = (etiqueta: string, valor: string, raiz: ParentNode = document)
   control.dispatchEvent(new Event("change", { bubbles: true }));
 };
 
+const tildar = (etiqueta: string, raiz: ParentNode = document) => campo(etiqueta, raiz).click();
+
 const exportar = async () => {
   const crearUrl = vi.spyOn(URL, "createObjectURL");
   const clic = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
@@ -337,17 +339,43 @@ describe("VistaPrincipal", () => {
       expect(hayDesplegable("Quienes ya no participan")).toBe(false);
     });
 
-    it("registrar un participante pide confirmar el cobro de la garantía, y después figura entre quienes participan", async () => {
+    it("registrar un participante que pagó la garantía se la cobra, y después figura entre quienes participan", async () => {
       const { aplicacion } = montar(almacenamientosConGrupoSinParticipantes());
       await navegarA("Participantes");
-
       hacerClic("Registrar participante");
-      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 1.000 de desentrada.");
       completar("Nombre", "ana", dialogoAbierto());
+
+      tildar("Pagó la garantía de $ 1.000", dialogoAbierto());
       hacerClic("Registrar", dialogoAbierto());
 
       expect(aplicacion.grupo().participante("ana")?.garantia()).toBe(1000);
       expect(filasDeQuienesParticipan()).toEqual([["ana", "participando"]]);
+    });
+
+    it("registrar un participante sin que pague la garantía lo deja inactivo y sin faltas entre quienes participan, sin cobrarle nada", async () => {
+      const { aplicacion } = montar(almacenamientosConGrupoSinParticipantes());
+      await navegarA("Participantes");
+      hacerClic("Registrar participante");
+      completar("Nombre", "ana", dialogoAbierto());
+
+      hacerClic("Registrar", dialogoAbierto());
+
+      expect(filasDeQuienesParticipan()).toEqual([["ana", "inactivo (0/2 faltas)"]]);
+      expect(aplicacion.grupo().caja().movimientos()).toEqual([]);
+    });
+
+    it("registrar sin que pague la garantía el nombre de quien ya no participa pide otro nombre", async () => {
+      const { aplicacion } = montar(almacenamientosConAnaFueraDeLaTolerancia());
+      await navegarA("Participantes");
+      hacerClic("Registrar participante");
+      completar("Nombre", "ana", dialogoAbierto());
+
+      hacerClic("Registrar", dialogoAbierto());
+
+      expect(textoDe(dialogoAbierto().querySelector("[role=alert]")!)).toBe(
+        "Ya hay alguien con el nombre ana. Escribí otro nombre.",
+      );
+      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
     });
 
     it("registrar el nombre de quien ya no participa pregunta si es la misma persona, y si lo es le cobra la garantía", async () => {
@@ -355,6 +383,7 @@ describe("VistaPrincipal", () => {
       await navegarA("Participantes");
       hacerClic("Registrar participante");
       completar("Nombre", "ana", dialogoAbierto());
+      tildar("Pagó la garantía de $ 1.000", dialogoAbierto());
 
       hacerClic("Registrar", dialogoAbierto());
       expect(textoDe(dialogoAbierto())).toContain(
@@ -372,6 +401,7 @@ describe("VistaPrincipal", () => {
       await navegarA("Participantes");
       hacerClic("Registrar participante");
       completar("Nombre", "ana", dialogoAbierto());
+      tildar("Pagó la garantía de $ 1.000", dialogoAbierto());
 
       hacerClic("Registrar", dialogoAbierto());
 
@@ -387,6 +417,7 @@ describe("VistaPrincipal", () => {
       await navegarA("Participantes");
       hacerClic("Registrar participante");
       completar("Nombre", "ana", dialogoAbierto());
+      tildar("Pagó la garantía de $ 400", dialogoAbierto());
 
       hacerClic("Registrar", dialogoAbierto());
 
@@ -400,6 +431,7 @@ describe("VistaPrincipal", () => {
       await navegarA("Participantes");
       hacerClic("Registrar participante");
       completar("Nombre", "ana", dialogoAbierto());
+      tildar("Pagó la garantía de $ 1.000", dialogoAbierto());
       hacerClic("Registrar", dialogoAbierto());
 
       hacerClic("No, es otra persona", dialogoAbierto());

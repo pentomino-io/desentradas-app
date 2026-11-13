@@ -129,14 +129,19 @@ export const intentar = (accion: () => void, alerta: HTMLOutputElement): boolean
   }
 };
 
-export const valorDe = (formulario: HTMLFormElement, nombre: string): string => {
+const entradaDe = (formulario: HTMLFormElement, nombre: string): HTMLInputElement => {
   const control = formulario.elements.namedItem(nombre);
   if (!(control instanceof HTMLInputElement)) {
     throw new Error(`El formulario no tiene el campo "${nombre}"`);
   }
 
-  return control.value;
+  return control;
 };
+
+export const valorDe = (formulario: HTMLFormElement, nombre: string): string => entradaDe(formulario, nombre).value;
+
+export const estaMarcado = (formulario: HTMLFormElement, nombre: string): boolean =>
+  entradaDe(formulario, nombre).checked;
 
 export const numeroDe = (formulario: HTMLFormElement, nombre: string): number => {
   const valor = valorDe(formulario, nombre);

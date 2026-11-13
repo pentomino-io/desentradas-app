@@ -80,7 +80,9 @@ export class PantallaParticipantes {
       "Registrar participante",
       (nombre) => this._entorno.aplicacion().ingresar(nombre, this._entorno.ahora()),
       (nombre) => this._entorno.aplicacion().cobrarGarantia(nombre, this._entorno.ahora()),
-    ).abrir();
+    )
+      .conIngresoSinPagar((nombre) => this._entorno.aplicacion().ingresarSinPagar(nombre, this._entorno.ahora()))
+      .abrir();
   }
 
   private _abrirReingreso(participante: Participante): void {

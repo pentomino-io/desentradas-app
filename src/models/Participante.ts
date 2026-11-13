@@ -1,6 +1,7 @@
 import type { Encuentro } from "./Encuentro.ts";
 import { GarantiaPerdida } from "./GarantiaPerdida.ts";
 import type { Estado, NombreDeEstado, Situacion } from "./estados/Estado.ts";
+import { Inactivo } from "./estados/Inactivo.ts";
 import { Participando } from "./estados/Participando.ts";
 import { Transicion, type Disparador } from "./Transicion.ts";
 
@@ -8,9 +9,17 @@ export class Participante {
   private _nombre: string;
   private _historial: Transicion[];
 
-  constructor(nombre: string, fechaDeIngreso: Date, garantia: number) {
+  static pagando(nombre: string, fechaDeIngreso: Date, garantia: number): Participante {
+    return new Participante(nombre, fechaDeIngreso, new Participando(garantia));
+  }
+
+  static sinPagar(nombre: string, fechaDeIngreso: Date): Participante {
+    return new Participante(nombre, fechaDeIngreso, new Inactivo(0));
+  }
+
+  private constructor(nombre: string, fechaDeIngreso: Date, estadoInicial: Estado) {
     this._nombre = nombre;
-    this._historial = [new Transicion(fechaDeIngreso, "ingreso", new Participando(garantia))];
+    this._historial = [new Transicion(fechaDeIngreso, "ingreso", estadoInicial)];
   }
 
   voy(encuentro: Encuentro): void {

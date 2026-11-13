@@ -54,16 +54,14 @@ export class Grupo {
   }
 
   ingresar(nombre: string, fecha: Date): Participante {
-    const nombreLimpio = nombre.trim();
-    if (nombreLimpio === "") throw new Error("El nombre no puede estar vacío");
-    if (this.participante(nombreLimpio) !== undefined) throw new Error(`${nombreLimpio} ya está en el grupo`);
-    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El ingreso", fecha);
-
     const garantia = this._garantiaVigente();
-    const participante = new Participante(nombreLimpio, fecha, garantia);
-    this._participantes.push(participante);
-    this._caja.cobrar(Cobro.alIngresar(nombreLimpio, garantia, fecha));
+    const participante = this._incorporar(Participante.pagando(nombre.trim(), fecha, garantia), fecha);
+    this._caja.cobrar(Cobro.alIngresar(participante.nombre(), garantia, fecha));
     return participante;
+  }
+
+  ingresarSinPagar(nombre: string, fecha: Date): Participante {
+    return this._incorporar(Participante.sinPagar(nombre.trim(), fecha), fecha);
   }
 
   cobrarGarantia(nombre: string, fecha: Date): void {
@@ -179,6 +177,16 @@ export class Grupo {
       const excedente = participante.bajarGarantia(reglas.rigeDesde(), reglas.garantia());
       if (excedente > 0) this._caja.acreditar(new Credito(participante.nombre(), excedente));
     }
+  }
+
+  private _incorporar(participante: Participante, fecha: Date): Participante {
+    const nombre = participante.nombre();
+    if (nombre === "") throw new Error("El nombre no puede estar vacío");
+    if (this.participante(nombre) !== undefined) throw new Error(`${nombre} ya está en el grupo`);
+    this._asertarQueNoEsAnteriorAlUltimoMovimiento("El ingreso", fecha);
+
+    this._participantes.push(participante);
+    return participante;
   }
 
   private _participantesLlamados(nombres: Iterable<string>): readonly Participante[] {

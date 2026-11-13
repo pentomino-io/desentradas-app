@@ -226,6 +226,38 @@ describe("Grupo", () => {
       expect(movimientosDe(grupo)).toEqual([[dia(3), "ana", 1500]]);
     });
 
+    it("ingresar sin pagar deja a la persona inactiva sin faltas, sin cobrarle nada, como posible asistente que no puede asistir", () => {
+      const grupo = nuevoGrupo();
+
+      const ana = grupo.ingresarSinPagar("ana", dia(1));
+
+      expect(ana.estado()).toBe("inactivo");
+      expect(ana.faltas()).toBe(0);
+      expect(grupo.participante("ana")).toBe(ana);
+      expect(movimientosDe(grupo)).toEqual([]);
+      expect(grupo.posiblesAsistentes()).toEqual([ana]);
+      expect(grupo.puedeAsistir(ana)).toBe(false);
+    });
+
+    it("quien ingresó sin pagar puede pagar la desentrada para participar", () => {
+      const grupo = nuevoGrupo(reglas({ garantia: 1000 }));
+      const ana = grupo.ingresarSinPagar("ana", dia(1));
+
+      grupo.cobrarGarantia("ana", dia(2));
+
+      expect(ana.estado()).toBe("participando");
+      expect(grupo.puedeAsistir(ana)).toBe(true);
+      expect(movimientosDe(grupo)).toEqual([[dia(2), "ana", 1000]]);
+    });
+
+    it("una persona que ya está en el grupo no puede volver a ingresar sin pagar", () => {
+      const { grupo } = grupoConAnaInactiva();
+
+      expect(() => {
+        grupo.ingresarSinPagar("ana", dia(3));
+      }).toThrow("ana ya está en el grupo");
+    });
+
     it("no hay participante para quien no ingresó", () => {
       const grupo = nuevoGrupo();
 
