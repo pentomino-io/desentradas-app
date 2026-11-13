@@ -109,7 +109,7 @@ export class PantallaCaja {
     const nombre = saldo.nombre();
     new Dialogo(
       this._entorno,
-      `Pagar saldo a favor a ${nombre}`,
+      `Pagarle a ${nombre} su saldo a favor`,
       [crear("p", {}, `Hay que pagarle ${monto(saldo.aFavor())}.`)],
       "Pagar",
       () => this._entorno.aplicacion().repartir(nombre, this._entorno.ahora()),

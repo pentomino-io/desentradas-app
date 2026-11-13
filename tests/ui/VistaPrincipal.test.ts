@@ -605,7 +605,7 @@ describe("VistaPrincipal", () => {
       await navegarA("Caja");
 
       hacerClic("Pagar saldo a favor", fila("beto"));
-      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Pagar saldo a favor a beto");
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Pagarle a beto su saldo a favor");
       expect(textoDe(dialogoAbierto())).toContain("Hay que pagarle $ 334.");
       hacerClic("Pagar", dialogoAbierto());
 
