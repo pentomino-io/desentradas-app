@@ -140,9 +140,6 @@ const entradaDe = (formulario: HTMLFormElement, nombre: string): HTMLInputElemen
 
 export const valorDe = (formulario: HTMLFormElement, nombre: string): string => entradaDe(formulario, nombre).value;
 
-export const estaMarcado = (formulario: HTMLFormElement, nombre: string): boolean =>
-  entradaDe(formulario, nombre).checked;
-
 export const numeroDe = (formulario: HTMLFormElement, nombre: string): number => {
   const valor = valorDe(formulario, nombre);
   const numero = Number(valor);

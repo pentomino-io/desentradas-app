@@ -143,14 +143,8 @@ export class PantallaEncuentro {
   }
 
   private _abrirIngreso(): void {
-    new DialogoDeRegistro(
-      this._entorno,
-      "Vino alguien nuevo",
-      (nombre) => {
-        this._entorno.aplicacion().ingresar(nombre, this._entorno.ahora());
-        this._cobrarGarantia(nombre);
-      },
-      (nombre) => this._cobrarGarantia(nombre),
+    new DialogoDeRegistro(this._entorno, "Vino alguien nuevo", "Queda presente en este encuentro.", (nombre) =>
+      this._cobrarGarantia(nombre),
     )
       .conPedidoPorNombreUsado((participante) => this._pedidoDeIrALaListaPor(participante))
       .abrir();

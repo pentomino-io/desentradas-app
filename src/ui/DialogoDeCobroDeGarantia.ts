@@ -5,9 +5,6 @@ import { Dialogo } from "./Dialogo.ts";
 import { crear } from "./dom.ts";
 import type { Entorno } from "./Entorno.ts";
 
-export const avisoDeGarantia = (grupo: Grupo): HTMLParagraphElement =>
-  crear("p", {}, `Hay que cobrarle ${monto(grupo.reglas().desentrada())} de garantía.`);
-
 export const tituloDelCobroDeLaGarantiaA = (nombre: string): string => `Cobrar la garantía a ${nombre}`;
 
 const efectivoParaLaGarantiaDe = (grupo: Grupo, participante: Participante): number =>

@@ -109,8 +109,6 @@ const completar = (etiqueta: string, valor: string, raiz: ParentNode = document)
   control.dispatchEvent(new Event("change", { bubbles: true }));
 };
 
-const tildar = (etiqueta: string, raiz: ParentNode = document) => campo(etiqueta, raiz).click();
-
 const exportar = async () => {
   const crearUrl = vi.spyOn(URL, "createObjectURL");
   const clic = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
@@ -323,6 +321,7 @@ describe("VistaPrincipal", () => {
       expect(hayEtiqueta("Fecha", dialogoAbierto())).toBe(false);
       completar("Nombre", "gus", dialogoAbierto());
       hacerClic("Registrar", dialogoAbierto());
+      hacerClic("Cobrar después", dialogoAbierto());
       hacerClic("Reingresar", fila("ana"));
       hacerClic("Registrar cobro de $ 1.000", dialogoAbierto());
 
@@ -346,32 +345,40 @@ describe("VistaPrincipal", () => {
       expect(hayDesplegable("Quienes ya no participan")).toBe(false);
     });
 
-    it("registrar un participante que pagó la garantía se la cobra, y después figura entre quienes participan", async () => {
+    it("registrar un participante abre el cobro de su garantía, y al confirmarlo figura entre quienes participan", async () => {
       const { aplicacion } = montar(almacenamientosConGrupoSinParticipantes());
       await navegarA("Participantes");
       hacerClic("Registrar participante");
       completar("Nombre", "ana", dialogoAbierto());
 
-      tildar("Pagó la garantía de $ 1.000", dialogoAbierto());
       hacerClic("Registrar", dialogoAbierto());
+      expect(textoDe(dialogoAbierto().querySelector("h3")!)).toBe("Cobrar la garantía a ana");
+      expect(textoDe(dialogoAbierto())).toContain("Hay que cobrarle $ 1.000 de garantía. Puede empezar a asistir.");
+      hacerClic("Registrar cobro de $ 1.000", dialogoAbierto());
 
-      expect(aplicacion.grupo().participante("ana")?.garantia()).toBe(1000);
+      expect(aplicacion.comandos().map((comando) => comando.describir())).toEqual([
+        'Se creó el grupo "Fútbol de los jueves"',
+        "Ingresó ana",
+        "Se cobró la garantía a ana",
+      ]);
       expect(filasDeQuienesParticipan()).toEqual([["ana", "participando", ""]]);
     });
 
-    it("registrar un participante sin que pague la garantía lo deja inactivo y sin faltas entre quienes participan, sin cobrarle nada", async () => {
+    it("cobrar después la garantía de quien se registró lo deja inactivo y sin faltas entre quienes participan, sin cobrarle nada", async () => {
       const { aplicacion } = montar(almacenamientosConGrupoSinParticipantes());
       await navegarA("Participantes");
       hacerClic("Registrar participante");
       completar("Nombre", "ana", dialogoAbierto());
-
       hacerClic("Registrar", dialogoAbierto());
 
+      hacerClic("Cobrar después", dialogoAbierto());
+
+      expect(hayDialogoAbierto()).toBe(false);
       expect(filasDeQuienesParticipan()).toEqual([["ana", "inactivo (0/2 faltas)", "Cobrar garantía"]]);
       expect(aplicacion.grupo().caja().movimientos()).toEqual([]);
     });
 
-    it("a quien se registró sin pagar se le puede cobrar la garantía desde su fila, y pasa a participar", async () => {
+    it("a quien se registró sin cobrarle la garantía se le puede cobrar la garantía desde su fila, y pasa a participar", async () => {
       const almacenamientos = almacenamientosConGrupoSinParticipantes();
       nuevaAplicacion(almacenamientos).ingresar("ana", dia(1));
       const { aplicacion } = montar(almacenamientos);
@@ -386,26 +393,11 @@ describe("VistaPrincipal", () => {
       expect(filasDeQuienesParticipan()).toEqual([["ana", "participando", ""]]);
     });
 
-    it("registrar sin que pague la garantía el nombre de quien ya no participa pide otro nombre", async () => {
-      const { aplicacion } = montar(almacenamientosConAnaFueraDeLaTolerancia());
-      await navegarA("Participantes");
-      hacerClic("Registrar participante");
-      completar("Nombre", "ana", dialogoAbierto());
-
-      hacerClic("Registrar", dialogoAbierto());
-
-      expect(textoDe(dialogoAbierto().querySelector("[role=alert]")!)).toBe(
-        "Ya hay alguien con el nombre ana. Escribí otro nombre.",
-      );
-      expect(aplicacion.grupo().participante("ana")?.estado()).toBe("inactivo");
-    });
-
     it("registrar el nombre de quien ya no participa pregunta si es la misma persona, y si lo es le cobra la garantía", async () => {
       const { aplicacion } = montar(almacenamientosConAnaFueraDeLaTolerancia());
       await navegarA("Participantes");
       hacerClic("Registrar participante");
       completar("Nombre", "ana", dialogoAbierto());
-      tildar("Pagó la garantía de $ 1.000", dialogoAbierto());
 
       hacerClic("Registrar", dialogoAbierto());
       expect(textoDe(dialogoAbierto())).toContain(
@@ -423,7 +415,6 @@ describe("VistaPrincipal", () => {
       await navegarA("Participantes");
       hacerClic("Registrar participante");
       completar("Nombre", "ana", dialogoAbierto());
-      tildar("Pagó la garantía de $ 1.000", dialogoAbierto());
 
       hacerClic("Registrar", dialogoAbierto());
 
@@ -439,7 +430,6 @@ describe("VistaPrincipal", () => {
       await navegarA("Participantes");
       hacerClic("Registrar participante");
       completar("Nombre", "ana", dialogoAbierto());
-      tildar("Pagó la garantía de $ 400", dialogoAbierto());
 
       hacerClic("Registrar", dialogoAbierto());
 
@@ -453,13 +443,13 @@ describe("VistaPrincipal", () => {
       await navegarA("Participantes");
       hacerClic("Registrar participante");
       completar("Nombre", "ana", dialogoAbierto());
-      tildar("Pagó la garantía de $ 1.000", dialogoAbierto());
       hacerClic("Registrar", dialogoAbierto());
 
       hacerClic("No, es otra persona", dialogoAbierto());
       expect(textoDe(dialogoAbierto())).toContain("Ya hay alguien con el nombre ana. Escribí otro nombre.");
       completar("Nombre", "ana g", dialogoAbierto());
       hacerClic("Registrar", dialogoAbierto());
+      hacerClic("Registrar cobro de $ 1.000", dialogoAbierto());
 
       expect(hayDialogoAbierto()).toBe(false);
       expect(aplicacion.grupo().participante("ana g")?.estado()).toBe("participando");
@@ -804,6 +794,40 @@ describe("VistaPrincipal", () => {
       expect(pantallaActual()).toBe("Encuentro");
       expect(casillaDeAsistencia("beto").checked).toBe(true);
       expect(casillaDeAsistencia("carla").checked).toBe(false);
+    });
+
+    it("si vino alguien nuevo, después de registrarlo se le cobra la garantía y queda marcado como presente", () => {
+      const { aplicacion } = montar(almacenamientosConAnaInactiva());
+      hacerClic("Empezar encuentro");
+      hacerClic("Vino alguien nuevo");
+      completar("Nombre", "eva", dialogoAbierto());
+
+      hacerClic("Registrar", dialogoAbierto());
+      expect(textoDe(dialogoAbierto())).toContain(
+        "Hay que cobrarle $ 1.000 de garantía. Queda presente en este encuentro.",
+      );
+      hacerClic("Registrar cobro de $ 1.000", dialogoAbierto());
+
+      expect(aplicacion.grupo().participante("eva")?.estado()).toBe("participando");
+      expect(casillaDeAsistencia("eva").checked).toBe(true);
+    });
+
+    it("si vino alguien nuevo y se cobra después su garantía, queda en la asistencia para cobrarle y habilitarlo", () => {
+      const { aplicacion } = montar(almacenamientosConAnaInactiva());
+      hacerClic("Empezar encuentro");
+      hacerClic("Vino alguien nuevo");
+      completar("Nombre", "eva", dialogoAbierto());
+      hacerClic("Registrar", dialogoAbierto());
+
+      hacerClic("Cobrar después", dialogoAbierto());
+
+      expect(aplicacion.grupo().participante("eva")?.estado()).toBe("inactivo");
+      expect(textosDeLasCeldas(fila("eva"))).toEqual([
+        "",
+        "eva",
+        "inactivo (0/2 faltas)",
+        "Cobrar garantía y habilitar",
+      ]);
     });
 
     it("si vuelve alguien que ya no participa y es la misma persona, se le cobra la garantía y queda marcado como presente", () => {

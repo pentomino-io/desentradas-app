@@ -79,17 +79,9 @@ export class PantallaParticipantes {
   }
 
   private _abrirIngreso(): void {
-    new DialogoDeRegistro(
-      this._entorno,
-      "Registrar participante",
-      (nombre) => {
-        this._entorno.aplicacion().ingresar(nombre, this._entorno.ahora());
-        this._entorno.aplicacion().cobrarGarantia(nombre, this._entorno.ahora());
-      },
-      (nombre) => this._entorno.aplicacion().cobrarGarantia(nombre, this._entorno.ahora()),
-    )
-      .conIngresoSinPagar((nombre) => this._entorno.aplicacion().ingresar(nombre, this._entorno.ahora()))
-      .abrir();
+    new DialogoDeRegistro(this._entorno, "Registrar participante", "Puede empezar a asistir.", (nombre) =>
+      this._entorno.aplicacion().cobrarGarantia(nombre, this._entorno.ahora()),
+    ).abrir();
   }
 
   private _abrirCobro(participante: Participante): void {
